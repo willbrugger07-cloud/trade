@@ -2,497 +2,674 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Le Bandit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@900&family=Cinzel:wght@600;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Special+Elite&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0a0814;--panel:#0e0618;--cell:#100818;--border:#2a1848;
-  --gold:#f0b830;--gold2:#ffe060;--dim:#6040a0;
-  --bronze:#c87830;--silver:#b0b0b0;--goldcoin:#f5c040;
-  --green:#22c060;--red:#e03030;--scatter:#f07020;--rainbow:#7080ff;
-  --card-color:#c8a8e8;
+html,body{
+  height:100%;width:100%;overflow:hidden;
+  font-family:'Inter',system-ui,sans-serif;
+  background:#1a1510;color:#fff;
+  user-select:none;-webkit-user-select:none;
 }
-html,body{height:100%;background:var(--bg);font-family:'Inter',system-ui,sans-serif;color:#fff;overflow-x:hidden}
-body{display:flex;flex-direction:column;align-items:center;min-height:100vh;
-  padding:10px 8px 24px;
-  background:radial-gradient(ellipse at 50% -20%,#1a0a30 0%,#0a0814 70%)}
 
-/* ── STARFIELD ── */
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+/* ── ALLEY BACKGROUND ── */
+body{
+  background:
+    radial-gradient(ellipse at 50% 100%,rgba(60,40,10,.6) 0%,transparent 55%),
+    radial-gradient(ellipse at 50% 0%,rgba(30,20,8,.8) 0%,transparent 50%),
+    linear-gradient(180deg,#1a1208 0%,#241a0e 30%,#2a1e10 60%,#1e1408 100%);
+}
+
+/* stone/brick texture overlay via repeating gradient */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background-image:
-    radial-gradient(1px 1px at 15% 20%,rgba(255,255,255,.55) 0%,transparent 100%),
-    radial-gradient(1px 1px at 42% 8%,rgba(255,255,255,.45) 0%,transparent 100%),
-    radial-gradient(1px 1px at 70% 30%,rgba(255,255,255,.5) 0%,transparent 100%),
-    radial-gradient(1px 1px at 88% 12%,rgba(255,255,255,.4) 0%,transparent 100%),
-    radial-gradient(1px 1px at 5% 60%,rgba(255,255,255,.35) 0%,transparent 100%),
-    radial-gradient(1px 1px at 55% 55%,rgba(255,255,255,.3) 0%,transparent 100%),
-    radial-gradient(1px 1px at 92% 70%,rgba(255,255,255,.4) 0%,transparent 100%),
-    radial-gradient(1px 1px at 28% 85%,rgba(255,255,255,.3) 0%,transparent 100%),
-    radial-gradient(1.5px 1.5px at 65% 80%,rgba(200,180,255,.5) 0%,transparent 100%),
-    radial-gradient(1.5px 1.5px at 35% 45%,rgba(200,180,255,.35) 0%,transparent 100%);
-  animation:shimmer 8s ease-in-out infinite alternate}
-@keyframes shimmer{
-  0%{opacity:.6}50%{opacity:1}100%{opacity:.7}
+    repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(0,0,0,.06) 28px,rgba(0,0,0,.06) 29px),
+    repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(0,0,0,.04) 40px,rgba(0,0,0,.04) 41px);
+  opacity:.6;
 }
 
-/* all content above the starfield */
-.hud,.machine,.pt-wrap,.reset-btn,.bigwin,.modal-bg{position:relative;z-index:1}
-
-/* ── TOP STATS ── */
-.hud{width:100%;max-width:680px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
-.hud-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-  border-radius:10px;padding:7px 12px;display:flex;flex-direction:column;
-  backdrop-filter:blur(4px);box-shadow:0 2px 12px rgba(0,0,0,.4)}
-.hud-box .hl{font-size:.52rem;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
-.hud-box .hv{font-size:1rem;font-weight:700;color:#e8e0ff;margin-top:2px}
-.hud-box.win-hud .hv{color:var(--gold2);text-shadow:0 0 12px rgba(255,224,96,.4)}
-.hud-box.fs-hud{border-color:rgba(240,184,48,.4);display:none}
-.hud-box.fs-hud .hv{color:var(--gold2)}
-
-/* ── MACHINE ── */
-.machine{width:100%;max-width:680px;
-  background:linear-gradient(180deg,#120820 0%,#0e0618 100%);
-  border:1px solid #3a2060;border-radius:18px;overflow:visible;
-  box-shadow:0 0 0 2px #2a1840,0 0 0 4px #1a0828,0 0 40px rgba(160,80,255,.15),0 20px 60px rgba(0,0,0,.8)}
-
-/* ── TITLE ── */
-.top-bar{padding:12px 16px 6px;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;flex-direction:column}
-.logo-text{font-size:2rem;font-weight:900;letter-spacing:6px;color:var(--gold);
-  text-shadow:0 0 30px rgba(240,184,48,.6),0 0 60px rgba(240,184,48,.2);font-style:italic;
-  text-transform:uppercase}
-.logo-sub{font-size:.48rem;color:#7050b0;letter-spacing:3px;margin-top:2px;text-transform:uppercase}
-.logo-raccoon{font-size:2.5rem;opacity:.9;filter:drop-shadow(0 0 12px rgba(160,80,255,.6));
-  animation:raccoon-bob 2.2s ease-in-out infinite}
-@keyframes raccoon-bob{
-  0%,100%{transform:translateY(0) rotate(-3deg)}
-  50%{transform:translateY(-5px) rotate(3deg)}
+/* ambient light orbs */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 300px 200px at 15% 80%,rgba(180,120,40,.07) 0%,transparent 70%),
+    radial-gradient(ellipse 300px 200px at 85% 80%,rgba(180,120,40,.07) 0%,transparent 70%),
+    radial-gradient(ellipse 400px 300px at 50% 110%,rgba(80,60,20,.1) 0%,transparent 60%);
 }
 
-/* ── FRAME LIGHTS ── */
-.frame-lights{position:absolute;inset:0;border-radius:18px;pointer-events:none;overflow:hidden;z-index:0}
-.frame-lights::before,.frame-lights::after{content:'';position:absolute;left:0;right:0;height:10px;display:flex}
-.fl-dot{position:absolute;width:8px;height:8px;border-radius:50%;
-  background:#f0b830;box-shadow:0 0 6px 2px rgba(240,184,48,.6);
-  animation:fl-blink 1.6s ease-in-out infinite}
-@keyframes fl-blink{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+/* ── GAME LAYOUT ── */
+.game{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  height:100vh;max-width:800px;margin:0 auto;
+}
 
-/* ── REEL AREA ── */
-.reel-area{padding:0 10px 8px}
-.reel-frame{background:#050308;border:1px solid #3a1868;border-radius:12px;
-  padding:6px;position:relative;overflow:hidden;
-  box-shadow:inset 0 0 40px rgba(0,0,0,.8),inset 0 0 0 2px rgba(160,80,255,.1),0 0 20px rgba(100,40,180,.1)}
+/* ── LOGO AREA ── */
+.logo-area{
+  position:relative;padding:6px 16px 4px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.logo-wood{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,#3a2810 0%,#2a1e0c 40%,#221808 100%);
+  border-bottom:3px solid #1a1006;
+  box-shadow:0 4px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,220,120,.08);
+}
+.logo-wood::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent,transparent 80px,rgba(0,0,0,.06) 80px,rgba(0,0,0,.06) 82px);
+}
+.logo-title{
+  position:relative;z-index:1;
+  font-family:'Permanent Marker',cursive;
+  font-size:clamp(1.6rem,5vw,2.6rem);
+  color:#f0e0b0;
+  text-shadow:
+    2px 2px 0 #3a2000,
+    -1px -1px 0 #2a1500,
+    0 0 30px rgba(255,200,80,.3);
+  letter-spacing:4px;
+}
+.logo-title span{color:#e8b020}
 
-.reels{display:flex;gap:4px}
-.rcol{flex:1;display:flex;flex-direction:column;gap:3px}
+/* raccoon ears as decorative flanks */
+.logo-left,.logo-right{
+  position:absolute;top:50%;transform:translateY(-50%);
+  font-size:1.2rem;opacity:.6;
+}
+.logo-left{left:16px}
+.logo-right{right:16px}
+
+/* ── MIDDLE ROW: reels + raccoon ── */
+.mid-row{
+  display:flex;align-items:stretch;flex:1;min-height:0;
+  padding:6px 8px 0;gap:6px;
+}
+
+/* ── RACCOON CHARACTER ── */
+.raccoon-side{
+  width:64px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:8px;
+}
+.raccoon-body{
+  font-size:3.2rem;
+  animation:raccoon-idle 3s ease-in-out infinite;
+  filter:drop-shadow(-3px 4px 8px rgba(0,0,0,.7));
+  cursor:default;
+}
+@keyframes raccoon-idle{
+  0%,100%{transform:translateY(0) scaleX(1)}
+  30%{transform:translateY(-4px) scaleX(1)}
+  60%{transform:translateY(-2px) scaleX(-1)}
+  80%{transform:translateY(0) scaleX(-1)}
+}
+.raccoon-shadow{
+  width:40px;height:8px;border-radius:50%;
+  background:rgba(0,0,0,.4);margin-top:2px;
+  animation:shadow-pulse 3s ease-in-out infinite;
+}
+@keyframes shadow-pulse{
+  0%,100%{transform:scaleX(1);opacity:.5}
+  30%{transform:scaleX(.7);opacity:.3}
+}
+
+/* ── MACHINE PANEL ── */
+.machine-panel{
+  flex:1;display:flex;flex-direction:column;min-width:0;
+}
+
+/* ── REEL FRAME ── */
+.reel-frame{
+  flex:1;min-height:0;position:relative;
+  background:linear-gradient(180deg,#0a0806 0%,#0c0a07 100%);
+  border-radius:10px;overflow:hidden;
+  border:2px solid #3a2808;
+  box-shadow:
+    inset 0 0 40px rgba(0,0,0,.9),
+    0 4px 20px rgba(0,0,0,.6),
+    0 0 0 1px #1a1006;
+}
+
+/* top and bottom reel mask — creates the slot-window illusion */
+.reel-frame::before,.reel-frame::after{
+  content:'';position:absolute;left:0;right:0;height:18px;z-index:10;pointer-events:none;
+}
+.reel-frame::before{
+  top:0;
+  background:linear-gradient(180deg,rgba(10,8,6,1) 0%,transparent 100%);
+}
+.reel-frame::after{
+  bottom:0;
+  background:linear-gradient(0deg,rgba(10,8,6,1) 0%,transparent 100%);
+}
+
+.reels{
+  display:flex;gap:3px;padding:6px;height:100%;
+}
+.rcol{flex:1;display:flex;flex-direction:column;gap:2px}
+
+/* reel column separators */
+.rcol:not(:last-child){
+  border-right:1px solid rgba(255,255,255,.04);
+}
 
 /* ── CELL ── */
-.cell{height:60px;background:linear-gradient(160deg,#1a1028,#100818);
-  border-radius:9px;border:1px solid #2a1848;
+.cell{
+  flex:1;min-height:0;
+  background:rgba(15,10,5,.5);
+  border-radius:5px;
+  border:1px solid rgba(255,255,255,.04);
   display:flex;align-items:center;justify-content:center;
-  font-size:1.8rem;position:relative;overflow:hidden;cursor:default;
-  transition:border-color .15s,box-shadow .15s,transform .12s}
-.cell:hover{border-color:#4a2870;box-shadow:0 0 8px rgba(120,60,200,.2)}
-
-/* symbol layer */
-.sym{display:flex;align-items:center;justify-content:center;width:100%;height:100%;
-  position:relative;z-index:1}
-
-/* card symbol styling */
-.csym{font-size:1.15rem;font-weight:800;font-family:Georgia,serif;
-  color:var(--card-color);letter-spacing:-1px}
-
-/* golden square glow layer */
-.gs-glow{position:absolute;inset:0;border-radius:8px;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at center,rgba(240,184,48,.32),transparent 65%);
-  transition:opacity .3s}
-.cell.golden .gs-glow{opacity:1;animation:gs-shimmer 2.4s ease-in-out infinite}
-@keyframes gs-shimmer{
-  0%,100%{background:radial-gradient(ellipse at 30% 40%,rgba(255,220,80,.28),transparent 65%)}
-  50%{background:radial-gradient(ellipse at 70% 60%,rgba(255,220,80,.4),transparent 65%)}
-}
-.cell.golden{border-color:rgba(240,184,48,.7);box-shadow:0 0 14px rgba(240,184,48,.4),inset 0 0 6px rgba(240,184,48,.1)}
-
-/* win — pulsing border that cycles gold → white → gold */
-.cell.win{border-color:var(--gold2);
-  animation:cell-win .38s ease-in-out infinite alternate}
-@keyframes cell-win{
-  from{transform:scale(1);border-color:#f0b830;box-shadow:0 0 16px rgba(255,200,60,.6),0 0 0 1px rgba(255,200,60,.4),0 0 40px rgba(255,200,60,.15)}
-  to  {transform:scale(1.06);border-color:#fffce0;box-shadow:0 0 32px rgba(255,255,180,.9),0 0 64px rgba(255,200,60,.35),0 0 80px rgba(255,200,60,.1)}
+  position:relative;overflow:hidden;cursor:default;
+  transition:border-color .12s,background .12s;
 }
 
-/* spin — reel-scroll illusion */
-.cell.spin .sym{animation:reel-scroll .09s linear infinite}
-@keyframes reel-scroll{
-  0%  {transform:translateY(-6px) scaleY(.9);filter:blur(3px) brightness(1.6);opacity:.65}
-  40% {transform:translateY(0)    scaleY(1); filter:blur(1px) brightness(1.1);opacity:1}
-  70% {transform:translateY(4px)  scaleY(.95);filter:blur(3px) brightness(.8);opacity:.7}
-  100%{transform:translateY(-6px) scaleY(.9);filter:blur(3px) brightness(1.6);opacity:.65}
+/* cell inner shine */
+.cell::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:40%;
+  background:linear-gradient(180deg,rgba(255,255,255,.03) 0%,transparent 100%);
+  pointer-events:none;border-radius:5px 5px 0 0;
 }
 
-/* explode */
-.cell.explode{animation:cell-burst .3s ease forwards}
-.cell.explode .sym{animation:sym-shrink .3s ease forwards}
-@keyframes cell-burst{
-  0%  {box-shadow:0 0 0 0 rgba(160,80,255,.9)}
-  60% {box-shadow:0 0 0 14px rgba(160,80,255,0)}
-  100%{box-shadow:0 0 0 14px rgba(160,80,255,0);background:#150b20}
+/* symbol */
+.sym{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;position:relative;z-index:1;
 }
-@keyframes sym-shrink{
-  0%  {transform:scale(1);opacity:1}
-  40% {transform:scale(1.4);opacity:.6;filter:brightness(2)}
+.esym{
+  font-size:clamp(1.6rem,3.5vw,2.2rem);
+  line-height:1;display:block;
+}
+
+/* card symbol */
+.card-sym{
+  display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  width:38px;height:46px;border-radius:5px;
+  font-family:'Special Elite',serif;font-weight:900;
+  box-shadow:0 2px 8px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.card-sym .cv{font-size:1.3rem;line-height:1}
+.card-sym .cp{font-size:.9rem;line-height:1;opacity:.8}
+
+/* golden square */
+.gs-glow{
+  position:absolute;inset:0;border-radius:5px;pointer-events:none;opacity:0;
+  transition:opacity .3s;
+}
+.cell.golden .gs-glow{opacity:1;animation:gs-pulse 2s ease-in-out infinite}
+@keyframes gs-pulse{
+  0%,100%{background:radial-gradient(ellipse at 35% 35%,rgba(255,210,60,.22),transparent 65%)}
+  50%{background:radial-gradient(ellipse at 65% 65%,rgba(255,210,60,.32),transparent 65%)}
+}
+.cell.golden{
+  background:rgba(30,20,5,.6);
+  border-color:rgba(240,180,40,.5);
+  box-shadow:0 0 12px rgba(240,180,40,.25),inset 0 0 8px rgba(240,180,40,.08);
+}
+
+/* ── WIN ANIMATION ── */
+.cell.win{
+  border-color:#ffe060;
+  background:rgba(50,35,5,.8);
+  animation:win-pulse .36s ease-in-out infinite alternate;
+}
+@keyframes win-pulse{
+  from{transform:scale(1);box-shadow:0 0 12px rgba(255,210,60,.5)}
+  to  {transform:scale(1.07);box-shadow:0 0 28px rgba(255,230,80,1),0 0 50px rgba(255,180,30,.3)}
+}
+
+/* ── SPIN ── */
+.cell.spin .sym{animation:reel-blur .08s linear infinite}
+@keyframes reel-blur{
+  0%  {transform:translateY(-8px) scaleY(.85);filter:blur(4px) brightness(1.5);opacity:.6}
+  45% {transform:translateY(0)    scaleY(1);  filter:blur(1px) brightness(1.1);opacity:1}
+  75% {transform:translateY(5px)  scaleY(.9); filter:blur(4px) brightness(.75);opacity:.65}
+  100%{transform:translateY(-8px) scaleY(.85);filter:blur(4px) brightness(1.5);opacity:.6}
+}
+
+/* ── EXPLODE ── */
+.cell.explode{animation:cell-pop .32s ease forwards}
+.cell.explode .sym{animation:sym-pop .32s ease forwards}
+@keyframes cell-pop{
+  0%  {box-shadow:0 0 0 0 rgba(255,180,40,.8)}
+  50% {box-shadow:0 0 0 16px rgba(255,180,40,0)}
+  100%{box-shadow:0 0 0 16px rgba(255,180,40,0)}
+}
+@keyframes sym-pop{
+  0%  {transform:scale(1);opacity:1;filter:brightness(1)}
+  35% {transform:scale(1.5);opacity:.7;filter:brightness(2.5)}
   100%{transform:scale(0);opacity:0}
 }
 
-/* drop */
-.cell.drop .sym{animation:sym-drop .28s cubic-bezier(.18,.89,.32,1.28)}
+/* ── DROP ── */
+.cell.drop .sym{animation:sym-drop .3s cubic-bezier(.18,.89,.32,1.3)}
 @keyframes sym-drop{
-  from{transform:translateY(-62px) scaleY(.8);opacity:0;filter:blur(2px)}
-  80% {transform:translateY(3px)  scaleY(1.05);opacity:1;filter:none}
-  to  {transform:translateY(0)    scaleY(1);opacity:1;filter:none}
+  from{transform:translateY(-70px) scaleY(.75);opacity:0;filter:blur(3px)}
+  75% {transform:translateY(4px) scaleY(1.08);opacity:1;filter:none}
+  to  {transform:translateY(0) scaleY(1);opacity:1}
 }
 
-/* rainbow cells */
-.cell.rb-flash{animation:rb .5s ease}
-@keyframes rb{
-  0%  {}
-  30% {box-shadow:0 0 0 3px rgba(120,140,255,.9),0 0 28px rgba(100,120,255,.8);border-color:#9090ff}
-  70% {box-shadow:0 0 0 3px rgba(120,140,255,.9),0 0 28px rgba(100,120,255,.8);border-color:#9090ff}
-  100%{}
+/* ── RAINBOW ── */
+.cell.rb-flash{animation:rb-pulse .55s ease}
+@keyframes rb-pulse{
+  0%,100%{}
+  35%{border-color:#a0b0ff;box-shadow:0 0 0 3px rgba(120,140,255,.7),0 0 24px rgba(100,120,255,.6)}
+  65%{border-color:#a0b0ff;box-shadow:0 0 0 3px rgba(120,140,255,.7),0 0 24px rgba(100,120,255,.6)}
 }
 
-/* scatter / wild / rainbow borders */
-.cell.is-sc{border-color:var(--scatter);box-shadow:0 0 14px rgba(240,112,32,.5)}
-.cell.is-wd{border-color:var(--green);box-shadow:0 0 12px rgba(34,192,96,.4)}
-.cell.is-rb{border-color:var(--rainbow);box-shadow:0 0 16px rgba(112,128,255,.6),0 0 4px rgba(112,128,255,.3)}
-
-/* ── COIN REVEAL STYLES ── */
-.coin-el{width:46px;height:46px;border-radius:50%;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;position:relative;z-index:2;flex-shrink:0}
-.coin-el.bronze{background:radial-gradient(circle at 30% 28%,#ffc880,#7a3a0a,#4a2005);
-  box-shadow:0 0 14px rgba(200,120,48,.7),inset 0 2px 0 rgba(255,220,160,.5),inset 0 -2px 0 rgba(0,0,0,.4)}
-.coin-el.silver{background:radial-gradient(circle at 30% 28%,#ffffff,#c0c0c0,#606060);
-  box-shadow:0 0 14px rgba(200,200,200,.6),inset 0 2px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(0,0,0,.3)}
-.coin-el.gold{background:radial-gradient(circle at 30% 28%,#fff080,#f8c030,#a85010);
-  box-shadow:0 0 20px rgba(255,200,48,.9),inset 0 2px 0 rgba(255,250,160,.6),inset 0 -2px 0 rgba(0,0,0,.3);
-  animation:gold-pulse .6s ease-in-out infinite alternate}
-@keyframes gold-pulse{
-  from{box-shadow:0 0 10px rgba(255,200,48,.6),inset 0 2px 0 rgba(255,250,160,.5)}
-  to  {box-shadow:0 0 30px rgba(255,200,48,1),0 0 50px rgba(255,200,48,.35),inset 0 2px 0 rgba(255,250,160,.6)}
-}
-.coin-flip{animation:coin-flip .35s cubic-bezier(.4,0,.2,1) forwards}
-@keyframes coin-flip{
-  0%  {transform:scaleX(0) scaleY(1.2);opacity:0}
-  50% {transform:scaleX(1.15) scaleY(.9);opacity:1}
-  100%{transform:scaleX(1) scaleY(1);opacity:1}
-}
-.coin-val{font-size:.68rem;font-weight:900;line-height:1;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8)}
-.coin-lbl{font-size:.4rem;opacity:.85;text-transform:uppercase;letter-spacing:.5px;line-height:1;margin-top:1px}
-.coin-el.bronze .coin-val{color:#fff8e8}.coin-el.silver .coin-val{color:#111}
-.clover-el{font-size:1.6rem;filter:drop-shadow(0 0 10px rgba(50,220,80,1));animation:clover-pulse .9s ease-in-out infinite alternate}
-@keyframes clover-pulse{from{filter:drop-shadow(0 0 5px rgba(50,220,80,.6))}to{filter:drop-shadow(0 0 16px rgba(50,220,80,1))}}
-.pot-el{font-size:1.6rem;filter:drop-shadow(0 0 12px rgba(240,184,48,1));animation:pot-spin 1.2s ease-in-out infinite alternate}
-@keyframes pot-spin{from{filter:drop-shadow(0 0 7px rgba(240,184,48,.6))}to{filter:drop-shadow(0 0 20px rgba(240,184,48,1))}}
+/* special borders */
+.cell.is-sc{border-color:#f07030;box-shadow:0 0 14px rgba(240,110,40,.5)}
+.cell.is-wd{border-color:#40d060;box-shadow:0 0 14px rgba(60,200,80,.45)}
+.cell.is-rb{border-color:#8090ff;box-shadow:0 0 16px rgba(100,120,255,.55)}
 
 /* ── RAINBOW SWEEP ── */
-.rb-sweep{position:absolute;top:0;left:-100%;width:40%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(120,140,255,.22),rgba(220,230,255,.3),rgba(120,140,255,.22),transparent);
-  pointer-events:none;z-index:30}
-.rb-sweep.go{animation:sweep .55s ease-in forwards}
-@keyframes sweep{from{left:-40%}to{left:110%}}
+.rb-sweep{
+  position:absolute;top:0;left:-50%;width:35%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(140,160,255,.2),rgba(200,220,255,.28),rgba(140,160,255,.2),transparent);
+  pointer-events:none;z-index:20;
+}
+.rb-sweep.go{animation:rb-sweep .6s ease-in forwards}
+@keyframes rb-sweep{from{left:-35%}to{left:110%}}
 
 /* ── WIN FLASH ── */
-.wflash{position:absolute;inset:0;border-radius:12px;pointer-events:none;
-  opacity:0;transition:opacity .18s;
-  background:radial-gradient(ellipse at center,rgba(255,220,80,.28) 0%,rgba(200,100,255,.08) 50%,transparent 70%)}
+.wflash{
+  position:absolute;inset:0;pointer-events:none;border-radius:10px;
+  opacity:0;transition:opacity .15s;
+  background:radial-gradient(ellipse at center,rgba(255,220,80,.2) 0%,rgba(200,100,255,.06) 50%,transparent 70%);
+}
 .wflash.on{opacity:1}
 
-/* ── BIG WIN OVERLAY ── */
-.bigwin{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  z-index:200;pointer-events:none;
-  background:radial-gradient(ellipse at center,rgba(40,0,80,.3) 0%,transparent 70%)}
-.bigwin.on{display:flex;animation:bw-in .3s ease}
-@keyframes bw-in{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
-.bw-inner{background:rgba(8,4,20,.94);border:2px solid var(--gold);border-radius:22px;
-  padding:24px 42px;text-align:center;
-  box-shadow:0 0 80px rgba(240,184,48,.5),0 0 0 1px rgba(160,80,255,.3);
-  backdrop-filter:blur(16px)}
-.bw-label{font-size:.72rem;letter-spacing:4px;color:#9060d0;text-transform:uppercase;margin-bottom:6px}
-.bw-amount{font-size:2.8rem;font-weight:900;color:var(--gold2);
-  text-shadow:0 0 40px rgba(255,224,80,.8),0 2px 0 rgba(0,0,0,.5);
-  animation:bw-count .08s steps(1) infinite}
-@keyframes bw-count{0%{filter:brightness(1)}50%{filter:brightness(1.5)}}
+/* ── COIN REVEAL ── */
+.coin-el{
+  width:46px;height:46px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;z-index:2;
+}
+.coin-el.bronze{
+  background:radial-gradient(circle at 32% 28%,#ffc870,#b06020,#6a3008);
+  box-shadow:0 0 14px rgba(200,120,40,.7),inset 0 2px 0 rgba(255,210,140,.5);
+}
+.coin-el.silver{
+  background:radial-gradient(circle at 32% 28%,#ffffff,#d0d0d0,#707070);
+  box-shadow:0 0 14px rgba(200,200,200,.6),inset 0 2px 0 rgba(255,255,255,.6);
+}
+.coin-el.gold{
+  background:radial-gradient(circle at 32% 28%,#fff080,#f8c030,#b05010);
+  box-shadow:0 0 24px rgba(255,200,40,1),0 0 40px rgba(255,180,20,.4),inset 0 2px 0 rgba(255,250,150,.6);
+  animation:gold-glow .55s ease-in-out infinite alternate;
+}
+@keyframes gold-glow{
+  from{box-shadow:0 0 12px rgba(255,200,40,.6)}
+  to  {box-shadow:0 0 32px rgba(255,200,40,1),0 0 50px rgba(255,180,20,.4)}
+}
+.coin-flip{animation:flip-in .38s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes flip-in{
+  0%  {transform:scaleX(0) scaleY(1.3);opacity:0}
+  55% {transform:scaleX(1.1) scaleY(.9);opacity:1}
+  100%{transform:scaleX(1) scaleY(1);opacity:1}
+}
+.coin-val{font-size:.7rem;font-weight:900;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);line-height:1}
+.coin-lbl{font-size:.38rem;opacity:.8;text-transform:uppercase;letter-spacing:.5px;line-height:1;margin-top:1px}
+.coin-el.bronze .coin-val{color:#fff8e8}.coin-el.silver .coin-val{color:#111}
+.clover-el{font-size:1.8rem;filter:drop-shadow(0 0 10px rgba(50,220,80,1));animation:clover-glow 1s ease-in-out infinite alternate}
+@keyframes clover-glow{from{filter:drop-shadow(0 0 5px rgba(50,220,80,.5))}to{filter:drop-shadow(0 0 18px rgba(50,220,80,1))}}
+.pot-el{font-size:1.8rem;filter:drop-shadow(0 0 12px rgba(240,180,40,1));animation:pot-glow 1.2s ease-in-out infinite alternate}
+@keyframes pot-glow{from{filter:drop-shadow(0 0 7px rgba(240,180,40,.5))}to{filter:drop-shadow(0 0 20px rgba(240,180,40,1))}}
 
-/* ── BONUS OVERLAY ── */
-.bov{position:absolute;inset:0;border-radius:12px;display:none;
-  flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(5,2,14,.95);backdrop-filter:blur(10px);z-index:40;text-align:center;padding:14px;
-  box-shadow:inset 0 0 60px rgba(80,20,140,.3)}
+/* ── BONUS OVERLAY (inside reel frame) ── */
+.bov{
+  position:absolute;inset:0;display:none;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  background:rgba(8,5,2,.93);backdrop-filter:blur(10px);z-index:40;padding:16px;
+  border-radius:10px;
+}
 .bov.on{display:flex;animation:bov-in .35s ease}
-@keyframes bov-in{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
-.bov-animal{font-size:2.5rem;animation:hop .7s ease-in-out infinite alternate}
-@keyframes hop{from{transform:translateY(-5px)rotate(-4deg)}to{transform:translateY(5px)rotate(4deg)}}
-.bov-title{font-size:1.9rem;font-weight:900;color:var(--gold);letter-spacing:4px;
-  text-shadow:0 0 30px rgba(240,184,48,.7);margin:6px 0 2px}
-.bov-tier{font-size:.58rem;color:#7050b0;letter-spacing:2.5px;text-transform:uppercase}
-.bov-num{font-size:3rem;font-weight:900;color:#fff;line-height:1.1;margin:4px 0;
-  text-shadow:0 0 20px rgba(160,80,255,.6)}
-.bov-lbl{font-size:.6rem;color:#7050b0;letter-spacing:2px;margin-bottom:10px}
-.bov-perks{font-size:.7rem;color:#b090e0;margin-bottom:14px;line-height:1.6}
-.bov-btn{padding:12px 36px;border:none;border-radius:12px;
-  background:linear-gradient(135deg,#8020d0,#f0b830);color:#fff;
-  font-size:.9rem;font-weight:800;cursor:pointer;letter-spacing:1.5px;
-  box-shadow:0 0 24px rgba(160,80,255,.45);transition:transform .1s,box-shadow .1s}
-.bov-btn:hover{transform:scale(1.06);box-shadow:0 0 36px rgba(160,80,255,.7)}
+@keyframes bov-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.bov-animal{font-size:3rem;margin-bottom:4px;animation:hop .7s ease-in-out infinite alternate}
+@keyframes hop{from{transform:translateY(-6px) rotate(-5deg)}to{transform:translateY(5px) rotate(5deg)}}
+.bov-title{font-family:'Permanent Marker',cursive;font-size:2.2rem;color:#f0b830;
+  text-shadow:0 0 30px rgba(240,180,40,.7),2px 2px 0 #3a2000;margin-bottom:4px}
+.bov-tier{font-size:.58rem;color:#a07040;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px}
+.bov-num{font-size:3.5rem;font-weight:900;color:#fff;line-height:1;
+  text-shadow:0 0 20px rgba(255,255,255,.3);margin-bottom:2px}
+.bov-lbl{font-size:.58rem;color:#806040;letter-spacing:2px;margin-bottom:8px}
+.bov-perks{font-size:.7rem;color:#c8a060;margin-bottom:14px;line-height:1.7}
+.bov-btn{
+  padding:12px 36px;border:none;border-radius:30px;cursor:pointer;
+  background:linear-gradient(135deg,#c87010,#f0b830,#c87010);
+  color:#1a0c00;font-size:.9rem;font-weight:900;letter-spacing:2px;
+  box-shadow:0 4px 20px rgba(240,180,40,.5),0 0 0 2px rgba(240,180,40,.3);
+  transition:transform .1s,box-shadow .1s;text-transform:uppercase;
+}
+.bov-btn:hover{transform:scale(1.05);box-shadow:0 6px 28px rgba(240,180,40,.7)}
 
-/* ── COIN TALLY BAR ── */
-.tally{display:none;background:rgba(255,255,255,.03);border-top:1px solid rgba(255,255,255,.07);
-  padding:5px 12px;align-items:center;gap:8px;flex-wrap:wrap}
+/* ── MESSAGE ── */
+.msg-area{
+  height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  padding:0 8px;margin-top:3px;
+}
+#msg{
+  font-size:.78rem;font-weight:600;color:#e8c870;
+  text-shadow:0 0 10px rgba(240,200,80,.35);text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* ── COIN TALLY ── */
+.tally{
+  display:none;height:26px;align-items:center;gap:5px;
+  padding:0 8px;flex-shrink:0;overflow:hidden;
+}
 .tally.on{display:flex}
-.tally-lbl{font-size:.52rem;color:var(--dim);letter-spacing:1.5px;flex-shrink:0;text-transform:uppercase}
-.tally-chips{display:flex;gap:4px;flex-wrap:wrap;flex:1}
-.tchip{display:inline-flex;align-items:center;gap:2px;
-  border-radius:20px;padding:2px 9px;font-size:.65rem;font-weight:700}
-.tchip.bronze{background:rgba(180,100,30,.2);border:1px solid rgba(180,100,30,.4);color:var(--bronze)}
-.tchip.silver{background:rgba(180,180,180,.15);border:1px solid rgba(180,180,180,.3);color:var(--silver)}
-.tchip.gold{background:rgba(240,184,48,.15);border:1px solid rgba(240,184,48,.35);color:var(--goldcoin)}
-.tchip.clover{background:rgba(60,200,80,.12);border:1px solid rgba(60,200,80,.3);color:#4ade80}
-.tally-sum{font-size:.85rem;font-weight:700;color:var(--gold2);margin-left:auto;white-space:nowrap;
-  text-shadow:0 0 10px rgba(255,224,80,.4)}
+.tally-lbl{font-size:.5rem;color:#806040;letter-spacing:1px;flex-shrink:0;text-transform:uppercase}
+.tally-chips{display:flex;gap:3px;flex:1;overflow:hidden}
+.tchip{
+  display:inline-flex;align-items:center;gap:2px;
+  border-radius:20px;padding:1px 7px;font-size:.6rem;font-weight:800;flex-shrink:0;
+}
+.tchip.bronze{background:rgba(160,80,20,.3);border:1px solid rgba(200,120,40,.4);color:#e8a050}
+.tchip.silver{background:rgba(160,160,160,.15);border:1px solid rgba(180,180,180,.3);color:#d0d0d0}
+.tchip.gold{background:rgba(240,180,40,.18);border:1px solid rgba(240,180,40,.4);color:#f8d060}
+.tchip.clover{background:rgba(40,180,60,.12);border:1px solid rgba(50,200,70,.3);color:#50e070}
+.tally-sum{font-size:.82rem;font-weight:800;color:#f8d060;margin-left:auto;white-space:nowrap;
+  text-shadow:0 0 8px rgba(255,200,60,.4)}
 
-/* ── MSG BAR ── */
-.msgbar{min-height:26px;text-align:center;padding:4px 14px 3px;
-  font-size:.82rem;font-weight:600;color:var(--gold);
-  text-shadow:0 0 12px rgba(240,184,48,.4);
-  border-left:2px solid rgba(160,80,255,.3);
-  background:rgba(100,40,180,.06);margin:0 10px 4px;border-radius:4px}
+/* ── BOTTOM CONTROL BAR ── */
+.ctrl-bar{
+  flex-shrink:0;
+  background:linear-gradient(180deg,#0e0c08 0%,#0a0806 100%);
+  border-top:2px solid #2a1e0c;
+  padding:6px 10px 8px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.6);
+}
 
-/* ── CONTROLS ── */
-.ctrl{padding:4px 10px 12px;display:flex;flex-direction:column;gap:7px}
+/* top row: balance/win/bet stats */
+.stat-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:6px;
+}
+.stat-box{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:6px;padding:4px 8px;
+}
+.stat-box .sl{font-size:.45rem;color:#6a5030;letter-spacing:1.5px;text-transform:uppercase}
+.stat-box .sv{font-size:.9rem;font-weight:800;color:#e8d0a0;line-height:1.2}
+.stat-box.win-stat .sv{color:#f8d060;text-shadow:0 0 8px rgba(255,200,60,.3)}
+.stat-box.fs-stat{border-color:rgba(240,180,40,.3);display:none;grid-column:span 3}
+.stat-box.fs-stat .sv{color:#f8d060}
 
-/* bet row */
-.bet-row{display:flex;align-items:center;gap:5px}
-.adj{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.05);color:#9070c0;font-size:1rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  transition:all .12s;font-weight:700}
-.adj:hover{border-color:var(--gold);color:var(--gold);background:rgba(240,184,48,.08)}
-.bet-val{flex:1;text-align:center;background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:8px;padding:5px 6px;font-size:.95rem;font-weight:700;color:#e8e0ff}
+/* bet controls row */
+.bet-row{display:flex;align-items:center;gap:4px;margin-bottom:6px}
+.adj{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  color:#a08060;font-size:1rem;font-weight:900;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .12s;
+}
+.adj:hover{background:rgba(240,180,40,.2);border-color:#c8a040;color:#f0b830}
+.bet-val{
+  flex:1;text-align:center;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:6px;padding:4px 6px;font-size:.9rem;font-weight:800;color:#e8d0a0;
+}
 .presets{display:flex;gap:3px;flex-wrap:wrap}
-.pre{padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.04);color:#6040a0;font-size:.68rem;cursor:pointer;
-  transition:all .12s;white-space:nowrap}
-.pre:hover,.pre.on{border-color:var(--gold);color:var(--gold);
-  background:rgba(240,184,48,.1);box-shadow:0 0 8px rgba(240,184,48,.15)}
+.pre{
+  padding:2px 8px;border-radius:20px;font-size:.62rem;cursor:pointer;font-weight:700;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:#6a5030;
+  transition:all .12s;white-space:nowrap;
+}
+.pre:hover,.pre.on{background:rgba(240,180,40,.15);border-color:#c8a040;color:#f0b830}
 
-/* action row */
-.act-row{display:grid;grid-template-columns:80px 1fr 80px;gap:6px;align-items:stretch}
+/* action row: auto | SPIN | bonus */
+.act-row{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center}
+.side-btn{
+  padding:7px 6px;border-radius:8px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
+  color:#6a5030;font-size:.58rem;font-weight:800;letter-spacing:.5px;
+  text-transform:uppercase;text-align:center;cursor:pointer;line-height:1.4;
+  transition:all .12s;
+}
+.side-btn:hover{border-color:#c8a040;color:#f0b830;background:rgba(240,180,40,.08)}
+.side-btn.on{border-color:#c03030;color:#ff6060;background:rgba(200,40,40,.08)}
 
-.spin-btn{padding:14px;border:none;border-radius:12px;
-  background:linear-gradient(160deg,#22c060,#16a050);color:#fff;
-  font-size:1rem;font-weight:800;letter-spacing:2px;cursor:pointer;
-  box-shadow:0 0 0 2px rgba(34,192,96,.2),0 4px 24px rgba(34,192,96,.4);
-  transition:all .14s;text-transform:uppercase}
-.spin-btn:hover:not(:disabled){transform:translateY(-2px);
-  box-shadow:0 0 0 2px rgba(34,192,96,.35),0 6px 30px rgba(34,192,96,.6)}
-.spin-btn:active:not(:disabled){transform:translateY(1px)}
-.spin-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+/* circular spin button */
+.spin-btn{
+  width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;
+  background:conic-gradient(from 180deg,#20a040,#30c860,#20a040);
+  box-shadow:
+    0 0 0 3px rgba(40,200,80,.25),
+    0 0 0 5px rgba(40,200,80,.1),
+    0 6px 24px rgba(30,180,60,.5),
+    inset 0 2px 0 rgba(255,255,255,.2);
+  font-size:.7rem;font-weight:900;letter-spacing:2px;color:#fff;text-transform:uppercase;
+  transition:all .14s;display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.spin-btn::before{
+  content:'';position:absolute;inset:3px;border-radius:50%;
+  background:linear-gradient(160deg,#28c060,#1a9040);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.15);
+}
+.spin-btn span{position:relative;z-index:1}
+.spin-btn:hover:not(:disabled){
+  transform:scale(1.08);
+  box-shadow:0 0 0 3px rgba(40,200,80,.4),0 0 0 6px rgba(40,200,80,.15),0 8px 32px rgba(30,180,60,.7);
+}
+.spin-btn:active:not(:disabled){transform:scale(.96)}
+.spin-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;filter:grayscale(.5)}
 
-.side-btn{padding:8px 4px;border:1px solid rgba(255,255,255,.08);border-radius:12px;
-  background:rgba(255,255,255,.04);color:#7050a0;font-size:.65rem;cursor:pointer;
-  transition:all .14s;text-align:center;line-height:1.5;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-.side-btn:hover{border-color:var(--gold);color:var(--gold);background:rgba(240,184,48,.06)}
-.side-btn.on{border-color:var(--red);color:var(--red);background:rgba(224,48,48,.06)}
+/* buy button */
+.buy-btn{
+  padding:7px 6px;border-radius:8px;cursor:pointer;text-align:center;
+  background:linear-gradient(160deg,rgba(180,60,0,.4),rgba(220,90,10,.3));
+  border:1px solid rgba(220,100,20,.4);
+  color:#e87030;font-size:.58rem;font-weight:800;letter-spacing:.5px;
+  text-transform:uppercase;line-height:1.4;transition:all .12s;
+}
+.buy-btn:hover:not(:disabled){border-color:#f07820;box-shadow:0 0 12px rgba(220,100,20,.3)}
+.buy-btn:disabled{opacity:.3;cursor:not-allowed}
 
-/* bonus buy open button */
-.buy-opener{width:100%;padding:10px;border:1px solid rgba(240,112,32,.3);border-radius:12px;
-  background:linear-gradient(160deg,#1c0e04,#2e1208);color:var(--scatter);
-  font-size:.78rem;font-weight:800;letter-spacing:2px;cursor:pointer;
-  text-transform:uppercase;transition:all .14s;
-  box-shadow:0 2px 12px rgba(240,112,32,.15)}
-.buy-opener:hover:not(:disabled){border-color:var(--scatter);
-  box-shadow:0 4px 20px rgba(240,112,32,.35);transform:translateY(-1px)}
-.buy-opener:disabled{opacity:.3;cursor:not-allowed;transform:none}
+/* ── BIG WIN OVERLAY ── */
+.bigwin{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  z-index:200;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(40,20,0,.5) 0%,transparent 65%);
+}
+.bigwin.on{display:flex;animation:bw-in .3s cubic-bezier(.25,.8,.25,1)}
+@keyframes bw-in{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
+.bw-inner{
+  background:rgba(10,6,2,.95);border-radius:20px;padding:22px 44px;text-align:center;
+  border:2px solid #c8a030;
+  box-shadow:0 0 0 1px rgba(240,180,40,.15),0 0 80px rgba(240,180,40,.45),0 0 120px rgba(200,100,20,.2);
+  backdrop-filter:blur(16px);
+}
+.bw-label{
+  font-family:'Permanent Marker',cursive;font-size:1rem;
+  letter-spacing:3px;color:#a07020;text-transform:uppercase;margin-bottom:6px;
+}
+.bw-amount{
+  font-family:'Permanent Marker',cursive;font-size:3rem;color:#f8d060;
+  text-shadow:0 0 40px rgba(255,220,60,.8),0 2px 0 rgba(0,0,0,.6);
+}
 
 /* ── BONUS BUY MODAL ── */
-.modal-bg{position:fixed;inset:0;background:rgba(4,2,12,.9);
-  backdrop-filter:blur(12px);z-index:100;display:none;
-  align-items:flex-end;justify-content:center;padding:0}
-.modal-bg.on{display:flex;animation:modal-fade .2s ease}
-@keyframes modal-fade{from{opacity:0}to{opacity:1}}
-
-.modal{background:linear-gradient(180deg,#130920 0%,#0e0618 100%);
-  border:1px solid #3a2060;border-radius:20px 20px 0 0;
-  width:100%;max-width:680px;max-height:92vh;overflow-y:auto;
-  box-shadow:0 -8px 60px rgba(0,0,0,.8),0 0 0 1px #2a1848;
-  animation:modal-up .3s cubic-bezier(.25,.8,.25,1)}
-@keyframes modal-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
-
-.modal-head{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid rgba(255,255,255,.07);position:sticky;top:0;
-  background:linear-gradient(180deg,#130920,#0e0618);backdrop-filter:blur(8px);z-index:5}
-.modal-head-l{display:flex;align-items:center;gap:10px}
-.modal-head-icon{font-size:1.4rem}
-.modal-head-title{font-size:.9rem;font-weight:800;color:var(--gold);letter-spacing:2px}
-.modal-head-sub{font-size:.52rem;color:#6040a0;letter-spacing:1.5px;margin-top:1px}
-.modal-close{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.04);color:#7050a0;font-size:.9rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .12s}
-.modal-close:hover{border-color:var(--red);color:var(--red)}
-
-.modal-info{padding:7px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.06);
-  display:flex;justify-content:space-between;font-size:.7rem;color:#6040a0}
-.modal-info span{color:#e8e0ff;font-weight:700}
-
+.modal-bg{
+  position:fixed;inset:0;background:rgba(5,3,1,.92);
+  backdrop-filter:blur(14px);z-index:100;display:none;
+  align-items:flex-end;justify-content:center;
+}
+.modal-bg.on{display:flex;animation:mfade .2s ease}
+@keyframes mfade{from{opacity:0}to{opacity:1}}
+.modal{
+  background:linear-gradient(180deg,#1a1208 0%,#120c06 100%);
+  border:1px solid #3a2810;border-radius:18px 18px 0 0;
+  width:100%;max-width:800px;max-height:88vh;overflow-y:auto;
+  animation:mup .3s cubic-bezier(.25,.8,.25,1);
+  box-shadow:0 -8px 60px rgba(0,0,0,.8);
+}
+@keyframes mup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-head{
+  padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  position:sticky;top:0;background:#1a1208;z-index:5;
+}
+.modal-head-title{font-family:'Permanent Marker',cursive;font-size:1.3rem;color:#f0b830;letter-spacing:2px}
+.modal-head-sub{font-size:.52rem;color:#6a4820;letter-spacing:1.5px;margin-top:1px}
+.modal-close{
+  width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.04);color:#6a4820;font-size:.9rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .12s;
+}
+.modal-close:hover{border-color:#c03030;color:#ff5050}
+.modal-info{
+  padding:6px 16px;background:rgba(0,0,0,.2);border-bottom:1px solid rgba(255,255,255,.05);
+  display:flex;justify-content:space-between;font-size:.68rem;color:#6a4820;
+}
+.modal-info span{color:#e8c880;font-weight:700}
 .modal-cards{padding:10px 12px 16px;display:flex;flex-direction:column;gap:8px}
 
-/* individual buy card */
-.bcard{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;
-  padding:12px 14px;position:relative;overflow:hidden;transition:border-color .15s,box-shadow .15s,transform .15s}
+/* buy cards */
+.bcard{
+  background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.07);border-radius:12px;
+  padding:12px 14px;position:relative;overflow:hidden;transition:all .15s;
+}
 .bcard.can:hover{transform:translateY(-2px)}
-.bcard.cant{opacity:.35;pointer-events:none}
-
-.bcard.t0:hover.can{border-color:#6a5030;box-shadow:0 4px 16px rgba(100,80,32,.25)}
-.bcard.t1:hover.can{border-color:var(--scatter);box-shadow:0 4px 20px rgba(240,112,32,.3)}
-.bcard.t2:hover.can{border-color:#8090d0;box-shadow:0 4px 20px rgba(120,144,220,.25)}
-.bcard.t3{background:linear-gradient(145deg,rgba(40,10,60,.6),rgba(20,8,32,.8))}
-.bcard.t3:hover.can{border-color:var(--gold);box-shadow:0 4px 22px rgba(240,184,48,.35)}
-
+.bcard.cant{opacity:.3;pointer-events:none}
+.bcard.t0:hover.can{border-color:rgba(160,120,40,.5)}
+.bcard.t1:hover.can{border-color:rgba(220,100,30,.6);box-shadow:0 4px 16px rgba(220,100,30,.2)}
+.bcard.t2:hover.can{border-color:rgba(80,120,220,.6);box-shadow:0 4px 16px rgba(80,120,220,.2)}
+.bcard.t3{background:linear-gradient(145deg,rgba(30,20,5,.8),rgba(20,14,3,.9))}
+.bcard.t3:hover.can{border-color:rgba(240,180,40,.6);box-shadow:0 4px 18px rgba(240,180,40,.25)}
 .bc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
 .bc-left{display:flex;align-items:center;gap:10px}
-.bc-icon{font-size:1.6rem;line-height:1;flex-shrink:0}
-.bc-name{font-size:.78rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
-.bc-rtp{font-size:.55rem;color:#6040a0;margin-top:2px;letter-spacing:.5px}
-.bc-right{text-align:right;flex-shrink:0}
+.bc-icon{font-size:1.5rem;line-height:1}
+.bc-name{font-size:.76rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.bc-rtp{font-size:.52rem;color:#6a4820;margin-top:2px}
 .bc-cost{font-size:1.2rem;font-weight:900;line-height:1}
-.bc-cost-lbl{font-size:.52rem;color:#6040a0;letter-spacing:1px;margin-top:2px;text-transform:uppercase}
-
+.bc-cost-lbl{font-size:.5rem;color:#6a4820;letter-spacing:1px;margin-top:2px;text-transform:uppercase}
 .t0 .bc-name{color:#a08040}.t0 .bc-cost{color:#a08040}
-.t1 .bc-name{color:#f09050}.t1 .bc-cost{color:var(--scatter)}
-.t2 .bc-name{color:#90a0f0}.t2 .bc-cost{color:#b0c0ff}
-.t3 .bc-name{color:var(--gold)}.t3 .bc-cost{color:var(--gold2)}
-
-.bc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
-.tag{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;
-  padding:2px 8px;font-size:.58rem;color:#6040a0}
-.t1 .tag{border-color:rgba(240,112,32,.25);color:#c07848}
-.t2 .tag{border-color:rgba(120,144,220,.25);color:#9090d0}
-.t3 .tag{border-color:rgba(240,184,48,.25);color:#c8a840}
-
-.bc-buy{width:100%;padding:10px;border:none;border-radius:10px;
-  font-size:.78rem;font-weight:800;letter-spacing:1px;cursor:pointer;
-  text-transform:uppercase;transition:all .12s}
-.t0 .bc-buy{background:rgba(255,255,255,.06);color:#a08040;border:1px solid rgba(255,255,255,.1)}
-.t0 .bc-buy:hover{background:rgba(255,255,255,.1);color:var(--gold)}
-.t1 .bc-buy{background:linear-gradient(135deg,#7a2800,#e05010);color:#fff;
-  box-shadow:0 2px 12px rgba(240,112,32,.3)}
-.t1 .bc-buy:hover{box-shadow:0 4px 20px rgba(240,112,32,.5)}
-.t2 .bc-buy{background:linear-gradient(135deg,#181850,#3838b0);color:#fff;
-  box-shadow:0 2px 10px rgba(120,144,220,.3)}
-.t2 .bc-buy:hover{box-shadow:0 4px 18px rgba(120,144,220,.5)}
-.t3 .bc-buy{background:linear-gradient(135deg,#501800,var(--gold));color:#fff;
-  box-shadow:0 2px 14px rgba(240,184,48,.35)}
-.t3 .bc-buy:hover{box-shadow:0 4px 24px rgba(240,184,48,.6)}
-
-/* confirm overlay on card */
-.bc-confirm{display:none;position:absolute;inset:0;background:rgba(5,2,16,.96);
-  border-radius:13px;flex-direction:column;align-items:center;
-  justify-content:center;text-align:center;padding:14px;z-index:5}
-.bc-confirm.on{display:flex;animation:conf-in .2s ease}
-@keyframes conf-in{from{opacity:0}to{opacity:1}}
-.conf-q{font-size:.72rem;color:#7050b0;margin-bottom:5px;letter-spacing:.5px}
-.conf-amt{font-size:1.5rem;font-weight:900;color:var(--gold);margin-bottom:3px;
-  text-shadow:0 0 16px rgba(240,184,48,.5)}
-.conf-desc{font-size:.62rem;color:#5030a0;margin-bottom:12px}
+.t1 .bc-name{color:#e87030}.t1 .bc-cost{color:#f07828}
+.t2 .bc-name{color:#7090e0}.t2 .bc-cost{color:#90a8f8}
+.t3 .bc-name{color:#f0b830}.t3 .bc-cost{color:#f8d060}
+.bc-tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px}
+.tag{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);
+  border-radius:4px;padding:2px 6px;font-size:.55rem;color:#6a5030;
+}
+.t1 .tag{border-color:rgba(220,100,30,.2);color:#c07040}
+.t2 .tag{border-color:rgba(80,120,220,.2);color:#7090c8}
+.t3 .tag{border-color:rgba(240,180,40,.2);color:#c09040}
+.bc-buy{
+  width:100%;padding:9px;border:none;border-radius:8px;
+  font-size:.76rem;font-weight:800;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .12s;
+}
+.t0 .bc-buy{background:rgba(160,120,40,.2);color:#a08040;border:1px solid rgba(160,120,40,.3)}
+.t0 .bc-buy:hover{background:rgba(160,120,40,.35)}
+.t1 .bc-buy{background:linear-gradient(135deg,#5a1a00,#c04008);color:#fff;box-shadow:0 2px 8px rgba(200,80,20,.3)}
+.t1 .bc-buy:hover{box-shadow:0 3px 14px rgba(200,80,20,.5)}
+.t2 .bc-buy{background:linear-gradient(135deg,#0a1850,#1828a0);color:#fff;box-shadow:0 2px 8px rgba(60,100,200,.3)}
+.t2 .bc-buy:hover{box-shadow:0 3px 14px rgba(60,100,200,.5)}
+.t3 .bc-buy{background:linear-gradient(135deg,#4a2800,#c08010,#f0b830);color:#1a0c00;box-shadow:0 2px 10px rgba(200,150,20,.4)}
+.t3 .bc-buy:hover{box-shadow:0 4px 18px rgba(200,150,20,.65)}
+.bc-confirm{
+  display:none;position:absolute;inset:0;background:rgba(8,5,2,.96);
+  border-radius:11px;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:14px;z-index:5;
+}
+.bc-confirm.on{display:flex;animation:cfade .2s ease}
+@keyframes cfade{from{opacity:0}to{opacity:1}}
+.conf-q{font-size:.68rem;color:#6a4820;margin-bottom:5px}
+.conf-amt{font-size:1.5rem;font-weight:900;color:#f0b830;margin-bottom:3px;text-shadow:0 0 16px rgba(240,180,40,.4)}
+.conf-desc{font-size:.6rem;color:#4a3010;margin-bottom:12px}
 .conf-btns{display:flex;gap:8px}
-.conf-yes{padding:8px 22px;border:none;border-radius:10px;
-  background:linear-gradient(135deg,#16a050,#22c060);
-  color:#fff;font-size:.75rem;font-weight:800;cursor:pointer;transition:all .12s;
-  box-shadow:0 2px 10px rgba(34,192,96,.3)}
-.conf-yes:hover{box-shadow:0 4px 16px rgba(34,192,96,.5);transform:translateY(-1px)}
-.conf-no{padding:8px 20px;border:1px solid rgba(255,255,255,.1);border-radius:10px;
-  background:transparent;color:#7050b0;font-size:.75rem;cursor:pointer;transition:all .12s}
-.conf-no:hover{border-color:var(--red);color:var(--red)}
+.conf-yes{padding:8px 22px;border:none;border-radius:8px;background:linear-gradient(135deg,#1a9040,#28c060);color:#fff;font-size:.74rem;font-weight:800;cursor:pointer;transition:all .12s;box-shadow:0 2px 10px rgba(40,180,80,.3)}
+.conf-yes:hover{box-shadow:0 4px 16px rgba(40,180,80,.5);transform:translateY(-1px)}
+.conf-no{padding:8px 20px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:transparent;color:#6a4820;font-size:.74rem;cursor:pointer;transition:all .12s}
+.conf-no:hover{border-color:#c03030;color:#ff5050}
 
 /* ── PAYTABLE ── */
-.pt-wrap{width:100%;max-width:680px;margin-top:8px}
-.pt-tog{width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;
-  color:#6040a0;font-size:.7rem;padding:8px;cursor:pointer;transition:all .2s;letter-spacing:1.5px}
-.pt-tog:hover{border-color:var(--gold);color:var(--gold);background:rgba(240,184,48,.05)}
-.pt{background:linear-gradient(180deg,#120820,#0e0618);border:1px solid #2a1848;border-radius:14px;
-  padding:14px;margin-top:6px;display:none;
-  box-shadow:0 0 0 1px #1a0828,0 8px 30px rgba(0,0,0,.6)}
-.pt.on{display:block}
-.pt h3{color:var(--gold);font-size:.65rem;letter-spacing:2.5px;text-align:center;margin-bottom:12px;
-  text-shadow:0 0 12px rgba(240,184,48,.3)}
-.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
-.pt-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:5px 10px;
-  display:flex;justify-content:space-between;align-items:center;font-size:.72rem}
-.pt-row .ps{font-size:.9rem}.pt-row .pv{color:var(--gold);font-weight:700;font-size:.65rem;text-align:right}
-.pt-note{font-size:.62rem;color:#4a3070;text-align:center;line-height:1.9}
-.pt-note b{color:#7050a8}
+.pt-wrap{display:none}
 
-.reset-btn{margin-top:6px;width:100%;max-width:680px;background:none;
-  border:1px solid rgba(255,255,255,.06);color:#4a3070;padding:6px 14px;border-radius:10px;
-  cursor:pointer;font-size:.68rem;transition:all .2s}
-.reset-btn:hover{border-color:var(--red);color:var(--red)}
+/* ── BIG WIN / CONFETTI ── */
+canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:300;display:none}
 </style>
 </head>
 <body>
 
-<div class="bigwin" id="bigwin"><div class="bw-inner"><div class="bw-label" id="bw-label">BIG WIN</div><div class="bw-amount" id="bw-amount">$0.00</div></div></div>
-<div class="hud">
-  <div class="hud-box"><span class="hl">Balance</span><span class="hv" id="s-bal">$1,000.00</span></div>
-  <div class="hud-box win-hud"><span class="hl">Win</span><span class="hv" id="s-win">$0.00</span></div>
-  <div class="hud-box"><span class="hl">Bet</span><span class="hv" id="s-bet">$1.00</span></div>
-  <div class="hud-box fs-hud" id="fs-hud" style="grid-column:span 3">
-    <span class="hl">Free Spins Remaining</span><span class="hv" id="s-fs">0</span>
+<canvas id="confetti"></canvas>
+<div class="bigwin" id="bigwin">
+  <div class="bw-inner">
+    <div class="bw-label" id="bw-label">BIG WIN</div>
+    <div class="bw-amount" id="bw-amount">$0.00</div>
   </div>
 </div>
 
-<canvas id="confetti" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:300;display:none"></canvas>
+<div class="game">
 
-<div class="machine">
-  <div class="frame-lights" id="frame-lights"></div>
-  <div class="top-bar">
-    <div class="logo">
-      <span class="logo-text" style="font-family:'Cinzel Decorative',serif">LE BANDIT</span>
-      <span class="logo-sub" style="font-family:'Cinzel',serif;letter-spacing:4px">HACKSAW GAMING · CLUSTER PAYS</span>
-    </div>
-    <span class="logo-raccoon">🦝</span>
+  <!-- LOGO -->
+  <div class="logo-area">
+    <div class="logo-wood"></div>
+    <span class="logo-left">🦝</span>
+    <div class="logo-title">Le <span>B</span>andit</div>
+    <span class="logo-right">🎩</span>
   </div>
 
-  <div class="reel-area">
-    <div class="reel-frame">
-      <div class="reels" id="reels"></div>
-      <div class="wflash" id="wf"></div>
-      <div class="rb-sweep" id="rb-sweep"></div>
-      <div class="bov" id="bov">
-        <div class="bov-animal">🦝</div>
-        <div class="bov-title" id="bov-title">BONUS!</div>
-        <div class="bov-tier" id="bov-tier">LUCK OF THE BANDIT</div>
-        <div class="bov-num" id="bov-num">8</div>
-        <div class="bov-lbl">FREE SPINS</div>
-        <div class="bov-perks" id="bov-perks">Golden Squares persist between spins</div>
-        <button class="bov-btn" onclick="startFS()">ALLONS-Y →</button>
+  <!-- MIDDLE: reels + raccoon -->
+  <div class="mid-row">
+
+    <div class="machine-panel">
+      <!-- REEL FRAME -->
+      <div class="reel-frame">
+        <div class="reels" id="reels"></div>
+        <div class="wflash" id="wf"></div>
+        <div class="rb-sweep" id="rb-sweep"></div>
+        <!-- BONUS OVERLAY -->
+        <div class="bov" id="bov">
+          <div class="bov-animal">🦝</div>
+          <div class="bov-title" id="bov-title">BONUS!</div>
+          <div class="bov-tier" id="bov-tier">LUCK OF THE BANDIT</div>
+          <div class="bov-num" id="bov-num">8</div>
+          <div class="bov-lbl">FREE SPINS</div>
+          <div class="bov-perks" id="bov-perks">Golden Squares persist · All coin tiers</div>
+          <button class="bov-btn" onclick="startFS()">PLAY IT!</button>
+        </div>
+      </div>
+
+      <!-- TALLY / MESSAGE -->
+      <div class="tally" id="tally">
+        <span class="tally-lbl">COINS</span>
+        <div class="tally-chips" id="tally-chips"></div>
+        <span class="tally-sum" id="tally-sum"></span>
+      </div>
+      <div class="msg-area"><div id="msg">Spin to win! 🦝</div></div>
+    </div>
+
+    <!-- RACCOON -->
+    <div class="raccoon-side">
+      <div class="raccoon-body" title="Le Bandit">🦝</div>
+      <div class="raccoon-shadow"></div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM CONTROLS -->
+  <div class="ctrl-bar">
+    <!-- Stats -->
+    <div class="stat-row">
+      <div class="stat-box"><span class="sl">Balance</span><span class="sv" id="s-bal">$1,000.00</span></div>
+      <div class="stat-box win-stat"><span class="sl">Win</span><span class="sv" id="s-win">$0.00</span></div>
+      <div class="stat-box"><span class="sl">Bet</span><span class="sv" id="s-bet">$1.00</span></div>
+      <div class="stat-box fs-stat" id="fs-hud" style="grid-column:span 3">
+        <span class="sl">Free Spins Left</span><span class="sv" id="s-fs">0</span>
       </div>
     </div>
-  </div>
 
-  <div class="tally" id="tally">
-    <span class="tally-lbl">COINS</span>
-    <div class="tally-chips" id="tally-chips"></div>
-    <span class="tally-sum" id="tally-sum"></span>
-  </div>
-
-  <div class="msgbar" id="msg">Spin to win, partner! 🦝</div>
-
-  <div class="ctrl">
+    <!-- Bet row -->
     <div class="bet-row">
       <button class="adj" onclick="changeBet(-1)">−</button>
       <div class="bet-val" id="bet-val">$1.00</div>
@@ -506,286 +683,143 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
         <button class="pre" onclick="setBet(100)">$100</button>
       </div>
     </div>
+
+    <!-- Action row -->
     <div class="act-row">
       <button class="side-btn" id="auto-btn" onclick="toggleAuto()">AUTO<br>SPIN</button>
-      <button class="spin-btn" id="spin-btn" onclick="handleSpin()">SPIN</button>
-      <button class="side-btn" onclick="openModal()">BONUS<br>BUY</button>
+      <button class="spin-btn" id="spin-btn" onclick="handleSpin()"><span>SPIN</span></button>
+      <button class="buy-btn" onclick="openModal()">BONUS<br>BUY</button>
     </div>
   </div>
+
 </div>
 
 <!-- BONUS BUY MODAL -->
 <div class="modal-bg" id="modal-bg" onclick="closeBg(event)">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-head-l">
-        <span class="modal-head-icon">🎰</span>
-        <div>
-          <div class="modal-head-title">BONUS BUY</div>
-          <div class="modal-head-sub">SKIP THE BASE GAME · GUARANTEED FEATURE</div>
-        </div>
+      <div>
+        <div class="modal-head-title">BONUS BUY</div>
+        <div class="modal-head-sub">GUARANTEED FEATURE · SKIP BASE GAME</div>
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-info">
-      Balance: <span id="mb-bal">$1,000.00</span> &nbsp;·&nbsp; Current Bet: <span id="mb-bet">$1.00</span>
+      Balance: <span id="mb-bal">$1,000.00</span> &nbsp;·&nbsp; Bet: <span id="mb-bet">$1.00</span>
     </div>
     <div class="modal-cards">
 
-      <!-- T0 Bonus Hunt -->
       <div class="bcard t0 can" id="bc0">
         <div class="bc-top">
-          <div class="bc-left">
-            <div class="bc-icon">📷</div>
+          <div class="bc-left"><div class="bc-icon">📷</div>
             <div><div class="bc-name">Bonus Hunt</div><div class="bc-rtp">Boosted scatter · 3× bet</div></div>
           </div>
-          <div class="bc-right">
-            <div class="bc-cost" id="bcc0">$3.00</div>
-            <div class="bc-cost-lbl">Total Cost</div>
-          </div>
+          <div><div class="bc-cost" id="bcc0">$3.00</div><div class="bc-cost-lbl">Total</div></div>
         </div>
-        <div class="bc-tags">
-          <span class="tag">Enhanced scatter rate</span>
-          <span class="tag">1 boosted spin</span>
-          <span class="tag">Can lead to free spins</span>
-        </div>
+        <div class="bc-tags"><span class="tag">1 boosted spin</span><span class="tag">Enhanced scatter rate</span></div>
         <button class="bc-buy" onclick="askConfirm(0)">BUY BONUS</button>
         <div class="bc-confirm" id="conf0">
-          <div class="conf-q">CONFIRM PURCHASE?</div>
-          <div class="conf-amt" id="ca0"></div>
+          <div class="conf-q">CONFIRM PURCHASE?</div><div class="conf-amt" id="ca0"></div>
           <div class="conf-desc">Bonus Hunt · 1 boosted spin</div>
-          <div class="conf-btns">
-            <button class="conf-yes" onclick="doBuy(0)">CONFIRM</button>
-            <button class="conf-no" onclick="noConf(0)">CANCEL</button>
-          </div>
+          <div class="conf-btns"><button class="conf-yes" onclick="doBuy(0)">CONFIRM</button><button class="conf-no" onclick="noConf(0)">CANCEL</button></div>
         </div>
       </div>
 
-      <!-- T1 Luck of the Bandit -->
       <div class="bcard t1 can" id="bc1">
         <div class="bc-top">
-          <div class="bc-left">
-            <div class="bc-icon">📷📷📷</div>
+          <div class="bc-left"><div class="bc-icon">🎩🎩🎩</div>
             <div><div class="bc-name">Luck of the Bandit</div><div class="bc-rtp">RTP 96.34% · 100× bet</div></div>
           </div>
-          <div class="bc-right">
-            <div class="bc-cost" id="bcc1">$100.00</div>
-            <div class="bc-cost-lbl">Total Cost</div>
-          </div>
+          <div><div class="bc-cost" id="bcc1">$100.00</div><div class="bc-cost-lbl">Total</div></div>
         </div>
-        <div class="bc-tags">
-          <span class="tag">8 Free Spins</span>
-          <span class="tag">Golden Squares persist</span>
-          <span class="tag">Bronze · Silver · Gold coins</span>
-          <span class="tag">Retrigger +2 spins</span>
-        </div>
+        <div class="bc-tags"><span class="tag">8 Free Spins</span><span class="tag">Golden Squares persist</span><span class="tag">Retrigger +2</span></div>
         <button class="bc-buy" onclick="askConfirm(1)">BUY BONUS</button>
         <div class="bc-confirm" id="conf1">
-          <div class="conf-q">CONFIRM PURCHASE?</div>
-          <div class="conf-amt" id="ca1"></div>
+          <div class="conf-q">CONFIRM PURCHASE?</div><div class="conf-amt" id="ca1"></div>
           <div class="conf-desc">Luck of the Bandit · 8 Free Spins</div>
-          <div class="conf-btns">
-            <button class="conf-yes" onclick="doBuy(1)">CONFIRM</button>
-            <button class="conf-no" onclick="noConf(1)">CANCEL</button>
-          </div>
+          <div class="conf-btns"><button class="conf-yes" onclick="doBuy(1)">CONFIRM</button><button class="conf-no" onclick="noConf(1)">CANCEL</button></div>
         </div>
       </div>
 
-      <!-- T2 Rainbow Feature -->
       <div class="bcard t2 can" id="bc2">
         <div class="bc-top">
-          <div class="bc-left">
-            <div class="bc-icon">🌈🦝</div>
-            <div><div class="bc-name">Rainbow Feature Spins</div><div class="bc-rtp">RTP 96.34% · 50× bet</div></div>
+          <div class="bc-left"><div class="bc-icon">🌈🦝</div>
+            <div><div class="bc-name">Rainbow Feature</div><div class="bc-rtp">RTP 96.34% · 50× bet</div></div>
           </div>
-          <div class="bc-right">
-            <div class="bc-cost" id="bcc2">$50.00</div>
-            <div class="bc-cost-lbl">Total Cost</div>
-          </div>
+          <div><div class="bc-cost" id="bcc2">$50.00</div><div class="bc-cost-lbl">Total</div></div>
         </div>
-        <div class="bc-tags">
-          <span class="tag">5 Feature Spins</span>
-          <span class="tag">🌈 Rainbow every spin</span>
-          <span class="tag">All coin tiers active</span>
-        </div>
+        <div class="bc-tags"><span class="tag">5 Feature Spins</span><span class="tag">🌈 Rainbow every spin</span></div>
         <button class="bc-buy" onclick="askConfirm(2)">BUY BONUS</button>
         <div class="bc-confirm" id="conf2">
-          <div class="conf-q">CONFIRM PURCHASE?</div>
-          <div class="conf-amt" id="ca2"></div>
-          <div class="conf-desc">Rainbow Feature Spins · 5 Spins</div>
-          <div class="conf-btns">
-            <button class="conf-yes" onclick="doBuy(2)">CONFIRM</button>
-            <button class="conf-no" onclick="noConf(2)">CANCEL</button>
-          </div>
+          <div class="conf-q">CONFIRM PURCHASE?</div><div class="conf-amt" id="ca2"></div>
+          <div class="conf-desc">Rainbow Feature · 5 Spins</div>
+          <div class="conf-btns"><button class="conf-yes" onclick="doBuy(2)">CONFIRM</button><button class="conf-no" onclick="noConf(2)">CANCEL</button></div>
         </div>
       </div>
 
-      <!-- T3 All That Glitters -->
       <div class="bcard t3 can" id="bc3">
         <div class="bc-top">
-          <div class="bc-left">
-            <div class="bc-icon">🏆✨</div>
-            <div><div class="bc-name">All That Glitters Is Gold</div><div class="bc-rtp">RTP 96.34% · 250× bet</div></div>
+          <div class="bc-left"><div class="bc-icon">🏆✨</div>
+            <div><div class="bc-name">All That Glitters</div><div class="bc-rtp">RTP 96.34% · 250× bet</div></div>
           </div>
-          <div class="bc-right">
-            <div class="bc-cost" id="bcc3">$250.00</div>
-            <div class="bc-cost-lbl">Total Cost</div>
-          </div>
+          <div><div class="bc-cost" id="bcc3">$250.00</div><div class="bc-cost-lbl">Total</div></div>
         </div>
-        <div class="bc-tags">
-          <span class="tag">12 Free Spins</span>
-          <span class="tag">Silver &amp; Gold coins only</span>
-          <span class="tag">Persistent Golden Squares</span>
-          <span class="tag">🍀 Clover &amp; 🏆 Pot active</span>
-          <span class="tag">Maximum win potential</span>
-        </div>
+        <div class="bc-tags"><span class="tag">12 Free Spins</span><span class="tag">Silver &amp; Gold only</span><span class="tag">🍀 Clover · 🏆 Pot active</span></div>
         <button class="bc-buy" onclick="askConfirm(3)">BUY BONUS</button>
         <div class="bc-confirm" id="conf3">
-          <div class="conf-q">CONFIRM PURCHASE?</div>
-          <div class="conf-amt" id="ca3"></div>
-          <div class="conf-desc">All That Glitters Is Gold · 12 Free Spins</div>
-          <div class="conf-btns">
-            <button class="conf-yes" onclick="doBuy(3)">CONFIRM</button>
-            <button class="conf-no" onclick="noConf(3)">CANCEL</button>
-          </div>
+          <div class="conf-q">CONFIRM PURCHASE?</div><div class="conf-amt" id="ca3"></div>
+          <div class="conf-desc">All That Glitters · 12 Free Spins</div>
+          <div class="conf-btns"><button class="conf-yes" onclick="doBuy(3)">CONFIRM</button><button class="conf-no" onclick="noConf(3)">CANCEL</button></div>
         </div>
       </div>
 
+      <button onclick="resetGame();closeModal()" style="width:100%;background:none;border:1px solid rgba(255,255,255,.06);color:#4a3010;padding:7px;border-radius:8px;cursor:pointer;font-size:.68rem;margin-top:4px;transition:all .2s" onmouseover="this.style.borderColor='#c03030';this.style.color='#ff5050'" onmouseout="this.style.borderColor='rgba(255,255,255,.06)';this.style.color='#4a3010'">↺ Reset Balance to $1,000</button>
     </div>
   </div>
 </div>
-
-<div class="pt-wrap">
-  <button class="pt-tog" onclick="document.getElementById('pt').classList.toggle('on')">▾ PAYTABLE &amp; RULES</button>
-  <div class="pt" id="pt">
-    <h3>— PAYTABLE (cluster size 5 / 8 / 10 / 13+) —</h3>
-    <div class="pt-grid">
-      <div class="pt-row"><span class="ps">Top Hat</span><span class="pv">0.4× · 1.5× · 3× · 100×</span></div>
-      <div class="pt-row"><span class="ps">Baguette</span><span class="pv">0.3× · 1× · 2× · 50×</span></div>
-      <div class="pt-row"><span class="ps">Beer</span><span class="pv">0.2× · 0.8× · 1.5× · 30×</span></div>
-      <div class="pt-row"><span class="ps">Cheese</span><span class="pv">0.15× · 0.6× · 1× · 20×</span></div>
-      <div class="pt-row"><span class="ps">Trap</span><span class="pv">0.1× · 0.5× · 0.8× · 15×</span></div>
-      <div class="pt-row"><span class="ps">A / K</span><span class="pv">0.05× · 0.25× · 0.6× · 8×</span></div>
-      <div class="pt-row"><span class="ps">Q / J / 10</span><span class="pv">0.03× · 0.15× · 0.4× · 5×</span></div>
-      <div class="pt-row"><span class="ps">Wild 🦝</span><span class="pv">Substitutes all regular</span></div>
-    </div>
-    <div class="pt-note">
-      <b>CLUSTER PAYS</b> — 5+ identical symbols connected horizontally or vertically<br>
-      <b>SUPER CASCADE</b> — wins explode, new symbols drop. Repeats until no more wins<br>
-      <b>GOLDEN SQUARES</b> — exploded cells become dormant squares, activated by 🌈<br>
-      <b>RAINBOW REVEAL</b> — reveals Bronze (0.2–4×) · Silver (5–20×) · Gold (25–500×) coins, 🍀 Clover (multiplies adjacent), 🏆 Pot (collects all)<br>
-      <b>SCATTER 📷</b> — 3 = 8 FS · 4 = 12 FS · 5 = 12 FS upgraded · Retrigger = +2 spins
-    </div>
-  </div>
-</div>
-<button class="reset-btn" onclick="resetGame()">↺ Reset Balance to $1,000</button>
 
 <script>
 // ── SYMBOLS ────────────────────────────────────────────────────────────────────
-const S={HAT:'HAT',BAG:'BAG',BEER:'BEER',CHE:'CHE',TRP:'TRP',
+const S={HAT:'🎩',BAG:'🥖',BEER:'🍺',CHE:'🧀',TRP:'🪤',
   A:'A',K:'K',Q:'Q',J:'J',TEN:'10',
-  WILD:'WILD',SCATTER:'SCAT',RAINBOW:'RB'};
+  WILD:'🦝',SCATTER:'📷',RAINBOW:'🌈'};
 const CARDS=[S.A,S.K,S.Q,S.J,S.TEN];
 const COLS=6,ROWS=5;
 
-// ── SVG ICONS ──────────────────────────────────────────────────────────────────
-const ICONS={
-  HAT:`<svg viewBox="0 0 40 40" width="36" height="36">
-    <ellipse cx="20" cy="32" rx="16" ry="4" fill="#111" stroke="#888" stroke-width=".8"/>
-    <rect x="13" y="10" width="14" height="22" rx="2" fill="#111" stroke="#777" stroke-width=".8"/>
-    <ellipse cx="20" cy="10" rx="7" ry="2.5" fill="#222" stroke="#999" stroke-width=".8"/>
-    <rect x="15" y="13" width="10" height="3" rx="1" fill="#d4a840" opacity=".9"/>
-    <ellipse cx="20" cy="32" rx="15" ry="3.5" fill="#1a1a1a" stroke="#666" stroke-width=".8"/>
-  </svg>`,
-  BAG:`<svg viewBox="0 0 40 40" width="36" height="36">
-    <path d="M10 16 Q10 8 20 8 Q30 8 30 16 L28 34 Q28 36 20 36 Q12 36 12 34 Z" fill="#c8941e" stroke="#a07010" stroke-width="1"/>
-    <path d="M10 16 Q10 8 20 8 Q30 8 30 16" fill="none" stroke="#e8b830" stroke-width="1.5"/>
-    <path d="M14 20 Q20 18 26 20" stroke="#a07010" stroke-width="1" fill="none"/>
-    <path d="M13 26 Q20 24 27 26" stroke="#a07010" stroke-width="1" fill="none"/>
-    <ellipse cx="20" cy="8" rx="5" ry="1.5" fill="#b08010" stroke="#907000" stroke-width=".8"/>
-    <circle cx="20" cy="8" r="2" fill="#d4a820"/>
-  </svg>`,
-  BEER:`<svg viewBox="0 0 40 40" width="36" height="36">
-    <path d="M12 10 L12 34 Q12 36 15 36 L25 36 Q28 36 28 34 L28 10 Z" fill="#c88010" stroke="#a06008" stroke-width="1"/>
-    <rect x="28" y="14" width="5" height="14" rx="2.5" fill="#c0b080" stroke="#a09060" stroke-width=".8"/>
-    <path d="M12 10 Q14 8 20 8 Q26 8 28 10" fill="#dda020" stroke="#b08010" stroke-width=".8"/>
-    <rect x="13" y="10" width="14" height="8" rx="1" fill="#f8f0e0" opacity=".9"/>
-    <path d="M14 22 Q20 20 26 22" stroke="#a06008" stroke-width=".8" fill="none"/>
-    <path d="M14 27 Q20 25 26 27" stroke="#a06008" stroke-width=".8" fill="none"/>
-  </svg>`,
-  CHE:`<svg viewBox="0 0 40 40" width="36" height="36">
-    <path d="M8 28 L8 20 Q8 12 20 12 L32 16 L32 28 Z" fill="#f0c830" stroke="#c8a010" stroke-width="1"/>
-    <path d="M8 28 L32 28 L32 32 L8 32 Z" fill="#e0b820" stroke="#b89808" stroke-width=".8"/>
-    <circle cx="17" cy="22" r="2.5" fill="#c8a010"/>
-    <circle cx="25" cy="19" r="2" fill="#c8a010"/>
-    <circle cx="23" cy="27" r="1.5" fill="#c8a010"/>
-    <path d="M8 20 Q8 12 20 12 L32 16" fill="none" stroke="#ffd840" stroke-width="1.2"/>
-  </svg>`,
-  TRP:`<svg viewBox="0 0 40 40" width="36" height="36">
-    <rect x="6" y="18" width="28" height="14" rx="3" fill="#6a4820" stroke="#4a3010" stroke-width="1"/>
-    <rect x="14" y="14" width="12" height="7" rx="2" fill="#8a6030" stroke="#6a4010" stroke-width=".8"/>
-    <rect x="17" y="10" width="6" height="6" rx="1.5" fill="#c8a060" stroke="#a07030" stroke-width=".8"/>
-    <line x1="20" y1="10" x2="20" y2="7" stroke="#808080" stroke-width="1.5"/>
-    <circle cx="20" cy="6" r="2" fill="#c0c0c0" stroke="#909090" stroke-width=".8"/>
-    <line x1="10" y1="18" x2="30" y2="18" stroke="#c8a060" stroke-width="1.5"/>
-  </svg>`,
-  WILD:`<svg viewBox="0 0 40 40" width="36" height="36">
-    <circle cx="20" cy="22" r="12" fill="#2a1808" stroke="#6a4020" stroke-width="1"/>
-    <ellipse cx="15" cy="14" rx="5" ry="7" fill="#3a2010" stroke="#5a3818" stroke-width=".8"/>
-    <ellipse cx="25" cy="14" rx="5" ry="7" fill="#3a2010" stroke="#5a3818" stroke-width=".8"/>
-    <circle cx="20" cy="22" r="10" fill="#c8a068"/>
-    <ellipse cx="16" cy="20" rx="2.5" ry="3" fill="#fff" stroke="#ccc" stroke-width=".5"/>
-    <ellipse cx="24" cy="20" rx="2.5" ry="3" fill="#fff" stroke="#ccc" stroke-width=".5"/>
-    <circle cx="16" cy="21" r="1.5" fill="#111"/>
-    <circle cx="24" cy="21" r="1.5" fill="#111"/>
-    <circle cx="16.6" cy="20.5" r=".5" fill="#fff"/>
-    <circle cx="24.6" cy="20.5" r=".5" fill="#fff"/>
-    <ellipse cx="20" cy="25" rx="4" ry="2.5" fill="#b08050"/>
-    <path d="M17 25 Q20 27 23 25" stroke="#806040" stroke-width=".8" fill="none"/>
-    <path d="M11 20 L7 18" stroke="#b09070" stroke-width=".8"/><path d="M11 21 L7 22" stroke="#b09070" stroke-width=".8"/>
-    <path d="M29 20 L33 18" stroke="#b09070" stroke-width=".8"/><path d="M29 21 L33 22" stroke="#b09070" stroke-width=".8"/>
-    <text x="20" y="38" text-anchor="middle" font-size="6" fill="#f0b830" font-weight="900" font-family="Arial">WILD</text>
-  </svg>`,
-  SCAT:`<svg viewBox="0 0 40 40" width="36" height="36">
-    <rect x="6" y="10" width="28" height="22" rx="3" fill="#1a1a2a" stroke="#f07020" stroke-width="1.5"/>
-    <rect x="8" y="12" width="24" height="16" rx="2" fill="#0a0a18"/>
-    <circle cx="20" cy="20" r="6" fill="none" stroke="#f07020" stroke-width="1.2"/>
-    <circle cx="20" cy="20" r="2" fill="#f07020"/>
-    <line x1="20" y1="13" x2="20" y2="15" stroke="#f07020" stroke-width="1"/>
-    <line x1="20" y1="25" x2="20" y2="27" stroke="#f07020" stroke-width="1"/>
-    <line x1="13" y1="20" x2="15" y2="20" stroke="#f07020" stroke-width="1"/>
-    <line x1="25" y1="20" x2="27" y2="20" stroke="#f07020" stroke-width="1"/>
-    <rect x="6" y="7" width="6" height="4" rx="1" fill="#f07020"/>
-    <circle cx="9" cy="9" r="1" fill="#fff"/>
-    <text x="20" y="38" text-anchor="middle" font-size="6" fill="#f07020" font-weight="900" font-family="Arial">SCATTER</text>
-  </svg>`,
-  RB:`<svg viewBox="0 0 40 40" width="36" height="36">
-    <path d="M6 26 Q6 10 20 10 Q34 10 34 26" fill="none" stroke="#f04040" stroke-width="3.5" stroke-linecap="round"/>
-    <path d="M8 27 Q8 13 20 13 Q32 13 32 27" fill="none" stroke="#f08020" stroke-width="2.8" stroke-linecap="round"/>
-    <path d="M10 28 Q10 16 20 16 Q30 16 30 28" fill="none" stroke="#f0f020" stroke-width="2.2" stroke-linecap="round"/>
-    <path d="M12 29 Q12 19 20 19 Q28 19 28 29" fill="none" stroke="#20c020" stroke-width="1.8" stroke-linecap="round"/>
-    <path d="M14 30 Q14 22 20 22 Q26 22 26 30" fill="none" stroke="#2080f0" stroke-width="1.4" stroke-linecap="round"/>
-    <path d="M16 31 Q16 25 20 25 Q24 25 24 31" fill="none" stroke="#8020f0" stroke-width="1.2" stroke-linecap="round"/>
-    <rect x="17" y="30" width="6" height="8" rx="2" fill="#c8a040"/>
-  </svg>`,
+// Per-symbol drop-shadow glow
+const SYM_GLOW={
+  '🎩':'rgba(220,180,60,.5)','🥖':'rgba(200,140,40,.4)','🍺':'rgba(180,110,20,.4)',
+  '🧀':'rgba(200,180,30,.4)','🪤':'rgba(140,100,60,.3)','🦝':'rgba(60,200,80,.5)',
+  '📷':'rgba(240,110,40,.6)','🌈':'rgba(120,140,255,.6)',
+  A:'rgba(220,80,80,.5)',K:'rgba(80,120,240,.5)',Q:'rgba(200,80,200,.5)',
+  J:'rgba(60,200,100,.5)','10':'rgba(200,140,60,.4)',
 };
-// Card face helper — styled as playing-card pips
+
+// Styled card SVG
 function cardSVG(v){
-  const col={A:'#f06060',K:'#6080f0',Q:'#d060d0',J:'#60c060','10':'#f0a030'}[v]||'#c8a8e8';
-  return `<svg viewBox="0 0 40 40" width="36" height="36">
-    <rect x="4" y="4" width="32" height="32" rx="5" fill="#0e0a1e" stroke="${col}" stroke-width="1.5"/>
-    <text x="8" y="16" font-size="10" fill="${col}" font-weight="900" font-family="Georgia,serif">${v}</text>
-    <text x="32" y="32" font-size="10" fill="${col}" font-weight="900" font-family="Georgia,serif" text-anchor="end" transform="rotate(180,20,26)">${v}</text>
-    <text x="20" y="26" font-size="14" fill="${col}" font-weight="900" font-family="Georgia,serif" text-anchor="middle" opacity=".4">${v}</text>
+  const cfg={
+    A:{bg:'#3a0606',fg:'#ff8888',pip:'♠'},
+    K:{bg:'#060e3a',fg:'#88a0ff',pip:'♦'},
+    Q:{bg:'#300830',fg:'#e888e8',pip:'♥'},
+    J:{bg:'#063018',fg:'#60e080',pip:'♣'},
+    '10':{bg:'#301c06',fg:'#f0b050',pip:'★'},
+  }[v]||{bg:'#181030',fg:'#c0a0e0',pip:'•'};
+  return `<svg viewBox="0 0 40 50" width="30" height="38">
+    <rect width="40" height="50" rx="5" fill="${cfg.bg}"/>
+    <rect x="1.5" y="1.5" width="37" height="47" rx="4" fill="none" stroke="${cfg.fg}" stroke-width=".8" opacity=".5"/>
+    <text x="4" y="14" font-size="12" fill="${cfg.fg}" font-weight="900" font-family="Georgia,serif">${v}</text>
+    <text x="20" y="32" text-anchor="middle" font-size="20" fill="${cfg.fg}" font-family="Georgia,serif" opacity=".85">${cfg.pip}</text>
+    <text x="36" y="44" text-anchor="end" font-size="12" fill="${cfg.fg}" font-weight="900" font-family="Georgia,serif" transform="rotate(180,36,44)">${v}</text>
   </svg>`;
 }
+
 function symHTML(s){
-  if(ICONS[s]) return ICONS[s];
   if(CARDS.includes(s)) return cardSVG(s);
-  return `<span style="font-size:1.6rem">${s}</span>`;
+  const glow=SYM_GLOW[s]||'rgba(255,255,255,.2)';
+  return `<span class="esym" style="filter:drop-shadow(0 2px 8px ${glow})">${s}</span>`;
 }
 
-// Payout by cluster size (index = size, capped at 12)
+// Payout table
 const PAY={
   [S.HAT]: [0,0,0,0,0.4,0.6,0.8,1.5,2,3,5,10,100],
   [S.BAG]: [0,0,0,0,0.3,0.5,0.6,1,1.5,2,4,8,50],
@@ -874,8 +908,8 @@ function renderAll(a){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)renderCell(c
 function showCoin(c,r,coin){
   const sw=gsym(c,r),el=gc(c,r);
   el.classList.add('golden');
-  if(coin.t==='clover') sw.innerHTML=`<div class="clover-el"><svg viewBox="0 0 40 40" width="34" height="34"><circle cx="20" cy="14" r="7" fill="#20a040" opacity=".9"/><circle cx="14" cy="22" r="7" fill="#20a040" opacity=".9"/><circle cx="26" cy="22" r="7" fill="#20a040" opacity=".9"/><rect x="18" y="14" width="4" height="16" rx="2" fill="#188030"/><ellipse cx="20" cy="13" rx="7" ry="7" fill="#28c050"/><ellipse cx="13" cy="22" rx="7" ry="7" fill="#28c050"/><ellipse cx="27" cy="22" rx="7" ry="7" fill="#28c050"/><text x="20" y="40" text-anchor="middle" font-size="7" fill="#20a040" font-weight="900" font-family="Arial">${coin.v}×</text></svg></div>`;
-  else if(coin.t==='pot') sw.innerHTML=`<div class="pot-el"><svg viewBox="0 0 40 40" width="34" height="34"><ellipse cx="20" cy="12" rx="14" ry="5" fill="#f0b830" stroke="#c89010" stroke-width="1"/><path d="M8 13 Q6 24 10 30 Q14 36 20 36 Q26 36 30 30 Q34 24 32 13 Z" fill="#d4950c" stroke="#c89010" stroke-width="1"/><ellipse cx="20" cy="12" rx="13" ry="4" fill="#f8cc40"/><ellipse cx="20" cy="15" rx="10" ry="3" fill="#ffe060" opacity=".6"/><circle cx="16" cy="24" r="2" fill="#f8e030"/><circle cx="24" cy="22" r="1.5" fill="#f8e030"/><circle cx="20" cy="28" r="2" fill="#f8e030"/></svg></div>`;
+  if(coin.t==='clover') sw.innerHTML=`<div class="clover-el">🍀</div>`;
+  else if(coin.t==='pot') sw.innerHTML=`<div class="pot-el">🏆</div>`;
   else sw.innerHTML=`<div class="coin-el ${coin.t}"><div class="coin-val">${coin.v}×</div><div class="coin-lbl">${coin.t}</div></div>`;
 }
 
@@ -885,8 +919,7 @@ function spinCol(c,dur){
     const p=pool();let t=0;
     const id=setInterval(()=>{
       for(let r=0;r<ROWS;r++){
-        const s=rnd(p),sw=gsym(c,r);
-        sw.innerHTML=symHTML(s);
+        gsym(c,r).innerHTML=symHTML(rnd(p));
         gc(c,r).className='cell spin';
       }
       t+=65;
@@ -900,24 +933,19 @@ function spinCol(c,dur){
   });
 }
 async function spinAll(){
-  // stagger column starts slightly for visual wave effect
   const durs=[520,660,800,940,1080,1220];
   const delays=[0,40,80,120,160,200];
   await Promise.all(durs.map((d,c)=>sleep(delays[c]).then(()=>spinCol(c,d))));
 }
 
-// ── WIN COUNTER ANIMATION ──────────────────────────────────────────────────────
+// ── WIN COUNTER ────────────────────────────────────────────────────────────────
 function animateWin(from,to,el,dur=600){
-  const start=performance.now();
-  const diff=to-from;
-  function tick(now){
-    const p=Math.min((now-start)/dur,1);
-    const ease=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
-    el.textContent=fmt(from+diff*ease);
-    if(p<1) requestAnimationFrame(tick);
-    else el.textContent=fmt(to);
-  }
-  requestAnimationFrame(tick);
+  const start=performance.now(),diff=to-from;
+  (function tick(now){
+    const p=Math.min((now-start)/dur,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    el.textContent=fmt(from+diff*e);
+    if(p<1) requestAnimationFrame(tick); else el.textContent=fmt(to);
+  })(performance.now());
 }
 
 let bigWinTimer=null;
@@ -936,30 +964,26 @@ function showBigWin(amount,label='BIG WIN'){
 let confettiRaf=null;
 function launchConfetti(){
   const cv=document.getElementById('confetti');
-  cv.style.display='block';
-  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  cv.style.display='block';cv.width=window.innerWidth;cv.height=window.innerHeight;
   const ctx=cv.getContext('2d');
   const cols=['#f0b830','#c060ff','#40d080','#ff6060','#60c0ff','#fff080'];
-  const pts=Array.from({length:120},()=>({
+  const pts=Array.from({length:130},()=>({
     x:Math.random()*cv.width,y:-20-Math.random()*200,
-    vx:(Math.random()-0.5)*4,vy:3+Math.random()*4,
+    vx:(Math.random()-.5)*4,vy:3+Math.random()*4,
     r:4+Math.random()*6,col:cols[Math.floor(Math.random()*cols.length)],
-    rot:Math.random()*360,vr:(Math.random()-0.5)*8,life:1
+    rot:Math.random()*360,vr:(Math.random()-.5)*8
   }));
   function draw(){
-    ctx.clearRect(0,0,cv.width,cv.height);
-    let alive=false;
+    ctx.clearRect(0,0,cv.width,cv.height);let alive=false;
     pts.forEach(p=>{
-      p.x+=p.vx;p.y+=p.vy;p.vy+=0.08;p.rot+=p.vr;
-      if(p.y<cv.height+20){alive=true;}
+      p.x+=p.vx;p.y+=p.vy;p.vy+=0.09;p.rot+=p.vr;
+      if(p.y<cv.height+20) alive=true;
       ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
-      ctx.globalAlpha=Math.max(0,1-(p.y/cv.height)*0.8);
-      ctx.fillStyle=p.col;
-      ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);
+      ctx.globalAlpha=Math.max(0,1-(p.y/cv.height)*.75);
+      ctx.fillStyle=p.col;ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);
       ctx.restore();
     });
-    if(alive) confettiRaf=requestAnimationFrame(draw);
-    else stopConfetti();
+    if(alive) confettiRaf=requestAnimationFrame(draw); else stopConfetti();
   }
   if(confettiRaf) cancelAnimationFrame(confettiRaf);
   confettiRaf=requestAnimationFrame(draw);
@@ -967,25 +991,6 @@ function launchConfetti(){
 function stopConfetti(){
   if(confettiRaf){cancelAnimationFrame(confettiRaf);confettiRaf=null;}
   document.getElementById('confetti').style.display='none';
-}
-
-// ── FRAME LIGHTS INIT ────────────────────────────────────────────────────────
-function initFrameLights(){
-  const el=document.getElementById('frame-lights');
-  if(!el) return;
-  const n=20;
-  for(let i=0;i<n;i++){
-    const d=document.createElement('div');d.className='fl-dot';
-    const pct=(i/(n-1))*100;
-    // top row
-    if(i<n/2){
-      d.style.top='6px';d.style.left=`${(i/(n/2-1))*90+5}%`;
-    } else {
-      d.style.bottom='6px';d.style.left=`${((i-n/2)/(n/2-1))*90+5}%`;
-    }
-    d.style.animationDelay=`${(i*0.15)%1.6}s`;
-    el.appendChild(d);
-  }
 }
 
 // ── CLUSTER DETECTION ──────────────────────────────────────────────────────────
@@ -1017,7 +1022,7 @@ function hasGolden(){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)if(golden[c][
 
 // ── CASCADE LOOP ───────────────────────────────────────────────────────────────
 async function cascade(){
-  let total=0;let iter=0;
+  let total=0,iter=0;
   while(true){
     const cl=clusters();
     const{n:sc,cells:scc}=scatterCount();
@@ -1054,26 +1059,19 @@ async function cascade(){
 }
 
 async function rainbowReveal(){
-  // flash rainbow cells
   for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) if(grid[c][r]===S.RAINBOW) gc(c,r).classList.add('rb-flash');
-  // sweep effect across grid
   const sw=document.getElementById('rb-sweep');
   sw.classList.remove('go');sw.offsetHeight;sw.classList.add('go');
   await sleep(420);
-  // staggered coin reveal column by column
   const coinCells=[];
-  const cols=Array.from({length:COLS},(_,c)=>c);
-  for(const c of cols){
+  for(let c=0;c<COLS;c++){
     let revealed=false;
     for(let r=0;r<ROWS;r++){
       if(golden[c][r]){
-        const coin=golden[c][r];
-        const sw2=gsym(c,r);
-        showCoin(c,r,coin);
-        // apply flip animation to the rendered coin element
-        const ce=sw2.querySelector('.coin-el,.clover-el,.pot-el');
-        if(ce){ce.classList.add('coin-flip');}
-        coinCells.push({c,r,coin});
+        showCoin(c,r,golden[c][r]);
+        const ce=gsym(c,r).querySelector('.coin-el,.clover-el,.pot-el');
+        if(ce) ce.classList.add('coin-flip');
+        coinCells.push({c,r,coin:golden[c][r]});
         revealed=true;
       }
     }
@@ -1081,7 +1079,6 @@ async function rainbowReveal(){
   }
   await sleep(400);
   const clovers=coinCells.filter(x=>x.coin.t==='clover');
-  const hasPot=coinCells.some(x=>x.coin.t==='pot');
   let total=0;
   coinCells.filter(x=>x.coin.t!=='clover'&&x.coin.t!=='pot').forEach(({c,r,coin})=>{
     let m=1;clovers.forEach(cl=>{if((Math.abs(cl.c-c)+Math.abs(cl.r-r))===1)m*=cl.coin.v;});
@@ -1092,7 +1089,7 @@ async function rainbowReveal(){
   const win=total*bet;spinWin+=win;balance+=win;
   showTally(coinCells,total);
   updateBalUI();
-  setMsg('🌈 Rainbow! Coins collected: +'+fmt(win));
+  setMsg('🌈 Rainbow! +'+fmt(win));
   await sleep(700);
   for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){
     if(golden[c][r]){golden[c][r]=null;grid[c][r]=rsym();renderCell(c,r,'drop');}
@@ -1106,19 +1103,17 @@ function showTally(coinCells,total){
   const g={bronze:[],silver:[],gold:[],clover:[],pot:[]};
   coinCells.forEach(({coin})=>g[coin.t].push(coin.v));
   chips.innerHTML='';
-  if(g.bronze.length) chips.innerHTML+=`<span class="tchip bronze">🥉 ${g.bronze.join(' · ')}×</span>`;
-  if(g.silver.length) chips.innerHTML+=`<span class="tchip silver">🥈 ${g.silver.join(' · ')}×</span>`;
-  if(g.gold.length)   chips.innerHTML+=`<span class="tchip gold">🥇 ${g.gold.join(' · ')}×</span>`;
-  if(g.clover.length) chips.innerHTML+=`<span class="tchip clover">CLVR ×${g.clover.join('·')}</span>`;
-  if(g.pot.length)    chips.innerHTML+=`<span class="tchip gold">POT ×${potCount||g.pot.length}</span>`;
-  sum.textContent='= $0.00';
-  // animate tally sum ticking up, prefixed with '= '
-  const start2=performance.now(),to2=total*bet;
-  (function tick2(now){
-    const p=Math.min((now-start2)/500,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  if(g.bronze.length) chips.innerHTML+=`<span class="tchip bronze">🥉${g.bronze.join('·')}×</span>`;
+  if(g.silver.length) chips.innerHTML+=`<span class="tchip silver">🥈${g.silver.join('·')}×</span>`;
+  if(g.gold.length)   chips.innerHTML+=`<span class="tchip gold">🥇${g.gold.join('·')}×</span>`;
+  if(g.clover.length) chips.innerHTML+=`<span class="tchip clover">🍀×${g.clover.join('·')}</span>`;
+  if(g.pot.length)    chips.innerHTML+=`<span class="tchip gold">🏆×${coinCells.filter(x=>x.coin.t==='pot').length}</span>`;
+  const start=performance.now(),to2=total*bet;
+  sum.textContent='$0.00';
+  (function tick(now){
+    const p=Math.min((now-start)/500,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
     sum.textContent='= '+fmt(to2*e);
-    if(p<1) requestAnimationFrame(tick2);
-    else sum.textContent='= '+fmt(to2);
+    if(p<1) requestAnimationFrame(tick); else sum.textContent='= '+fmt(to2);
   })(performance.now());
 }
 
@@ -1134,7 +1129,7 @@ async function doSpin(free=false){
   if(bonus&&!isFreeSpins){
     scCells.forEach(({c,r})=>gc(c,r).classList.add('win'));
     await sleep(400);
-    const sp=scN===3?8:scN>=4?12:12,tier=scN>=5?3:scN>=4?3:1;
+    const sp=scN===3?8:12,tier=scN>=5?3:scN>=4?3:1;
     showBonus(sp,tier,'');spinning=false;updateButtons();return;
   }
   const allWin=total+spinWin;
@@ -1144,7 +1139,6 @@ async function doSpin(free=false){
     if(allWin>=bet*100){showBigWin(allWin,'💎 MEGA WIN');setMsg('💎 MEGA WIN! '+fmt(allWin));}
     else if(allWin>=bet*30){showBigWin(allWin,'🔥 BIG WIN');setMsg('🔥 BIG WIN! '+fmt(allWin));}
     else if(allWin>=bet*10){showBigWin(allWin,'✨ GREAT WIN');setMsg('✨ Great win! '+fmt(allWin));}
-    else if(allWin>=bet*3) setMsg('Win: '+fmt(allWin));
     else setMsg('Win: '+fmt(allWin));
   } else if(!isFreeSpins) setMsg('No luck this time...');
   spinning=false;updateButtons();
@@ -1159,8 +1153,8 @@ async function doSpin(free=false){
 
 function showBonus(spins,tier,src){
   fsLeft=spins;fsTier=tier;
-  const names={1:'LUCK OF THE BANDIT',2:'RAINBOW FEATURE SPINS',3:'ALL THAT GLITTERS IS GOLD'};
-  const perks={1:'Golden Squares persist · All coin tiers',2:'🌈 Rainbow guaranteed every spin',3:'Silver & Gold coins only · Persistent squares'};
+  const names={1:'LUCK OF THE BANDIT',2:'RAINBOW FEATURE',3:'ALL THAT GLITTERS'};
+  const perks={1:'Golden Squares persist · All coin tiers',2:'🌈 Rainbow guaranteed every spin',3:'Silver & Gold only · Persistent squares'};
   document.getElementById('bov-title').textContent=src==='buy'?'BONUS BUY!':'BONUS!';
   document.getElementById('bov-tier').textContent=names[tier]||names[1];
   document.getElementById('bov-num').textContent=spins;
@@ -1182,12 +1176,7 @@ function endFS(){
 }
 
 // ── MODAL ──────────────────────────────────────────────────────────────────────
-const TIERS=[
-  {m:3,  sp:1,  tier:1},
-  {m:100,sp:8,  tier:1},
-  {m:50, sp:5,  tier:2},
-  {m:250,sp:12, tier:3},
-];
+const TIERS=[{m:3,sp:1,tier:1},{m:100,sp:8,tier:1},{m:50,sp:5,tier:2},{m:250,sp:12,tier:3}];
 function openModal(){
   if(spinning||isFreeSpins) return;
   updateModal();document.getElementById('modal-bg').classList.add('on');document.body.style.overflow='hidden';
@@ -1263,10 +1252,10 @@ function resetGame(){
   document.getElementById('bov').classList.remove('on');
   document.getElementById('s-win').textContent='$0.00';
   document.getElementById('tally').classList.remove('on');
-  buildGrid();setBet(1);updateBalUI();setMsg('Spin to win, partner! 🦝');
+  buildGrid();setBet(1);updateBalUI();setMsg('Spin to win! 🦝');
 }
 
-buildGrid();setBet(1);updateBalUI();updateButtons();initFrameLights();
+buildGrid();setBet(1);updateBalUI();updateButtons();
 </script>
 </body>
 </html>
