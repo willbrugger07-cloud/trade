@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Le Bandit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@900&family=Cinzel:wght@600;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -13,7 +15,7 @@
   --green:#22c060;--red:#e03030;--scatter:#f07020;--rainbow:#7080ff;
   --card-color:#c8a8e8;
 }
-html,body{height:100%;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:#fff;overflow-x:hidden}
+html,body{height:100%;background:var(--bg);font-family:'Inter',system-ui,sans-serif;color:#fff;overflow-x:hidden}
 body{display:flex;flex-direction:column;align-items:center;min-height:100vh;
   padding:10px 8px 24px;
   background:radial-gradient(ellipse at 50% -20%,#1a0a30 0%,#0a0814 70%)}
@@ -69,6 +71,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   0%,100%{transform:translateY(0) rotate(-3deg)}
   50%{transform:translateY(-5px) rotate(3deg)}
 }
+
+/* ── FRAME LIGHTS ── */
+.frame-lights{position:absolute;inset:0;border-radius:18px;pointer-events:none;overflow:hidden;z-index:0}
+.frame-lights::before,.frame-lights::after{content:'';position:absolute;left:0;right:0;height:10px;display:flex}
+.fl-dot{position:absolute;width:8px;height:8px;border-radius:50%;
+  background:#f0b830;box-shadow:0 0 6px 2px rgba(240,184,48,.6);
+  animation:fl-blink 1.6s ease-in-out infinite}
+@keyframes fl-blink{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
 
 /* ── REEL AREA ── */
 .reel-area{padding:0 10px 8px}
@@ -445,11 +455,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   </div>
 </div>
 
+<canvas id="confetti" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:300;display:none"></canvas>
+
 <div class="machine">
+  <div class="frame-lights" id="frame-lights"></div>
   <div class="top-bar">
     <div class="logo">
-      <span class="logo-text">Le Bandit</span>
-      <span class="logo-sub">Cluster Pays · Golden Squares · Super Cascades</span>
+      <span class="logo-text" style="font-family:'Cinzel Decorative',serif">LE BANDIT</span>
+      <span class="logo-sub" style="font-family:'Cinzel',serif;letter-spacing:4px">HACKSAW GAMING · CLUSTER PAYS</span>
     </div>
     <span class="logo-raccoon">🦝</span>
   </div>
@@ -647,14 +660,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   <div class="pt" id="pt">
     <h3>— PAYTABLE (cluster size 5 / 8 / 10 / 13+) —</h3>
     <div class="pt-grid">
-      <div class="pt-row"><span class="ps">🎩 Top Hat</span><span class="pv">0.4× · 1.5× · 3× · 100×</span></div>
-      <div class="pt-row"><span class="ps">🥖 Baguette</span><span class="pv">0.3× · 1× · 2× · 50×</span></div>
-      <div class="pt-row"><span class="ps">🍺 Beer</span><span class="pv">0.2× · 0.8× · 1.5× · 30×</span></div>
-      <div class="pt-row"><span class="ps">🧀 Cheese</span><span class="pv">0.15× · 0.6× · 1× · 20×</span></div>
-      <div class="pt-row"><span class="ps">🪤 Trap</span><span class="pv">0.1× · 0.5× · 0.8× · 15×</span></div>
+      <div class="pt-row"><span class="ps">Top Hat</span><span class="pv">0.4× · 1.5× · 3× · 100×</span></div>
+      <div class="pt-row"><span class="ps">Baguette</span><span class="pv">0.3× · 1× · 2× · 50×</span></div>
+      <div class="pt-row"><span class="ps">Beer</span><span class="pv">0.2× · 0.8× · 1.5× · 30×</span></div>
+      <div class="pt-row"><span class="ps">Cheese</span><span class="pv">0.15× · 0.6× · 1× · 20×</span></div>
+      <div class="pt-row"><span class="ps">Trap</span><span class="pv">0.1× · 0.5× · 0.8× · 15×</span></div>
       <div class="pt-row"><span class="ps">A / K</span><span class="pv">0.05× · 0.25× · 0.6× · 8×</span></div>
       <div class="pt-row"><span class="ps">Q / J / 10</span><span class="pv">0.03× · 0.15× · 0.4× · 5×</span></div>
-      <div class="pt-row"><span class="ps">🦝 Wild</span><span class="pv">Substitutes all regular</span></div>
+      <div class="pt-row"><span class="ps">Wild 🦝</span><span class="pv">Substitutes all regular</span></div>
     </div>
     <div class="pt-note">
       <b>CLUSTER PAYS</b> — 5+ identical symbols connected horizontally or vertically<br>
@@ -669,11 +682,108 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 
 <script>
 // ── SYMBOLS ────────────────────────────────────────────────────────────────────
-const S={HAT:'🎩',BAG:'🥖',BEER:'🍺',CHE:'🧀',TRP:'🪤',
+const S={HAT:'HAT',BAG:'BAG',BEER:'BEER',CHE:'CHE',TRP:'TRP',
   A:'A',K:'K',Q:'Q',J:'J',TEN:'10',
-  WILD:'🦝',SCATTER:'📷',RAINBOW:'🌈'};
+  WILD:'WILD',SCATTER:'SCAT',RAINBOW:'RB'};
 const CARDS=[S.A,S.K,S.Q,S.J,S.TEN];
 const COLS=6,ROWS=5;
+
+// ── SVG ICONS ──────────────────────────────────────────────────────────────────
+const ICONS={
+  HAT:`<svg viewBox="0 0 40 40" width="36" height="36">
+    <ellipse cx="20" cy="32" rx="16" ry="4" fill="#111" stroke="#888" stroke-width=".8"/>
+    <rect x="13" y="10" width="14" height="22" rx="2" fill="#111" stroke="#777" stroke-width=".8"/>
+    <ellipse cx="20" cy="10" rx="7" ry="2.5" fill="#222" stroke="#999" stroke-width=".8"/>
+    <rect x="15" y="13" width="10" height="3" rx="1" fill="#d4a840" opacity=".9"/>
+    <ellipse cx="20" cy="32" rx="15" ry="3.5" fill="#1a1a1a" stroke="#666" stroke-width=".8"/>
+  </svg>`,
+  BAG:`<svg viewBox="0 0 40 40" width="36" height="36">
+    <path d="M10 16 Q10 8 20 8 Q30 8 30 16 L28 34 Q28 36 20 36 Q12 36 12 34 Z" fill="#c8941e" stroke="#a07010" stroke-width="1"/>
+    <path d="M10 16 Q10 8 20 8 Q30 8 30 16" fill="none" stroke="#e8b830" stroke-width="1.5"/>
+    <path d="M14 20 Q20 18 26 20" stroke="#a07010" stroke-width="1" fill="none"/>
+    <path d="M13 26 Q20 24 27 26" stroke="#a07010" stroke-width="1" fill="none"/>
+    <ellipse cx="20" cy="8" rx="5" ry="1.5" fill="#b08010" stroke="#907000" stroke-width=".8"/>
+    <circle cx="20" cy="8" r="2" fill="#d4a820"/>
+  </svg>`,
+  BEER:`<svg viewBox="0 0 40 40" width="36" height="36">
+    <path d="M12 10 L12 34 Q12 36 15 36 L25 36 Q28 36 28 34 L28 10 Z" fill="#c88010" stroke="#a06008" stroke-width="1"/>
+    <rect x="28" y="14" width="5" height="14" rx="2.5" fill="#c0b080" stroke="#a09060" stroke-width=".8"/>
+    <path d="M12 10 Q14 8 20 8 Q26 8 28 10" fill="#dda020" stroke="#b08010" stroke-width=".8"/>
+    <rect x="13" y="10" width="14" height="8" rx="1" fill="#f8f0e0" opacity=".9"/>
+    <path d="M14 22 Q20 20 26 22" stroke="#a06008" stroke-width=".8" fill="none"/>
+    <path d="M14 27 Q20 25 26 27" stroke="#a06008" stroke-width=".8" fill="none"/>
+  </svg>`,
+  CHE:`<svg viewBox="0 0 40 40" width="36" height="36">
+    <path d="M8 28 L8 20 Q8 12 20 12 L32 16 L32 28 Z" fill="#f0c830" stroke="#c8a010" stroke-width="1"/>
+    <path d="M8 28 L32 28 L32 32 L8 32 Z" fill="#e0b820" stroke="#b89808" stroke-width=".8"/>
+    <circle cx="17" cy="22" r="2.5" fill="#c8a010"/>
+    <circle cx="25" cy="19" r="2" fill="#c8a010"/>
+    <circle cx="23" cy="27" r="1.5" fill="#c8a010"/>
+    <path d="M8 20 Q8 12 20 12 L32 16" fill="none" stroke="#ffd840" stroke-width="1.2"/>
+  </svg>`,
+  TRP:`<svg viewBox="0 0 40 40" width="36" height="36">
+    <rect x="6" y="18" width="28" height="14" rx="3" fill="#6a4820" stroke="#4a3010" stroke-width="1"/>
+    <rect x="14" y="14" width="12" height="7" rx="2" fill="#8a6030" stroke="#6a4010" stroke-width=".8"/>
+    <rect x="17" y="10" width="6" height="6" rx="1.5" fill="#c8a060" stroke="#a07030" stroke-width=".8"/>
+    <line x1="20" y1="10" x2="20" y2="7" stroke="#808080" stroke-width="1.5"/>
+    <circle cx="20" cy="6" r="2" fill="#c0c0c0" stroke="#909090" stroke-width=".8"/>
+    <line x1="10" y1="18" x2="30" y2="18" stroke="#c8a060" stroke-width="1.5"/>
+  </svg>`,
+  WILD:`<svg viewBox="0 0 40 40" width="36" height="36">
+    <circle cx="20" cy="22" r="12" fill="#2a1808" stroke="#6a4020" stroke-width="1"/>
+    <ellipse cx="15" cy="14" rx="5" ry="7" fill="#3a2010" stroke="#5a3818" stroke-width=".8"/>
+    <ellipse cx="25" cy="14" rx="5" ry="7" fill="#3a2010" stroke="#5a3818" stroke-width=".8"/>
+    <circle cx="20" cy="22" r="10" fill="#c8a068"/>
+    <ellipse cx="16" cy="20" rx="2.5" ry="3" fill="#fff" stroke="#ccc" stroke-width=".5"/>
+    <ellipse cx="24" cy="20" rx="2.5" ry="3" fill="#fff" stroke="#ccc" stroke-width=".5"/>
+    <circle cx="16" cy="21" r="1.5" fill="#111"/>
+    <circle cx="24" cy="21" r="1.5" fill="#111"/>
+    <circle cx="16.6" cy="20.5" r=".5" fill="#fff"/>
+    <circle cx="24.6" cy="20.5" r=".5" fill="#fff"/>
+    <ellipse cx="20" cy="25" rx="4" ry="2.5" fill="#b08050"/>
+    <path d="M17 25 Q20 27 23 25" stroke="#806040" stroke-width=".8" fill="none"/>
+    <path d="M11 20 L7 18" stroke="#b09070" stroke-width=".8"/><path d="M11 21 L7 22" stroke="#b09070" stroke-width=".8"/>
+    <path d="M29 20 L33 18" stroke="#b09070" stroke-width=".8"/><path d="M29 21 L33 22" stroke="#b09070" stroke-width=".8"/>
+    <text x="20" y="38" text-anchor="middle" font-size="6" fill="#f0b830" font-weight="900" font-family="Arial">WILD</text>
+  </svg>`,
+  SCAT:`<svg viewBox="0 0 40 40" width="36" height="36">
+    <rect x="6" y="10" width="28" height="22" rx="3" fill="#1a1a2a" stroke="#f07020" stroke-width="1.5"/>
+    <rect x="8" y="12" width="24" height="16" rx="2" fill="#0a0a18"/>
+    <circle cx="20" cy="20" r="6" fill="none" stroke="#f07020" stroke-width="1.2"/>
+    <circle cx="20" cy="20" r="2" fill="#f07020"/>
+    <line x1="20" y1="13" x2="20" y2="15" stroke="#f07020" stroke-width="1"/>
+    <line x1="20" y1="25" x2="20" y2="27" stroke="#f07020" stroke-width="1"/>
+    <line x1="13" y1="20" x2="15" y2="20" stroke="#f07020" stroke-width="1"/>
+    <line x1="25" y1="20" x2="27" y2="20" stroke="#f07020" stroke-width="1"/>
+    <rect x="6" y="7" width="6" height="4" rx="1" fill="#f07020"/>
+    <circle cx="9" cy="9" r="1" fill="#fff"/>
+    <text x="20" y="38" text-anchor="middle" font-size="6" fill="#f07020" font-weight="900" font-family="Arial">SCATTER</text>
+  </svg>`,
+  RB:`<svg viewBox="0 0 40 40" width="36" height="36">
+    <path d="M6 26 Q6 10 20 10 Q34 10 34 26" fill="none" stroke="#f04040" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M8 27 Q8 13 20 13 Q32 13 32 27" fill="none" stroke="#f08020" stroke-width="2.8" stroke-linecap="round"/>
+    <path d="M10 28 Q10 16 20 16 Q30 16 30 28" fill="none" stroke="#f0f020" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M12 29 Q12 19 20 19 Q28 19 28 29" fill="none" stroke="#20c020" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M14 30 Q14 22 20 22 Q26 22 26 30" fill="none" stroke="#2080f0" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M16 31 Q16 25 20 25 Q24 25 24 31" fill="none" stroke="#8020f0" stroke-width="1.2" stroke-linecap="round"/>
+    <rect x="17" y="30" width="6" height="8" rx="2" fill="#c8a040"/>
+  </svg>`,
+};
+// Card face helper — styled as playing-card pips
+function cardSVG(v){
+  const col={A:'#f06060',K:'#6080f0',Q:'#d060d0',J:'#60c060','10':'#f0a030'}[v]||'#c8a8e8';
+  return `<svg viewBox="0 0 40 40" width="36" height="36">
+    <rect x="4" y="4" width="32" height="32" rx="5" fill="#0e0a1e" stroke="${col}" stroke-width="1.5"/>
+    <text x="8" y="16" font-size="10" fill="${col}" font-weight="900" font-family="Georgia,serif">${v}</text>
+    <text x="32" y="32" font-size="10" fill="${col}" font-weight="900" font-family="Georgia,serif" text-anchor="end" transform="rotate(180,20,26)">${v}</text>
+    <text x="20" y="26" font-size="14" fill="${col}" font-weight="900" font-family="Georgia,serif" text-anchor="middle" opacity=".4">${v}</text>
+  </svg>`;
+}
+function symHTML(s){
+  if(ICONS[s]) return ICONS[s];
+  if(CARDS.includes(s)) return cardSVG(s);
+  return `<span style="font-size:1.6rem">${s}</span>`;
+}
 
 // Payout by cluster size (index = size, capped at 12)
 const PAY={
@@ -751,8 +861,7 @@ function gsym(c,r){return gc(c,r).querySelector('.sym');}
 
 function renderCell(c,r,anim){
   const s=grid[c][r],el=gc(c,r),sw=gsym(c,r);
-  if(CARDS.includes(s)) sw.innerHTML=`<span class="csym">${s}</span>`;
-  else sw.textContent=s;
+  sw.innerHTML=symHTML(s);
   el.className='cell';
   if(golden[c][r]) el.classList.add('golden');
   if(s===S.SCATTER) el.classList.add('is-sc');
@@ -765,8 +874,8 @@ function renderAll(a){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)renderCell(c
 function showCoin(c,r,coin){
   const sw=gsym(c,r),el=gc(c,r);
   el.classList.add('golden');
-  if(coin.t==='clover') sw.innerHTML=`<div class="clover-el">🍀</div>`;
-  else if(coin.t==='pot') sw.innerHTML=`<div class="pot-el">🏆</div>`;
+  if(coin.t==='clover') sw.innerHTML=`<div class="clover-el"><svg viewBox="0 0 40 40" width="34" height="34"><circle cx="20" cy="14" r="7" fill="#20a040" opacity=".9"/><circle cx="14" cy="22" r="7" fill="#20a040" opacity=".9"/><circle cx="26" cy="22" r="7" fill="#20a040" opacity=".9"/><rect x="18" y="14" width="4" height="16" rx="2" fill="#188030"/><ellipse cx="20" cy="13" rx="7" ry="7" fill="#28c050"/><ellipse cx="13" cy="22" rx="7" ry="7" fill="#28c050"/><ellipse cx="27" cy="22" rx="7" ry="7" fill="#28c050"/><text x="20" y="40" text-anchor="middle" font-size="7" fill="#20a040" font-weight="900" font-family="Arial">${coin.v}×</text></svg></div>`;
+  else if(coin.t==='pot') sw.innerHTML=`<div class="pot-el"><svg viewBox="0 0 40 40" width="34" height="34"><ellipse cx="20" cy="12" rx="14" ry="5" fill="#f0b830" stroke="#c89010" stroke-width="1"/><path d="M8 13 Q6 24 10 30 Q14 36 20 36 Q26 36 30 30 Q34 24 32 13 Z" fill="#d4950c" stroke="#c89010" stroke-width="1"/><ellipse cx="20" cy="12" rx="13" ry="4" fill="#f8cc40"/><ellipse cx="20" cy="15" rx="10" ry="3" fill="#ffe060" opacity=".6"/><circle cx="16" cy="24" r="2" fill="#f8e030"/><circle cx="24" cy="22" r="1.5" fill="#f8e030"/><circle cx="20" cy="28" r="2" fill="#f8e030"/></svg></div>`;
   else sw.innerHTML=`<div class="coin-el ${coin.t}"><div class="coin-val">${coin.v}×</div><div class="coin-lbl">${coin.t}</div></div>`;
 }
 
@@ -777,10 +886,7 @@ function spinCol(c,dur){
     const id=setInterval(()=>{
       for(let r=0;r<ROWS;r++){
         const s=rnd(p),sw=gsym(c,r);
-        // restart animation on each tick so scroll loop stays fluid
-        sw.style.animation='none';sw.offsetHeight;sw.style.animation='';
-        if(CARDS.includes(s)) sw.innerHTML=`<span class="csym">${s}</span>`;
-        else sw.textContent=s;
+        sw.innerHTML=symHTML(s);
         gc(c,r).className='cell spin';
       }
       t+=65;
@@ -821,8 +927,65 @@ function showBigWin(amount,label='BIG WIN'){
   document.getElementById('bw-amount').textContent=fmt(0);
   bw.classList.add('on');
   animateWin(0,amount,document.getElementById('bw-amount'),900);
+  launchConfetti();
   if(bigWinTimer) clearTimeout(bigWinTimer);
-  bigWinTimer=setTimeout(()=>{bw.classList.remove('on');bigWinTimer=null;},2800);
+  bigWinTimer=setTimeout(()=>{bw.classList.remove('on');stopConfetti();bigWinTimer=null;},3200);
+}
+
+// ── CONFETTI ──────────────────────────────────────────────────────────────────
+let confettiRaf=null;
+function launchConfetti(){
+  const cv=document.getElementById('confetti');
+  cv.style.display='block';
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const ctx=cv.getContext('2d');
+  const cols=['#f0b830','#c060ff','#40d080','#ff6060','#60c0ff','#fff080'];
+  const pts=Array.from({length:120},()=>({
+    x:Math.random()*cv.width,y:-20-Math.random()*200,
+    vx:(Math.random()-0.5)*4,vy:3+Math.random()*4,
+    r:4+Math.random()*6,col:cols[Math.floor(Math.random()*cols.length)],
+    rot:Math.random()*360,vr:(Math.random()-0.5)*8,life:1
+  }));
+  function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    let alive=false;
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.vy+=0.08;p.rot+=p.vr;
+      if(p.y<cv.height+20){alive=true;}
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+      ctx.globalAlpha=Math.max(0,1-(p.y/cv.height)*0.8);
+      ctx.fillStyle=p.col;
+      ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);
+      ctx.restore();
+    });
+    if(alive) confettiRaf=requestAnimationFrame(draw);
+    else stopConfetti();
+  }
+  if(confettiRaf) cancelAnimationFrame(confettiRaf);
+  confettiRaf=requestAnimationFrame(draw);
+}
+function stopConfetti(){
+  if(confettiRaf){cancelAnimationFrame(confettiRaf);confettiRaf=null;}
+  document.getElementById('confetti').style.display='none';
+}
+
+// ── FRAME LIGHTS INIT ────────────────────────────────────────────────────────
+function initFrameLights(){
+  const el=document.getElementById('frame-lights');
+  if(!el) return;
+  const n=20;
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div');d.className='fl-dot';
+    const pct=(i/(n-1))*100;
+    // top row
+    if(i<n/2){
+      d.style.top='6px';d.style.left=`${(i/(n/2-1))*90+5}%`;
+    } else {
+      d.style.bottom='6px';d.style.left=`${((i-n/2)/(n/2-1))*90+5}%`;
+    }
+    d.style.animationDelay=`${(i*0.15)%1.6}s`;
+    el.appendChild(d);
+  }
 }
 
 // ── CLUSTER DETECTION ──────────────────────────────────────────────────────────
@@ -946,8 +1109,8 @@ function showTally(coinCells,total){
   if(g.bronze.length) chips.innerHTML+=`<span class="tchip bronze">🥉 ${g.bronze.join(' · ')}×</span>`;
   if(g.silver.length) chips.innerHTML+=`<span class="tchip silver">🥈 ${g.silver.join(' · ')}×</span>`;
   if(g.gold.length)   chips.innerHTML+=`<span class="tchip gold">🥇 ${g.gold.join(' · ')}×</span>`;
-  if(g.clover.length) chips.innerHTML+=`<span class="tchip clover">🍀 ×${g.clover.join('·')}</span>`;
-  if(g.pot.length)    chips.innerHTML+=`<span class="tchip gold">🏆 ×2</span>`;
+  if(g.clover.length) chips.innerHTML+=`<span class="tchip clover">CLVR ×${g.clover.join('·')}</span>`;
+  if(g.pot.length)    chips.innerHTML+=`<span class="tchip gold">POT ×${potCount||g.pot.length}</span>`;
   sum.textContent='= $0.00';
   // animate tally sum ticking up, prefixed with '= '
   const start2=performance.now(),to2=total*bet;
@@ -1103,7 +1266,7 @@ function resetGame(){
   buildGrid();setBet(1);updateBalUI();setMsg('Spin to win, partner! 🦝');
 }
 
-buildGrid();setBet(1);updateBalUI();updateButtons();
+buildGrid();setBet(1);updateBalUI();updateButtons();initFrameLights();
 </script>
 </body>
 </html>
