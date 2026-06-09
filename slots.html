@@ -7,652 +7,859 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --gold:#f0b429;--dark:#0c0a12;--panel:#14101f;--border:#2a1f3d;
-  --accent:#7c3aed;--green:#16a34a;--red:#dc2626;
-  --scatter:#ef4444;--wild:#f59e0b;--mult:#a855f7;
+  --bg:#100c06;--panel:#1a1208;--cell:#0e0a05;--border:#3d2810;
+  --gold:#d4a017;--gold2:#f0c040;--dim:#8a6a30;
+  --bronze:#cd7f32;--silver:#aaa;--goldcoin:#ffd700;
+  --green:#16a34a;--red:#dc2626;--purple:#7c3aed;
+  --scatter:#e85d04;--rainbow:#6366f1;--wild:#16a34a;
 }
-html,body{height:100%;background:var(--dark);font-family:'Segoe UI',sans-serif;color:#fff;overflow-x:hidden}
-body{display:flex;flex-direction:column;align-items:center;padding:10px 6px 20px;min-height:100vh;
-  background:radial-gradient(ellipse at 50% 0%,#1a0f2e 0%,#0c0a12 60%)}
+html,body{height:100%;background:var(--bg);font-family:'Segoe UI',sans-serif;color:#fff;overflow-x:hidden}
+body{display:flex;flex-direction:column;align-items:center;padding:10px 6px 30px;
+  background:radial-gradient(ellipse at 50% -10%,#2a1c08 0%,#100c06 55%)}
 
 /* ── TOP BAR ── */
-.topbar{width:100%;max-width:660px;display:flex;gap:8px;margin-bottom:8px}
-.stat{flex:1;background:#0d0a1a;border:1px solid var(--border);border-radius:10px;padding:7px 10px}
-.stat .lbl{font-size:.6rem;color:#555;letter-spacing:1.5px;text-transform:uppercase}
-.stat .val{font-size:1.05rem;font-weight:700;color:#fff;margin-top:2px;white-space:nowrap}
-.stat.win-stat .val{color:var(--gold)}
-.stat.fs-stat{background:linear-gradient(135deg,#130a2a,#1e0a40);border-color:var(--mult);display:none}
-.stat.fs-stat .val{color:#c084fc}
+.topbar{width:100%;max-width:700px;display:flex;gap:8px;margin-bottom:8px}
+.stat{flex:1;background:#14100a;border:1px solid var(--border);border-radius:10px;padding:7px 10px}
+.stat .lbl{font-size:.58rem;color:#5a4520;letter-spacing:1.5px;text-transform:uppercase}
+.stat .v{font-size:1.05rem;font-weight:700;color:#d4b060;white-space:nowrap}
+.stat.win-s .v{color:var(--gold2)}
+.stat.fs-s{background:#12100a;border-color:var(--gold);display:none}
+.stat.fs-s .v{color:var(--gold2)}
 
-/* ── MACHINE SHELL ── */
-.machine{width:100%;max-width:660px;background:var(--panel);border:2px solid var(--border);
-  border-radius:20px;overflow:hidden;
-  box-shadow:0 0 80px rgba(124,58,237,.2),0 0 0 1px #1a1030}
+/* ── MACHINE ── */
+.machine{width:100%;max-width:700px;background:var(--panel);
+  border:2px solid var(--border);border-radius:20px;overflow:hidden;
+  box-shadow:0 0 60px rgba(180,120,10,.15),0 0 0 1px #2a1c08}
 
-/* ── GAME TITLE ── */
-.game-title{text-align:center;padding:10px 0 4px;
-  font-size:1.4rem;font-weight:900;letter-spacing:6px;color:var(--gold);
-  text-shadow:0 0 20px rgba(240,180,41,.5)}
-.game-sub{text-align:center;font-size:.6rem;color:#555;letter-spacing:3px;margin-bottom:8px}
+/* ── TITLE ── */
+.title-bar{padding:10px 16px 4px;text-align:center;position:relative}
+.game-name{font-size:1.6rem;font-weight:900;letter-spacing:8px;
+  color:var(--gold);text-shadow:0 0 20px rgba(212,160,23,.4)}
+.game-tag{font-size:.58rem;color:#5a4520;letter-spacing:3px;margin-top:2px}
+.raccoon{position:absolute;right:16px;top:8px;font-size:2rem;opacity:.7}
 
 /* ── REELS ── */
-.reels-wrap{position:relative;padding:0 12px 8px}
-.reels-bg{background:#080510;border:2px solid #1a1030;border-radius:14px;
-  padding:8px;position:relative;overflow:hidden}
+.reels-wrap{padding:0 10px 6px;position:relative}
+.reels-bg{background:#08060200;border:2px solid #2a1c08;border-radius:14px;
+  padding:6px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#0a0703,#0e0a05)}
 
-.reels{display:flex;gap:6px}
-.reel-col{flex:1;display:flex;flex-direction:column;gap:5px}
+.reels{display:flex;gap:5px}
+.col{flex:1;display:flex;flex-direction:column;gap:4px}
 
-.cell{height:78px;background:linear-gradient(145deg,#0f0c1e,#0a0815);
-  border:1.5px solid #1e1840;border-radius:10px;
+/* ── CELL ── */
+.cell{height:66px;background:var(--cell);border-radius:8px;border:1.5px solid #1e1408;
   display:flex;align-items:center;justify-content:center;
-  font-size:2.5rem;position:relative;overflow:hidden;
+  font-size:2.1rem;position:relative;overflow:hidden;
   transition:border-color .15s,box-shadow .15s}
 .cell::before{content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);pointer-events:none}
+  background:linear-gradient(135deg,rgba(255,255,255,.03),transparent);pointer-events:none}
 
-.cell.spin{animation:sym-roll .07s steps(1) infinite}
-@keyframes sym-roll{0%{filter:blur(3px)brightness(1.4)}50%{filter:blur(6px)brightness(.6)}to{filter:blur(3px)brightness(1.4)}}
+/* golden square background layer */
+.cell .gs{position:absolute;inset:0;border-radius:7px;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(212,160,23,.25),transparent 70%);
+  border:1.5px solid transparent;transition:opacity .3s,border-color .3s}
+.cell.golden .gs{opacity:1;border-color:rgba(212,160,23,.5)}
+.cell.golden{box-shadow:0 0 10px rgba(212,160,23,.3)}
 
-.cell.explode{animation:cell-explode .28s ease forwards}
-@keyframes cell-explode{0%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.6}to{transform:scale(0);opacity:0}}
+/* card symbol styling */
+.card-sym{font-size:1.3rem;font-weight:900;font-family:'Georgia',serif}
+.card-sym.ca{color:#d4a017}.card-sym.ck{color:#b8860b}
+.card-sym.cq{color:#cd853f}.card-sym.cj{color:#a0785a}.card-sym.c10{color:#8a6040}
 
-.cell.drop{animation:cell-drop .25s cubic-bezier(.22,.61,.36,1) forwards}
-@keyframes cell-drop{from{transform:translateY(-50px);opacity:0}to{transform:translateY(0);opacity:1}}
+/* coin reveals */
+.coin{width:46px;height:46px;border-radius:50%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;font-weight:800;position:relative;z-index:2}
+.coin.bronze{background:radial-gradient(#cd7f32,#8b4a0a);box-shadow:0 0 10px rgba(205,127,50,.5);
+  font-size:.55rem;color:#fff5e0}
+.coin.silver{background:radial-gradient(#e0e0e0,#808080);box-shadow:0 0 12px rgba(200,200,200,.5);
+  font-size:.55rem;color:#1a1a1a}
+.coin.gold{background:radial-gradient(#ffd700,#b8860b);box-shadow:0 0 16px rgba(255,215,0,.7);
+  font-size:.55rem;color:#3a2000;animation:gold-glow .6s ease-in-out infinite alternate}
+@keyframes gold-glow{from{box-shadow:0 0 10px rgba(255,215,0,.5)}to{box-shadow:0 0 24px rgba(255,215,0,.9)}}
+.coin .coin-val{font-size:.65rem;font-weight:900;line-height:1}
+.coin .coin-lbl{font-size:.45rem;opacity:.8;text-transform:uppercase;margin-top:1px}
 
-.cell.win{border-color:var(--gold);box-shadow:0 0 16px rgba(240,180,41,.55);
-  animation:win-glow .35s ease-in-out infinite alternate}
-@keyframes win-glow{from{box-shadow:0 0 10px rgba(240,180,41,.4)}to{box-shadow:0 0 24px rgba(240,180,41,.8)}}
+/* clover / pot */
+.special-coin{font-size:1.6rem;z-index:2;position:relative;
+  filter:drop-shadow(0 0 6px rgba(34,197,94,.6))}
+.special-coin.pot{filter:drop-shadow(0 0 8px rgba(212,160,23,.8))}
 
-.cell.is-wild{border-color:var(--wild);box-shadow:0 0 12px rgba(245,158,11,.4)}
-.cell.is-scatter{border-color:var(--scatter);box-shadow:0 0 14px rgba(239,68,68,.5)}
-.cell.is-mult{border-color:var(--mult);
-  animation:mult-glow .5s ease-in-out infinite alternate}
-@keyframes mult-glow{from{box-shadow:0 0 8px rgba(168,85,247,.4)}to{box-shadow:0 0 22px rgba(168,85,247,.9)}}
+/* spin animation */
+.cell.spin .sym-wrap{animation:sym-blur .08s steps(1) infinite}
+@keyframes sym-blur{0%{filter:blur(3px)brightness(1.4)}50%{filter:blur(6px)brightness(.6)}to{filter:blur(3px)brightness(1.4)}}
 
-.mult-tag{position:absolute;bottom:3px;right:4px;font-size:.6rem;font-weight:800;
-  color:#d8b4fe;background:#2a0a4a;border-radius:4px;padding:1px 5px;pointer-events:none}
+/* win cluster */
+.cell.win{border-color:var(--gold2);box-shadow:0 0 14px rgba(240,192,64,.6);
+  animation:win-pulse .4s ease-in-out infinite alternate}
+@keyframes win-pulse{from{transform:scale(1)}to{transform:scale(1.04)}}
 
-/* ── MULTIPLIER TRAIL ── */
-.trail-wrap{padding:8px 12px 4px}
-.trail-bar{display:flex;align-items:center;gap:4px;background:#060410;
-  border:1px solid var(--border);border-radius:10px;padding:8px 10px}
-.trail-label{font-size:.6rem;color:#555;letter-spacing:1px;margin-right:4px;white-space:nowrap}
-.trail-steps{display:flex;gap:3px;flex:1;overflow:hidden}
-.trail-step{flex:1;height:22px;border-radius:5px;background:#0f0c1e;border:1px solid #1e1840;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.62rem;font-weight:700;color:#333;transition:all .3s;min-width:0}
-.trail-step.active{background:var(--mult);border-color:#c084fc;color:#fff;
-  box-shadow:0 0 10px rgba(168,85,247,.6)}
-.trail-step.past{background:#1e0a3a;border-color:#4a1060;color:#9f7aea}
+/* explode */
+.cell.explode .sym-wrap{animation:explode .28s ease forwards}
+@keyframes explode{0%{transform:scale(1);opacity:1}60%{transform:scale(1.4);opacity:.5}to{transform:scale(0);opacity:0}}
 
-/* ── WIN OVERLAY ── */
+/* drop in */
+.cell.drop .sym-wrap{animation:drop-in .25s cubic-bezier(.2,.6,.3,1)}
+@keyframes drop-in{from{transform:translateY(-60px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* rainbow flash */
+.cell.rainbow-flash{animation:rb-flash .5s ease}
+@keyframes rb-flash{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px rgba(99,102,241,.9),0 0 40px rgba(99,102,241,.4)}}
+
+/* coin reveal */
+.cell.revealing .sym-wrap{animation:coin-flip .35s ease}
+@keyframes coin-flip{0%{transform:scaleX(1)}40%{transform:scaleX(0)}41%{}100%{transform:scaleX(1)}}
+
+/* scatter highlight */
+.cell.is-scatter{border-color:var(--scatter);box-shadow:0 0 10px rgba(232,93,4,.4)}
+.cell.is-wild{border-color:var(--wild);box-shadow:0 0 8px rgba(22,163,74,.3)}
+.cell.is-rainbow{border-color:var(--rainbow);box-shadow:0 0 12px rgba(99,102,241,.5)}
+
+/* ── WIN FLASH OVERLAY ── */
 .win-flash{position:absolute;inset:0;border-radius:14px;pointer-events:none;
   opacity:0;transition:opacity .2s;
-  background:radial-gradient(ellipse at center,rgba(240,180,41,.12),transparent 70%)}
+  background:radial-gradient(ellipse at center,rgba(212,160,23,.1),transparent 70%)}
 .win-flash.show{opacity:1}
 
 /* ── BONUS OVERLAY ── */
-.bonus-overlay{position:absolute;inset:0;border-radius:14px;
+.b-overlay{position:absolute;inset:0;border-radius:14px;
   display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(8,5,20,.94);backdrop-filter:blur(6px);z-index:30}
-.bonus-overlay.show{display:flex;animation:b-in .4s ease}
-@keyframes b-in{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
-.b-title{font-size:2.8rem;font-weight:900;color:var(--gold);letter-spacing:5px;
-  text-shadow:0 0 30px var(--gold);animation:bounce .7s ease infinite alternate}
-@keyframes bounce{from{transform:translateY(-5px)}to{transform:translateY(5px)}}
-.b-sub{color:#c084fc;font-size:.95rem;margin:8px 0;text-align:center;line-height:1.5}
-.b-spins{font-size:2rem;font-weight:900;color:#fff;margin:6px 0}
-.b-start{padding:13px 40px;border:none;border-radius:12px;margin-top:10px;
-  background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;
-  font-size:1rem;font-weight:800;cursor:pointer;letter-spacing:1px;
-  box-shadow:0 0 24px rgba(124,58,237,.6);transition:transform .1s}
-.b-start:hover{transform:scale(1.05)}
+  background:rgba(10,7,2,.93);backdrop-filter:blur(8px);z-index:30;text-align:center;padding:16px}
+.b-overlay.show{display:flex;animation:b-in .4s ease}
+@keyframes b-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.b-raccoon{font-size:3rem;animation:raccoon-hop .8s ease-in-out infinite alternate}
+@keyframes raccoon-hop{from{transform:translateY(-6px) rotate(-5deg)}to{transform:translateY(6px) rotate(5deg)}}
+.b-title{font-size:2rem;font-weight:900;color:var(--gold);letter-spacing:4px;
+  text-shadow:0 0 24px var(--gold);margin:8px 0 4px}
+.b-tier{font-size:.8rem;color:#8a6a30;letter-spacing:2px;text-transform:uppercase}
+.b-spins-num{font-size:3rem;font-weight:900;color:#fff;line-height:1.1}
+.b-spins-lbl{font-size:.7rem;color:#8a6a30;letter-spacing:2px;margin-bottom:12px}
+.b-perks{font-size:.75rem;color:#c4a050;margin:4px 0 12px;line-height:1.6}
+.b-go{padding:12px 36px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#92400e,var(--gold));color:#fff;
+  font-size:.95rem;font-weight:800;cursor:pointer;letter-spacing:1px;
+  box-shadow:0 0 24px rgba(212,160,23,.4);transition:transform .1s}
+.b-go:hover{transform:scale(1.06)}
 
-/* ── MESSAGE ── */
-.msg-bar{min-height:26px;text-align:center;padding:4px 12px;
-  font-size:.9rem;font-weight:600;color:var(--gold);
-  text-shadow:0 0 8px rgba(240,180,41,.4)}
+/* ── COIN TALLY ── */
+.coin-tally{display:none;background:#0a0703;border-top:1px solid var(--border);
+  padding:6px 12px;flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+.coin-tally.show{display:flex}
+.tally-label{font-size:.6rem;color:#5a4520;letter-spacing:1px}
+.tally-coins{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.tc{display:inline-flex;align-items:center;gap:3px;
+  border-radius:6px;padding:2px 6px;font-size:.7rem;font-weight:700}
+.tc.bronze{background:#3a2010;color:var(--bronze)}.tc.silver{background:#1a1a2a;color:var(--silver)}
+.tc.gold{background:#2a1a00;color:var(--goldcoin)}.tc.clover{background:#0a1a0a;color:#4ade80}
+.tally-total{font-size:.85rem;font-weight:700;color:var(--gold2);margin-left:auto;white-space:nowrap}
+
+/* ── MSG ── */
+.msg{min-height:26px;text-align:center;padding:5px 12px 2px;
+  font-size:.88rem;font-weight:600;color:var(--gold);
+  text-shadow:0 0 8px rgba(212,160,23,.3)}
 
 /* ── CONTROLS ── */
-.controls{padding:0 12px 14px;display:flex;flex-direction:column;gap:8px}
+.ctrl{padding:4px 12px 14px;display:flex;flex-direction:column;gap:8px}
 
 .bet-row{display:flex;align-items:center;gap:6px}
-.ico-btn{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);
-  background:#0d0a1a;color:#aaa;font-size:1rem;cursor:pointer;flex-shrink:0;
-  transition:all .12s;display:flex;align-items:center;justify-content:center}
-.ico-btn:hover{border-color:var(--gold);color:var(--gold)}
-.bet-display{flex:1;text-align:center;background:#080510;border:1px solid var(--border);
-  border-radius:8px;padding:5px 8px;font-size:.95rem;font-weight:700;color:#fff}
+.ico{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);
+  background:#0e0a05;color:#8a6a30;font-size:1rem;cursor:pointer;
+  transition:all .12s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ico:hover{border-color:var(--gold);color:var(--gold)}
+.bet-dsp{flex:1;text-align:center;background:#080603;border:1px solid var(--border);
+  border-radius:8px;padding:5px 8px;font-size:.95rem;font-weight:700;color:#d4b060}
 .presets{display:flex;gap:4px;flex-wrap:wrap}
-.preset{padding:3px 9px;border-radius:6px;border:1px solid var(--border);
-  background:#0d0a1a;color:#888;font-size:.72rem;cursor:pointer;transition:all .12s;white-space:nowrap}
-.preset:hover,.preset.on{border-color:var(--accent);color:#c084fc;background:#1a0a30}
+.pre{padding:3px 9px;border-radius:6px;border:1px solid var(--border);
+  background:#0e0a05;color:#5a4520;font-size:.7rem;cursor:pointer;transition:all .12s}
+.pre:hover,.pre.on{border-color:var(--gold);color:var(--gold);background:#1e1408}
 
-.action-row{display:grid;grid-template-columns:1fr 1.8fr 1fr;gap:8px}
-
+.act-row{display:grid;grid-template-columns:1fr 1.8fr 1fr;gap:8px}
 .spin-btn{padding:13px;border:none;border-radius:12px;
-  background:linear-gradient(135deg,#15803d,#22c55e);color:#fff;
-  font-size:1.1rem;font-weight:800;letter-spacing:2px;cursor:pointer;
-  box-shadow:0 4px 18px rgba(34,197,94,.35);transition:all .15s}
-.spin-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 24px rgba(34,197,94,.5)}
-.spin-btn:active:not(:disabled){transform:translateY(1px)}
-.spin-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
-.spin-btn.stop-mode{background:linear-gradient(135deg,#b91c1c,#ef4444);
-  box-shadow:0 4px 18px rgba(239,68,68,.35)}
-
-.auto-btn{padding:10px 6px;border:1px solid var(--border);border-radius:12px;
-  background:#0d0a1a;color:#888;font-size:.72rem;cursor:pointer;
+  background:linear-gradient(135deg,#14532d,#22c55e);color:#fff;
+  font-size:1.05rem;font-weight:800;letter-spacing:2px;cursor:pointer;
+  box-shadow:0 4px 18px rgba(34,197,94,.25);transition:all .15s}
+.spin-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 24px rgba(34,197,94,.4)}
+.spin-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.side-btn{padding:10px 6px;border:1px solid var(--border);border-radius:12px;
+  background:#0e0a05;color:#5a4520;font-size:.7rem;cursor:pointer;
   transition:all .15s;text-align:center;line-height:1.4;font-weight:600}
-.auto-btn:hover{border-color:var(--accent);color:#c084fc}
-.auto-btn.on{border-color:var(--red);color:var(--red);background:#1a060a}
+.side-btn:hover{border-color:var(--gold);color:var(--gold)}
+.side-btn.on{border-color:var(--red);color:var(--red)}
 
 /* ── BONUS BUY ── */
-.buy-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.buy-card{background:#0d0a1a;border:1px solid var(--border);border-radius:10px;
-  padding:8px 6px;text-align:center;cursor:pointer;transition:all .15s}
-.buy-card:hover:not(:disabled){border-color:var(--scatter);transform:translateY(-2px);
-  box-shadow:0 4px 14px rgba(239,68,68,.3)}
-.buy-card:disabled{opacity:.35;cursor:not-allowed;transform:none}
-.buy-card .bc-title{font-size:.65rem;font-weight:700;color:#aaa;letter-spacing:.5px;text-transform:uppercase}
-.buy-card .bc-icon{font-size:1.4rem;margin:3px 0}
-.buy-card .bc-price{font-size:.72rem;color:var(--scatter);font-weight:700}
-.buy-card .bc-desc{font-size:.6rem;color:#555;margin-top:2px;line-height:1.3}
-.buy-card.tier1{border-color:#1e1840}
-.buy-card.tier1:hover:not(:disabled){border-color:#4a90e2;box-shadow:0 4px 14px rgba(74,144,226,.3)}
-.buy-card.tier2:hover:not(:disabled){border-color:var(--mult);box-shadow:0 4px 14px rgba(168,85,247,.3)}
-.buy-card.tier3{background:linear-gradient(145deg,#12080a,#0d0a1a)}
-.buy-card.tier3:hover:not(:disabled){border-color:var(--gold);box-shadow:0 4px 16px rgba(240,180,41,.35)}
-.buy-card .bc-price.t1{color:#4a90e2}.buy-card .bc-price.t2{color:#a855f7}.buy-card .bc-price.t3{color:var(--gold)}
+.buy-section{border-top:1px solid var(--border);padding-top:8px}
+.buy-title{font-size:.58rem;color:#5a4520;letter-spacing:2px;text-align:center;margin-bottom:6px;text-transform:uppercase}
+.buy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.bcard{background:#0e0a05;border:1px solid var(--border);border-radius:10px;
+  padding:7px 5px;text-align:center;cursor:pointer;transition:all .15s}
+.bcard:hover:not(:disabled){transform:translateY(-2px)}
+.bcard:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.bcard .bc-icon{font-size:1.2rem;margin-bottom:2px}
+.bcard .bc-name{font-size:.58rem;font-weight:700;color:#8a6a30;letter-spacing:.5px;text-transform:uppercase;line-height:1.2}
+.bcard .bc-cost{font-size:.68rem;font-weight:700;margin-top:3px}
+.bcard .bc-desc{font-size:.52rem;color:#5a4520;margin-top:2px;line-height:1.3}
+.bcard.t0{border-color:#1e1408}.bcard.t0 .bc-cost{color:#8a6a30}
+.bcard.t0:hover:not(:disabled){border-color:#8a6a30;box-shadow:0 3px 10px rgba(138,106,48,.2)}
+.bcard.t1 .bc-cost{color:var(--scatter)}
+.bcard.t1:hover:not(:disabled){border-color:var(--scatter);box-shadow:0 3px 10px rgba(232,93,4,.25)}
+.bcard.t2 .bc-cost{color:var(--silver)}
+.bcard.t2:hover:not(:disabled){border-color:var(--silver);box-shadow:0 3px 10px rgba(200,200,200,.2)}
+.bcard.t3{background:linear-gradient(145deg,#1a1205,#0e0a05)}
+.bcard.t3 .bc-cost{color:var(--gold2)}
+.bcard.t3:hover:not(:disabled){border-color:var(--gold);box-shadow:0 3px 12px rgba(212,160,23,.3)}
 
 /* ── PAYTABLE ── */
-.pt-toggle{width:100%;max-width:660px;margin-top:8px;background:none;
-  border:1px solid var(--border);border-radius:9px;color:#555;font-size:.75rem;
-  padding:7px;cursor:pointer;transition:all .2s;letter-spacing:1px}
-.pt-toggle:hover{border-color:var(--accent);color:#c084fc}
-.pt-panel{width:100%;max-width:660px;background:var(--panel);
-  border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:6px;display:none}
-.pt-panel.show{display:block}
-.pt-panel h3{color:var(--gold);font-size:.72rem;letter-spacing:2px;text-align:center;margin-bottom:10px}
-.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
-.pt-row{background:#080510;border-radius:7px;padding:6px 10px;
-  display:flex;justify-content:space-between;align-items:center;font-size:.78rem}
-.pt-row .syms{font-size:1rem}
-.pt-row .pays{color:var(--gold);font-weight:700;font-size:.75rem;text-align:right}
-.pt-note{font-size:.68rem;color:#444;text-align:center;line-height:1.7}
-.pt-note b{color:#666}
+.pt-tog{width:100%;max-width:700px;margin-top:8px;background:none;
+  border:1px solid var(--border);border-radius:9px;color:#5a4520;
+  font-size:.72rem;padding:7px;cursor:pointer;transition:all .2s;letter-spacing:1px}
+.pt-tog:hover{border-color:var(--gold);color:var(--gold)}
+.pt{width:100%;max-width:700px;background:var(--panel);border:1px solid var(--border);
+  border-radius:12px;padding:14px;margin-top:6px;display:none}
+.pt.show{display:block}
+.pt h3{color:var(--gold);font-size:.68rem;letter-spacing:2px;text-align:center;margin-bottom:10px}
+.pt-g{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
+.pt-r{background:#0a0703;border-radius:7px;padding:6px 10px;
+  display:flex;justify-content:space-between;align-items:center;font-size:.75rem}
+.pt-r .ps{font-size:.95rem}.pt-r .pv{color:var(--gold);font-weight:700;font-size:.7rem;text-align:right}
+.pt-note{font-size:.65rem;color:#5a4520;text-align:center;line-height:1.8}
+.pt-note b{color:#8a6a30}
 
-.reset-btn{margin-top:8px;background:none;border:1px solid #1a0a1a;color:#444;
-  padding:5px 14px;border-radius:8px;cursor:pointer;font-size:.72rem;
-  transition:all .2s;width:100%;max-width:660px}
+.reset-btn{margin-top:8px;background:none;border:1px solid #1a1208;color:#3a2810;
+  padding:5px 14px;border-radius:8px;cursor:pointer;font-size:.7rem;
+  transition:all .2s;width:100%;max-width:700px}
 .reset-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* ── FS tier badges ── */
+.tier-badge{display:inline-block;padding:2px 8px;border-radius:10px;
+  font-size:.65rem;font-weight:700;margin-left:6px;vertical-align:middle}
+.tb1{background:#1a0a00;color:var(--scatter)}.tb2{background:#1a1a2a;color:var(--silver)}
+.tb3{background:#2a1a00;color:var(--goldcoin)}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="stat"><div class="lbl">Balance</div><div class="val" id="s-bal">$1,000.00</div></div>
-  <div class="stat win-stat"><div class="lbl">Win</div><div class="val" id="s-win">$0.00</div></div>
-  <div class="stat"><div class="lbl">Bet</div><div class="val" id="s-bet">$1.00</div></div>
-  <div class="stat fs-stat" id="fs-stat"><div class="lbl">Free Spins</div><div class="val" id="s-fs">0</div></div>
+  <div class="stat"><div class="lbl">Balance</div><div class="v" id="s-bal">$1,000.00</div></div>
+  <div class="stat win-s"><div class="lbl">Win</div><div class="v" id="s-win">$0.00</div></div>
+  <div class="stat"><div class="lbl">Bet</div><div class="v" id="s-bet">$1.00</div></div>
+  <div class="stat fs-s" id="fs-stat"><div class="lbl">Free Spins</div><div class="v" id="s-fs">0</div></div>
 </div>
 
 <div class="machine">
-  <div class="game-title">LE BANDIT</div>
-  <div class="game-sub">AVALANCHE · MULTIPLIER TRAIL · BONUS BUY</div>
+  <div class="title-bar">
+    <div class="game-name">LE BANDIT</div>
+    <div class="game-tag">CLUSTER PAYS · GOLDEN SQUARES · SUPER CASCADES</div>
+    <div class="raccoon">🦝</div>
+  </div>
 
   <div class="reels-wrap">
     <div class="reels-bg">
       <div class="reels" id="reels"></div>
       <div class="win-flash" id="wf"></div>
-      <div class="bonus-overlay" id="b-overlay">
-        <div class="b-title">🤠 BONUS!</div>
-        <div class="b-sub" id="b-sub">Free Spins Triggered!</div>
-        <div class="b-spins" id="b-spins">10</div>
-        <div style="color:#888;font-size:.75rem">Free Spins</div>
-        <button class="b-start" onclick="startFS()">LET'S RIDE →</button>
+      <div class="b-overlay" id="b-ov">
+        <div class="b-raccoon">🦝</div>
+        <div class="b-title" id="b-title">BONUS!</div>
+        <div class="b-tier" id="b-tier">LUCK OF THE BANDIT</div>
+        <div class="b-spins-num" id="b-num">8</div>
+        <div class="b-spins-lbl">FREE SPINS</div>
+        <div class="b-perks" id="b-perks">Golden Squares persist between spins</div>
+        <button class="b-go" onclick="startFS()">ALLONS-Y! →</button>
       </div>
     </div>
   </div>
 
-  <!-- Multiplier Trail -->
-  <div class="trail-wrap">
-    <div class="trail-bar">
-      <span class="trail-label">TRAIL</span>
-      <div class="trail-steps" id="trail"></div>
-    </div>
+  <!-- Coin Tally -->
+  <div class="coin-tally" id="coin-tally">
+    <span class="tally-label">COINS</span>
+    <div class="tally-coins" id="tally-coins"></div>
+    <span class="tally-total" id="tally-total"></span>
   </div>
 
-  <div class="msg-bar" id="msg">Spin to win, partner! 🤠</div>
+  <div class="msg" id="msg">Spin the reels, mon ami! 🦝</div>
 
-  <div class="controls">
+  <div class="ctrl">
     <div class="bet-row">
-      <button class="ico-btn" onclick="changeBet(-1)">−</button>
-      <div class="bet-display" id="bet-disp">$1.00</div>
-      <button class="ico-btn" onclick="changeBet(1)">+</button>
+      <button class="ico" onclick="changeBet(-1)">−</button>
+      <div class="bet-dsp" id="bet-dsp">$1.00</div>
+      <button class="ico" onclick="changeBet(1)">+</button>
       <div class="presets">
-        <button class="preset" onclick="setBet(.10)">$.10</button>
-        <button class="preset" onclick="setBet(.50)">$.50</button>
-        <button class="preset on" onclick="setBet(1)">$1</button>
-        <button class="preset" onclick="setBet(5)">$5</button>
-        <button class="preset" onclick="setBet(25)">$25</button>
-        <button class="preset" onclick="setBet(100)">$100</button>
+        <button class="pre" onclick="setBet(.10)">$.10</button>
+        <button class="pre" onclick="setBet(.50)">$.50</button>
+        <button class="pre on" onclick="setBet(1)">$1</button>
+        <button class="pre" onclick="setBet(5)">$5</button>
+        <button class="pre" onclick="setBet(25)">$25</button>
+        <button class="pre" onclick="setBet(100)">$100</button>
       </div>
     </div>
 
-    <div class="action-row">
-      <button class="auto-btn" id="auto-btn" onclick="toggleAuto()">AUTO<br>SPIN</button>
+    <div class="act-row">
+      <button class="side-btn" id="auto-btn" onclick="toggleAuto()">AUTO<br>SPIN</button>
       <button class="spin-btn" id="spin-btn" onclick="handleSpin()">SPIN</button>
-      <button class="auto-btn" onclick="setBet(balance)" style="border-color:#1a2a10;color:#3a6a20">MAX<br>BET</button>
+      <button class="side-btn" onclick="setBet(Math.floor(balance/10)*10||bet)" style="border-color:#1a2a0a;color:#3a6a10">MAX<br>BET</button>
     </div>
 
-    <!-- Bonus Buy -->
-    <div class="buy-row" id="buy-row">
-      <button class="buy-card tier1" onclick="buyBonus(0)">
-        <div class="bc-title">Bonus</div>
-        <div class="bc-icon">💣</div>
-        <div class="bc-price t1" id="bp0">$75</div>
-        <div class="bc-desc">3 scatters<br>10 free spins</div>
-      </button>
-      <button class="buy-card tier2" onclick="buyBonus(1)">
-        <div class="bc-title">Bonus+</div>
-        <div class="bc-icon">💣💣</div>
-        <div class="bc-price t2" id="bp1">$200</div>
-        <div class="bc-desc">4 scatters<br>15 FS + ×2 start</div>
-      </button>
-      <button class="buy-card tier3" onclick="buyBonus(2)">
-        <div class="bc-title">Mega Bonus</div>
-        <div class="bc-icon">💣💣💣</div>
-        <div class="bc-price t3" id="bp2">$500</div>
-        <div class="bc-desc">5 scatters<br>20 FS + ×5 start</div>
-      </button>
+    <div class="buy-section">
+      <div class="buy-title">— Bonus Buy —</div>
+      <div class="buy-grid">
+        <button class="bcard t0" onclick="buyBonus(0)">
+          <div class="bc-icon">📷</div>
+          <div class="bc-name">Bonus Hunt</div>
+          <div class="bc-cost" id="bp0">$3</div>
+          <div class="bc-desc">Enhanced scatter chance</div>
+        </button>
+        <button class="bcard t1" onclick="buyBonus(1)">
+          <div class="bc-icon">📷📷📷</div>
+          <div class="bc-name">Luck of the Bandit</div>
+          <div class="bc-cost" id="bp1">$100</div>
+          <div class="bc-desc">8 FS · Squares persist</div>
+        </button>
+        <button class="bcard t2" onclick="buyBonus(2)">
+          <div class="bc-icon">🌈</div>
+          <div class="bc-name">Rainbow Spins</div>
+          <div class="bc-cost" id="bp2">$50</div>
+          <div class="bc-desc">5 FS · Rainbow every spin</div>
+        </button>
+        <button class="bcard t3" onclick="buyBonus(3)">
+          <div class="bc-icon">🏆</div>
+          <div class="bc-name">All That Glitters</div>
+          <div class="bc-cost" id="bp3">$250</div>
+          <div class="bc-desc">12 FS · Silver/Gold only</div>
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<button class="pt-toggle" onclick="document.getElementById('pt').classList.toggle('show')">▾ PAYTABLE &amp; RULES</button>
-<div class="pt-panel" id="pt">
-  <h3>— PAYTABLE (3 / 4 / 5 of a kind from left) —</h3>
-  <div class="pt-grid">
-    <div class="pt-row"><span class="syms">🤠🤠🤠</span><span class="pays">3× · 12× · 30×</span></div>
-    <div class="pt-row"><span class="syms">💰💰💰</span><span class="pays">1.5× · 6× · 15×</span></div>
-    <div class="pt-row"><span class="syms">🔫🔫🔫</span><span class="pays">1× · 4× · 10×</span></div>
-    <div class="pt-row"><span class="syms">🐴🐴🐴</span><span class="pays">0.8× · 2.5× · 7×</span></div>
-    <div class="pt-row"><span class="syms">🃏🃏🃏</span><span class="pays">0.4× · 1.5× · 4×</span></div>
-    <div class="pt-row"><span class="syms">🌵🌵🌵</span><span class="pays">0.2× · 0.8× · 2×</span></div>
-    <div class="pt-row"><span class="syms">⭐ WILD</span><span class="pays">Substitutes all</span></div>
-    <div class="pt-row"><span class="syms">💣 SCATTER</span><span class="pays">3+ triggers bonus</span></div>
+<button class="pt-tog" onclick="document.getElementById('pt').classList.toggle('show')">▾ PAYTABLE &amp; RULES</button>
+<div class="pt" id="pt">
+  <h3>— PAYTABLE (cluster size 5 / 8 / 10 / 13+) —</h3>
+  <div class="pt-g">
+    <div class="pt-r"><span class="ps">🎩 Top Hat</span><span class="pv">0.4× · 1.5× · 3× · 100×</span></div>
+    <div class="pt-r"><span class="ps">🥖 Baguette</span><span class="pv">0.3× · 1× · 2× · 50×</span></div>
+    <div class="pt-r"><span class="ps">🍺 Beer</span><span class="pv">0.2× · 0.8× · 1.5× · 30×</span></div>
+    <div class="pt-r"><span class="ps">🧀 Cheese</span><span class="pv">0.15× · 0.6× · 1× · 20×</span></div>
+    <div class="pt-r"><span class="ps">🪤 Trap</span><span class="pv">0.1× · 0.5× · 0.8× · 15×</span></div>
+    <div class="pt-r"><span class="ps">A / K</span><span class="pv">0.05× · 0.25× · 0.6× · 8×</span></div>
+    <div class="pt-r"><span class="ps">Q / J / 10</span><span class="pv">0.03× · 0.15× · 0.4× · 5×</span></div>
+    <div class="pt-r"><span class="ps">🦝 WILD</span><span class="pv">Substitutes all regular</span></div>
   </div>
   <div class="pt-note">
-    <b>AVALANCHE</b> — winning symbols explode, new ones drop. Each avalanche advances the trail.<br>
-    <b>TRAIL</b> — ×1 → ×2 → ×3 → ×5 → ×8 → ×10 → ×15 → ×20 → ×25 → ×50. Resets each spin.<br>
-    <b>FREE SPINS</b> — trail does NOT reset between spins. Multipliers stack across all spins.<br>
-    <b>RETRIGGER</b> — 3+ scatters during free spins = +5 extra spins.<br>
-    <b>BONUS BUY</b> — 75×, 200×, 500× your bet. Guaranteed scatter counts with perks.
+    <b>CLUSTER PAYS</b> — 5+ identical symbols touching horizontally/vertically.<br>
+    <b>SUPER CASCADE</b> — winning symbols vanish, new ones drop. Repeat until no wins.<br>
+    <b>GOLDEN SQUARES</b> — winning cells become Golden Squares. Activated by 🌈 Rainbow.<br>
+    <b>RAINBOW REVEAL</b> — activates all Golden Squares → Bronze (0.2×–4×), Silver (5×–20×), Gold (25×–500×), 🍀 Clover (multiplies adjacent ×2–×10), 🏆 Pot of Gold (collects all coins).<br>
+    <b>SCATTER 📷</b> — 3 = 8 FS · 4 = 12 FS · 5 = 12 FS (upgraded) &nbsp;|&nbsp; Retrigger in FS = +2 spins.<br>
+    <b>MAX WIN</b> 10,000× bet &nbsp;|&nbsp; <b>RTP</b> 96.34% &nbsp;|&nbsp; <b>Volatility</b> Medium
   </div>
 </div>
-<button class="reset-btn" onclick="resetGame()">↺ Reset Balance to $1,000</button>
+<button class="reset-btn" onclick="resetGame()">↺ Reset to $1,000</button>
 
 <script>
-// ── SYMBOLS ──────────────────────────────────────────────────────────────────
-const SYM = {
-  BANDIT:'🤠',MONEY:'💰',GUN:'🔫',HORSE:'🐴',CARD:'🃏',CACTUS:'🌵',
-  WILD:'⭐',SCATTER:'💣'
-};
-const PAY = {
-  [SYM.BANDIT]: [3,12,30],
-  [SYM.MONEY]:  [1.5,6,15],
-  [SYM.GUN]:    [1,4,10],
-  [SYM.HORSE]:  [0.8,2.5,7],
-  [SYM.CARD]:   [0.4,1.5,4],
-  [SYM.CACTUS]: [0.2,0.8,2],
-};
-const TRAIL = [1,2,3,5,8,10,15,20,25,50];
-const COLS=5,ROWS=3;
+// ── SYMBOLS ────────────────────────────────────────────────────────────────────
+const S={HAT:'🎩',BAG:'🥖',BEER:'🍺',CHE:'🧀',TRP:'🪤',
+  A:'A',K:'K',Q:'Q',J:'J',TEN:'10',
+  WILD:'🦝',SCATTER:'📷',RAINBOW:'🌈'};
+const CARDS=[S.A,S.K,S.Q,S.J,S.TEN];
+const PREMIUMS=[S.HAT,S.BAG,S.BEER,S.CHE,S.TRP];
+const REGULARS=[...PREMIUMS,...CARDS];
+const COLS=6,ROWS=5;
 
-// Weighted strip for base game
-const BASE_WEIGHTS = [
-  [SYM.CACTUS,9],[SYM.CARD,7],[SYM.HORSE,6],[SYM.GUN,5],
-  [SYM.MONEY,4],[SYM.BANDIT,2],[SYM.WILD,3],[SYM.SCATTER,2]
-];
-// FS strip — more wilds, more scatters, more premium symbols
-const FS_WEIGHTS = [
-  [SYM.CACTUS,6],[SYM.CARD,5],[SYM.HORSE,5],[SYM.GUN,4],
-  [SYM.MONEY,4],[SYM.BANDIT,3],[SYM.WILD,5],[SYM.SCATTER,3]
-];
+// Payout table: index = cluster size (capped at 12 = 13+)
+const PAY={
+  [S.HAT]:  [0,0,0,0,0.4,0.6,0.8,1.5,2,3,5,10,100],
+  [S.BAG]:  [0,0,0,0,0.3,0.5,0.6,1,1.5,2,4,8,50],
+  [S.BEER]: [0,0,0,0,0.2,0.3,0.4,0.8,1,1.5,3,6,30],
+  [S.CHE]:  [0,0,0,0,0.15,0.25,0.35,0.6,0.8,1,2,4,20],
+  [S.TRP]:  [0,0,0,0,0.1,0.18,0.3,0.5,0.65,0.8,1.5,3,15],
+  [S.A]:    [0,0,0,0,0.05,0.1,0.15,0.25,0.4,0.6,1,2,8],
+  [S.K]:    [0,0,0,0,0.05,0.1,0.13,0.2,0.3,0.5,0.8,1.5,6],
+  [S.Q]:    [0,0,0,0,0.04,0.08,0.1,0.15,0.2,0.4,0.6,1,5],
+  [S.J]:    [0,0,0,0,0.03,0.06,0.09,0.12,0.18,0.3,0.5,0.8,4],
+  [S.TEN]:  [0,0,0,0,0.02,0.05,0.07,0.1,0.14,0.2,0.4,0.6,3],
+};
+function clusterPay(sym,size){
+  const t=PAY[sym]; if(!t) return 0;
+  return t[Math.min(size,12)]||0;
+}
+
+// Symbol pools
+const BASE_POOL=makePool([
+  [S.TEN,14],[S.J,12],[S.Q,10],[S.K,9],[S.A,8],
+  [S.TRP,7],[S.CHE,6],[S.BEER,5],[S.BAG,4],[S.HAT,2],
+  [S.WILD,4],[S.SCATTER,2],[S.RAINBOW,3]
+]);
+const FS_POOL=makePool([
+  [S.TEN,10],[S.J,9],[S.Q,8],[S.K,7],[S.A,7],
+  [S.TRP,6],[S.CHE,5],[S.BEER,5],[S.BAG,4],[S.HAT,3],
+  [S.WILD,6],[S.SCATTER,3],[S.RAINBOW,5]
+]);
+const FS_RAINBOW_POOL=makePool([  // guaranteed rainbow mode
+  [S.TEN,8],[S.J,7],[S.Q,6],[S.K,6],[S.A,6],
+  [S.TRP,5],[S.CHE,4],[S.BEER,4],[S.BAG,3],[S.HAT,2],
+  [S.WILD,6],[S.SCATTER,3],[S.RAINBOW,12]  // heavy rainbow weight
+]);
+// Gold/silver only (tier 3 FS coins)
+const GOLD_ONLY_POOL=makePool([
+  [S.TEN,6],[S.J,5],[S.Q,4],[S.K,5],[S.A,5],
+  [S.TRP,4],[S.CHE,3],[S.BEER,3],[S.BAG,2],[S.HAT,2],
+  [S.WILD,6],[S.SCATTER,3],[S.RAINBOW,10]
+]);
 
 function makePool(weights){
-  const pool=[];
-  weights.forEach(([s,n])=>{for(let i=0;i<n;i++)pool.push(s);});
-  return pool;
+  const a=[];weights.forEach(([s,n])=>{for(let i=0;i<n;i++)a.push(s);});return a;
 }
-let basePool=makePool(BASE_WEIGHTS);
-let fsPool=makePool(FS_WEIGHTS);
-function randSym(fs=false){const p=fs?fsPool:basePool;return p[Math.floor(Math.random()*p.length)];}
+function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function randSym(){
+  const p=isFreeSpins?(fsTier===3?GOLD_ONLY_POOL:fsTier===2?FS_RAINBOW_POOL:FS_POOL):BASE_POOL;
+  return rand(p);
+}
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
-let balance=1000,bet=1,spinning=false;
-let freeSpinsLeft=0,isFreeSpins=false;
-let trailStep=0;   // index into TRAIL
-let autoOn=false;
-let grid=Array.from({length:COLS},()=>Array(ROWS).fill(SYM.CACTUS));
+// Coin generation
+function randCoin(tier){ // tier: 0=all, 1=silver+gold, 2=gold+big
+  if(tier===2){
+    return Math.random()<.3?{t:'clover',v:Math.ceil(Math.random()*4)*2+2}
+      :Math.random()<.15?{t:'pot',v:0}
+      :{t:'gold',v:randGoldVal()};
+  }
+  if(tier===1){
+    const r=Math.random();
+    if(r<.08) return {t:'pot',v:0};
+    if(r<.18) return {t:'clover',v:Math.ceil(Math.random()*4)*2+2};
+    if(r<.45) return {t:'gold',v:randGoldVal()};
+    return {t:'silver',v:randSilverVal()};
+  }
+  const r=Math.random();
+  if(r<.04) return {t:'pot',v:0};
+  if(r<.1)  return {t:'clover',v:Math.ceil(Math.random()*3)*2+2};
+  if(r<.2)  return {t:'gold',v:randGoldVal()};
+  if(r<.5)  return {t:'silver',v:randSilverVal()};
+  return {t:'bronze',v:randBronzeVal()};
+}
+function randBronzeVal(){const v=[0.2,.3,.5,.8,1,1.5,2,3,4];return rand(v);}
+function randSilverVal(){const v=[5,6,8,10,12,15,20];return rand(v);}
+function randGoldVal(){const v=[25,30,40,50,75,100,150,200,300,500];return rand(v);}
 
-// ── PAYLINES (20) ─────────────────────────────────────────────────────────────
-const PAYLINES=[
-  [1,1,1,1,1],[0,0,0,0,0],[2,2,2,2,2],
-  [0,1,2,1,0],[2,1,0,1,2],
-  [0,0,1,2,2],[2,2,1,0,0],
-  [1,0,0,0,1],[1,2,2,2,1],
-  [0,1,0,1,0],[2,1,2,1,2],
-  [1,0,1,0,1],[1,2,1,2,1],
-  [0,1,1,1,2],[2,1,1,1,0],
-  [0,0,2,0,0],[2,2,0,2,2],
-  [1,1,0,1,1],[1,1,2,1,1],
-  [0,2,0,2,0]
-];
+// ── STATE ───────────────────────────────────────────────────────────────────────
+let balance=1000,bet=1,spinning=false,autoOn=false;
+let grid=Array.from({length:COLS},()=>Array(ROWS).fill(S.TEN));
+let goldenSquares=Array.from({length:COLS},()=>Array(ROWS).fill(null)); // null or coin obj
+let isFreeSpins=false,fsLeft=0,fsTier=0; // fsTier: 1=luck,2=rainbow,3=allglitters
+let spinWin=0; // win accumulated this spin sequence
 
-// ── DOM BUILD ─────────────────────────────────────────────────────────────────
+// ── DOM ─────────────────────────────────────────────────────────────────────────
 function buildGrid(){
-  const el=document.getElementById('reels');
-  el.innerHTML='';
+  const el=document.getElementById('reels');el.innerHTML='';
   for(let c=0;c<COLS;c++){
-    const col=document.createElement('div');
-    col.className='reel-col';
+    const col=document.createElement('div');col.className='col';
     for(let r=0;r<ROWS;r++){
-      const cell=document.createElement('div');
-      cell.className='cell';
-      cell.id=`c${c}r${r}`;
-      cell.textContent=grid[c][r];
+      const cell=document.createElement('div');cell.className='cell';cell.id=`c${c}r${r}`;
+      const gs=document.createElement('div');gs.className='gs';
+      const sw=document.createElement('div');sw.className='sym-wrap';
+      cell.appendChild(gs);cell.appendChild(sw);
       col.appendChild(cell);
     }
     el.appendChild(col);
   }
+  renderAll();
 }
 
-function buildTrail(){
-  const el=document.getElementById('trail');
-  el.innerHTML='';
-  TRAIL.forEach((v,i)=>{
-    const s=document.createElement('div');
-    s.className='trail-step';
-    s.id=`ts${i}`;
-    s.textContent='×'+v;
-    el.appendChild(s);
-  });
-}
-
-function updateTrailUI(){
-  TRAIL.forEach((_,i)=>{
-    const el=document.getElementById('ts'+i);
-    el.className='trail-step'+(i===trailStep?' active':i<trailStep?' past':'');
-  });
-}
-
-// ── CELL HELPERS ──────────────────────────────────────────────────────────────
 function getCell(c,r){return document.getElementById(`c${c}r${r}`);}
-function renderCell(c,r,anim){
-  const sym=grid[c][r];
-  const el=getCell(c,r);
-  el.textContent=sym;
-  el.className='cell';
-  if(sym===SYM.WILD)   el.classList.add('is-wild');
-  if(sym===SYM.SCATTER)el.classList.add('is-scatter');
-  if(anim) el.classList.add(anim);
-  // remove old mult-tag
-  el.querySelectorAll('.mult-tag').forEach(t=>t.remove());
-}
-function markWinCell(c,r){getCell(c,r).classList.add('win');}
 
-// ── SPIN ANIMATION ────────────────────────────────────────────────────────────
+function renderAll(anim){
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) renderCell(c,r,anim);
+}
+
+function renderCell(c,r,anim){
+  const el=getCell(c,r);
+  const sym=grid[c][r];
+  const sw=el.querySelector('.sym-wrap');
+
+  // Build sym content
+  if(CARDS.includes(sym)){
+    const cls={[S.A]:'ca',[S.K]:'ck',[S.Q]:'cq',[S.J]:'cj',[S.TEN]:'c10'}[sym];
+    sw.innerHTML=`<span class="card-sym ${cls}">${sym}</span>`;
+  } else {
+    sw.textContent=sym;
+  }
+
+  // Classes
+  el.className='cell';
+  if(goldenSquares[c][r]) el.classList.add('golden');
+  if(sym===S.SCATTER) el.classList.add('is-scatter');
+  if(sym===S.WILD)    el.classList.add('is-wild');
+  if(sym===S.RAINBOW) el.classList.add('is-rainbow');
+  if(anim) el.classList.add(anim);
+}
+
+function showCoin(c,r,coin){
+  const el=getCell(c,r);
+  const sw=el.querySelector('.sym-wrap');
+  el.classList.add('golden','revealing');
+  if(coin.t==='clover'){
+    sw.innerHTML=`<div class="special-coin">🍀</div>`;
+  } else if(coin.t==='pot'){
+    sw.innerHTML=`<div class="special-coin pot">🏆</div>`;
+  } else {
+    sw.innerHTML=`<div class="coin ${coin.t}"><div class="coin-val">${coin.v}×</div><div class="coin-lbl">${coin.t}</div></div>`;
+  }
+  setTimeout(()=>el.classList.remove('revealing'),400);
+}
+
+// ── SPIN ANIMATION ─────────────────────────────────────────────────────────────
 function spinColAnim(c,dur){
   return new Promise(res=>{
-    const pool=isFreeSpins?fsPool:basePool;
-    let t=0;const iv=setInterval(()=>{
+    let t=0;
+    const id=setInterval(()=>{
       for(let r=0;r<ROWS;r++){
-        const el=getCell(c,r);
-        el.textContent=pool[Math.floor(Math.random()*pool.length)];
-        el.className='cell spin';
+        const sw=getCell(c,r).querySelector('.sym-wrap');
+        const s=rand(BASE_POOL);
+        if(CARDS.includes(s)){const cls={[S.A]:'ca',[S.K]:'ck',[S.Q]:'cq',[S.J]:'cj',[S.TEN]:'c10'}[s];
+          sw.innerHTML=`<span class="card-sym ${cls}">${s}</span>`;}
+        else sw.textContent=s;
+        getCell(c,r).className='cell spin';
       }
-      t+=70;
+      t+=75;
       if(t>=dur){
-        clearInterval(iv);
-        // land
-        for(let r=0;r<ROWS;r++){
-          grid[c][r]=randSym(isFreeSpins);
-          renderCell(c,r,null);
-        }
+        clearInterval(id);
+        for(let r=0;r<ROWS;r++){grid[c][r]=randSym();}
+        for(let r=0;r<ROWS;r++) renderCell(c,r,null);
         res();
       }
-    },70);
+    },75);
   });
 }
 
-async function spinAllReels(){
-  const delays=[500,650,800,950,1100];
-  await Promise.all(Array.from({length:COLS},(_,c)=>spinColAnim(c,delays[c])));
+async function spinReels(){
+  const ds=[520,660,800,940,1080,1220];
+  await Promise.all(Array.from({length:COLS},(_,c)=>spinColAnim(c,ds[c])));
 }
 
-// ── AVALANCHE / EVALUATE ──────────────────────────────────────────────────────
-function evalPaylines(){
-  const winCells=new Set();
-  let totalMult=0;
-  for(const pl of PAYLINES){
-    const line=pl.map((r,c)=>grid[c][r]);
-    const {m,n}=evalLine(line);
-    if(m>0){
-      totalMult+=m;
-      for(let c=0;c<n;c++) winCells.add(`${c},${pl[c]}`);
+// ── CLUSTER DETECTION ──────────────────────────────────────────────────────────
+function findClusters(){
+  const globalVisited=new Set();
+  const clusters=[];
+  for(let c=0;c<COLS;c++){
+    for(let r=0;r<ROWS;r++){
+      const sym=grid[c][r];
+      if(!sym||sym===S.SCATTER||sym===S.RAINBOW||sym===S.WILD) continue;
+      if(globalVisited.has(`${c},${r}`)) continue;
+      // BFS
+      const cells=[],q=[{c,r}],vis=new Set();
+      while(q.length){
+        const {c:cc,r:rr}=q.shift();
+        const k=`${cc},${rr}`;
+        if(vis.has(k)) continue;
+        const s=grid[cc][rr];
+        if(s!==sym&&s!==S.WILD) continue;
+        vis.add(k);globalVisited.add(k);cells.push({c:cc,r:rr});
+        [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dc,dr])=>{
+          const nc=cc+dc,nr=rr+dr;
+          if(nc>=0&&nc<COLS&&nr>=0&&nr<ROWS&&!vis.has(`${nc},${nr}`)) q.push({c:nc,r:nr});
+        });
+      }
+      if(cells.length>=5) clusters.push({sym,cells,size:cells.length});
     }
   }
-  let scatters=0;
-  const scatterCells=[];
+  return clusters;
+}
+
+function countScatters(){
+  let n=0,cells=[];
   for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
-    if(grid[c][r]===SYM.SCATTER){scatters++;scatterCells.push({c,r});}
+    if(grid[c][r]===S.SCATTER){n++;cells.push({c,r});}
   }
-  return {totalMult,winCells,scatters,scatterCells};
+  return {n,cells};
 }
 
-function evalLine(line){
-  let anchor=null;
-  for(let i=0;i<line.length;i++){
-    if(line[i]!==SYM.WILD&&line[i]!==SYM.SCATTER){anchor=line[i];break;}
-  }
-  if(!anchor) return {m:0,n:0};
-  let n=0;
-  for(let i=0;i<line.length;i++){
-    if(line[i]===anchor||line[i]===SYM.WILD) n++;
-    else break;
-  }
-  if(n<3) return {m:0,n:0};
-  const p=PAY[anchor];
-  if(!p) return {m:0,n:0};
-  return {m:p[n-3]??p[p.length-1],n};
+function hasRainbow(){
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) if(grid[c][r]===S.RAINBOW) return true;
+  return false;
 }
 
-function countWinCells(){
-  // Returns set of {c,r} that are part of any win
-  return evalPaylines().winCells;
-}
-
-async function doAvalanche(){
-  let cascadeWin=0;
-  let cascades=0;
+// ── CORE LOOP ──────────────────────────────────────────────────────────────────
+async function doCascade(){
+  let totalWin=0;
+  let cascadeNum=0;
 
   while(true){
-    const {totalMult,winCells,scatters,scatterCells}=evalPaylines();
+    const clusters=findClusters();
+    const {n:scatterN,cells:scatterCells}=countScatters();
 
-    // Scatter checks (only on initial landing, not mid-cascade)
-    if(cascades===0&&scatters>=3&&!isFreeSpins){
-      return {cascadeWin,scatters,scatterCells,triggered:true};
+    // On first cascade only: check scatter trigger
+    if(cascadeNum===0&&scatterN>=3&&!isFreeSpins){
+      return {totalWin,scatterN,scatterCells,bonusTriggered:true};
     }
-    if(cascades===0&&scatters>=3&&isFreeSpins){
-      freeSpinsLeft+=5;
-      document.getElementById('s-fs').textContent=freeSpinsLeft;
-      setMsg('🌟 RETRIGGER! +5 spins!');
+    if(cascadeNum===0&&scatterN>=3&&isFreeSpins){
+      fsLeft+=2;document.getElementById('s-fs').textContent=fsLeft;
+      setMsg('📷 Retrigger! +2 free spins!');
     }
 
-    if(winCells.size===0) break;
+    // Check rainbow with golden squares
+    if(hasRainbow()&&hasAnyGolden()){
+      await activateRainbow();
+    }
 
-    const currentMult=TRAIL[Math.min(trailStep,TRAIL.length-1)];
-    const stepWin=totalMult*bet*currentMult;
-    cascadeWin+=stepWin;
+    if(clusters.length===0) break;
 
-    // Flash winning cells
-    winCells.forEach(k=>{
-      const[c,r]=k.split(',').map(Number);
-      markWinCell(c,r);
-    });
+    // Calculate win
+    let stepWin=0;
+    clusters.forEach(({sym,size})=>{stepWin+=clusterPay(sym,size)*bet;});
+    totalWin+=stepWin;
+
+    // Highlight
+    const allWinCells=new Set();
+    clusters.forEach(({cells})=>cells.forEach(({c,r})=>allWinCells.add(`${c},${r}`)));
+    allWinCells.forEach(k=>{const[c,r]=k.split(',').map(Number);getCell(c,r).classList.add('win');});
     document.getElementById('wf').classList.add('show');
-    await sleep(350);
+    await sleep(380);
     document.getElementById('wf').classList.remove('show');
 
-    // Explode winning cells
-    winCells.forEach(k=>{
+    // Explode winning cells → mark golden squares
+    allWinCells.forEach(k=>{
       const[c,r]=k.split(',').map(Number);
       const el=getCell(c,r);
       el.classList.remove('win');
       el.classList.add('explode');
+      // Create golden square (random coin, tier based on FS)
+      const tier=isFreeSpins?(fsTier===3?2:fsTier===2?1:0):0;
+      goldenSquares[c][r]=randCoin(tier);
       grid[c][r]=null;
     });
-    await sleep(300);
+    await sleep(310);
 
-    // Gravity + refill
+    // Gravity + fill
     for(let c=0;c<COLS;c++){
-      // Compact downward
-      let write=ROWS-1;
+      let w=ROWS-1;
       for(let r=ROWS-1;r>=0;r--){
         if(grid[c][r]!==null){
-          grid[c][write]=grid[c][r];
-          if(write!==r) grid[c][r]=null;
-          write--;
+          if(w!==r){grid[c][w]=grid[c][r];goldenSquares[c][w]=goldenSquares[c][r];grid[c][r]=null;goldenSquares[c][r]=null;}
+          w--;
         }
       }
-      while(write>=0){grid[c][write]=randSym(isFreeSpins);write--;}
+      while(w>=0){grid[c][w]=randSym();goldenSquares[c][w]=null;w--;}
     }
-
-    // Advance trail
-    if(trailStep<TRAIL.length-1) trailStep++;
-    updateTrailUI();
-
-    // Re-render with drop animation
     for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
     await sleep(280);
-
-    cascades++;
+    cascadeNum++;
   }
 
-  return {cascadeWin,scatters:0,triggered:false};
+  return {totalWin,scatterN:0,bonusTriggered:false};
 }
 
-// ── SPIN FLOW ─────────────────────────────────────────────────────────────────
+function hasAnyGolden(){
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) if(goldenSquares[c][r]) return true;
+  return false;
+}
+
+async function activateRainbow(){
+  // Flash rainbow cells
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
+    if(grid[c][r]===S.RAINBOW) getCell(c,r).classList.add('rainbow-flash');
+  }
+  await sleep(300);
+
+  // Reveal all golden squares
+  const coinCells=[];
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
+    if(goldenSquares[c][r]){
+      showCoin(c,r,goldenSquares[c][r]);
+      coinCells.push({c,r,coin:goldenSquares[c][r]});
+    }
+  }
+  await sleep(500);
+
+  // Collect: apply clovers first, then pot of gold
+  const clovers=coinCells.filter(x=>x.coin.t==='clover');
+  const pot=coinCells.find(x=>x.coin.t==='pot');
+
+  // For each coin, apply adjacent clovers
+  let totalCoins=0;
+  const nonSpecial=coinCells.filter(x=>x.coin.t!=='clover'&&x.coin.t!=='pot');
+
+  nonSpecial.forEach(({c,r,coin})=>{
+    let mult=1;
+    clovers.forEach(cl=>{
+      if(Math.abs(cl.c-c)<=1&&Math.abs(cl.r-r)<=1) mult*=cl.coin.v;
+    });
+    totalCoins+=coin.v*mult;
+  });
+
+  if(pot) totalCoins*=2; // pot of gold roughly doubles (simplified)
+
+  const coinWin=totalCoins*bet;
+  spinWin+=coinWin;
+  balance+=coinWin;
+
+  // Show tally
+  updateCoinTally(coinCells,totalCoins);
+  updateBalUI();
+  setMsg('🌈 Rainbow activated! Coins: +'+fmt(coinWin));
+  await sleep(800);
+
+  // Clear golden squares but keep the cells (they'll be overwritten in next cascade)
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
+    if(goldenSquares[c][r]){
+      goldenSquares[c][r]=null;
+      grid[c][r]=randSym();
+      renderCell(c,r,'drop');
+    }
+  }
+  await sleep(200);
+}
+
+function updateCoinTally(coinCells,total){
+  const tally=document.getElementById('coin-tally');
+  const coins=document.getElementById('tally-coins');
+  const tot=document.getElementById('tally-total');
+  tally.classList.add('show');
+  const groups={bronze:[],silver:[],gold:[],clover:[],pot:[]};
+  coinCells.forEach(({coin})=>groups[coin.t].push(coin.v));
+  coins.innerHTML='';
+  if(groups.bronze.length) coins.innerHTML+=`<span class="tc bronze">🥉 ${groups.bronze.join('·')}×</span>`;
+  if(groups.silver.length) coins.innerHTML+=`<span class="tc silver">🥈 ${groups.silver.join('·')}×</span>`;
+  if(groups.gold.length)   coins.innerHTML+=`<span class="tc gold">🥇 ${groups.gold.join('·')}×</span>`;
+  if(groups.clover.length) coins.innerHTML+=`<span class="tc clover">🍀 ×${groups.clover.join('·')}</span>`;
+  if(groups.pot.length)    coins.innerHTML+=`<span class="tc gold">🏆 ×2</span>`;
+  tot.textContent='= '+fmt(total*bet);
+}
+
+// ── SPIN FLOW ────────────────────────────────────────────────────────────────
 async function doSpin(free=false){
-  spinning=true; updateButtons();
-  clearWins();
+  spinning=true;updateButtons();
+  clearWinState();
+  document.getElementById('coin-tally').classList.remove('show');
   setMsg('');
   document.getElementById('s-win').textContent='$0.00';
+  spinWin=0;
 
-  if(!free){balance-=bet; updateBalUI();}
-  if(!isFreeSpins) trailStep=0;
-  updateTrailUI();
+  if(!free){balance-=bet;updateBalUI();}
 
-  await spinAllReels();
+  // In FS, golden squares persist (don't clear between spins) for tier 1+
+  if(!isFreeSpins||(isFreeSpins&&fsTier>=2)) {
+    // keep golden squares
+  } else if(!isFreeSpins) {
+    clearGoldenSquares();
+  }
+  if(!isFreeSpins) clearGoldenSquares();
+
+  await spinReels();
   await sleep(80);
 
-  const{cascadeWin,triggered,scatterCells}=await doAvalanche();
+  const {totalWin,bonusTriggered,scatterN,scatterCells}=await doCascade();
 
-  if(triggered&&!isFreeSpins){
-    const n=scatterCells.length;
-    const spins=n===3?10:n===4?15:20;
-    scatterCells.forEach(({c,r})=>markWinCell(c,r));
+  if(bonusTriggered&&!isFreeSpins){
+    scatterCells.forEach(({c,r})=>getCell(c,r).classList.add('win'));
     await sleep(400);
-    triggerBonus(spins,0,false);
-    spinning=false; updateButtons();
-    return;
+    const spins=scatterN===3?8:scatterN===4?12:12;
+    const tier=scatterN>=5?3:scatterN===4?3:1;
+    triggerBonus(spins,tier,'scatter');
+    spinning=false;updateButtons();return;
   }
 
-  if(cascadeWin>0){
-    balance+=cascadeWin;
-    document.getElementById('s-win').textContent=fmt(cascadeWin);
+  const allWin=totalWin+spinWin;
+  if(allWin>0){
+    balance+=totalWin; // spinWin already added in activateRainbow
+    document.getElementById('s-win').textContent=fmt(allWin);
     updateBalUI();
-    if(cascadeWin>=bet*50) setMsg('💎 MEGA WIN! '+fmt(cascadeWin));
-    else if(cascadeWin>=bet*20) setMsg('🔥 BIG WIN! '+fmt(cascadeWin));
-    else if(cascadeWin>=bet*5) setMsg('✨ Win! '+fmt(cascadeWin));
-    else setMsg('Win: '+fmt(cascadeWin));
+    if(allWin>=bet*50) setMsg('💎 MEGA WIN! '+fmt(allWin));
+    else if(allWin>=bet*20) setMsg('🔥 BIG WIN! '+fmt(allWin));
+    else if(allWin>=bet*5) setMsg('✨ Win! '+fmt(allWin));
+    else setMsg('Win: '+fmt(allWin));
   } else if(!isFreeSpins){
     setMsg('No luck this time...');
   }
 
-  spinning=false; updateButtons();
+  spinning=false;updateButtons();
 
   if(isFreeSpins){
-    freeSpinsLeft--;
-    document.getElementById('s-fs').textContent=freeSpinsLeft;
-    if(freeSpinsLeft>0){ await sleep(1100); if(isFreeSpins) await doSpin(true); }
+    fsLeft--;
+    document.getElementById('s-fs').textContent=fsLeft;
+    if(fsLeft>0){await sleep(1000);if(isFreeSpins) await doSpin(true);}
     else endFS();
     return;
   }
 
   if(autoOn&&!isFreeSpins){
-    if(balance<bet){stopAuto();setMsg('Out of funds!');return;}
+    if(balance<bet){stopAuto();setMsg('Not enough balance!');return;}
     await sleep(700);
     if(autoOn) await doSpin(false);
   }
 }
 
-// ── BONUS ─────────────────────────────────────────────────────────────────────
-function triggerBonus(spins,trailBoost,clearTrail){
-  freeSpinsLeft=spins;
-  if(clearTrail) trailStep=0;
-  if(trailBoost>0) trailStep=Math.min(trailBoost,TRAIL.length-1);
-  document.getElementById('b-spins').textContent=spins;
-  document.getElementById('b-sub').textContent=
-    spins+' Free Spins '+(trailBoost>0?'— Trail starts at ×'+TRAIL[trailBoost]:'Triggered!');
-  document.getElementById('b-overlay').classList.add('show');
+// ── BONUS ────────────────────────────────────────────────────────────────────
+function triggerBonus(spins,tier,source){
+  fsLeft=spins;fsTier=tier;
+  const names={1:'LUCK OF THE BANDIT',2:'RAINBOW SPINS',3:'ALL THAT GLITTERS IS GOLD'};
+  const perks={
+    1:'Golden Squares persist between spins',
+    2:'🌈 Rainbow guaranteed every spin',
+    3:'🥈 Silver & 🥇 Gold coins only · Squares persist'
+  };
+  document.getElementById('b-title').textContent=source==='buy'?'BONUS BUY!':'BONUS!';
+  document.getElementById('b-tier').textContent=names[tier]||names[1];
+  document.getElementById('b-num').textContent=spins;
+  document.getElementById('b-perks').textContent=perks[tier]||perks[1];
+  document.getElementById('b-ov').classList.add('show');
 }
 
 function startFS(){
-  document.getElementById('b-overlay').classList.remove('show');
+  document.getElementById('b-ov').classList.remove('show');
   isFreeSpins=true;
   document.getElementById('fs-stat').style.display='block';
-  document.getElementById('s-fs').textContent=freeSpinsLeft;
-  setMsg('🤠 Ride the trail! Free Spins active!');
-  setTimeout(async()=>{ await doSpin(true); },400);
+  document.getElementById('s-fs').textContent=fsLeft;
+  clearGoldenSquares();
+  setMsg('🦝 Free Spins! Bonne chance!');
+  setTimeout(async()=>await doSpin(true),400);
 }
 
 function endFS(){
-  isFreeSpins=false;
+  isFreeSpins=false;fsTier=0;
   document.getElementById('fs-stat').style.display='none';
-  const finalMult=TRAIL[Math.min(trailStep,TRAIL.length-1)];
-  setMsg('🎉 Free Spins over! Final trail: ×'+finalMult);
-  trailStep=0; updateTrailUI(); updateButtons();
+  clearGoldenSquares();
+  setMsg('🎉 Free Spins over!');
+  updateButtons();
 }
 
 // ── BONUS BUY ─────────────────────────────────────────────────────────────────
-const BUY_TIERS=[
-  {mult:75, spins:10, trail:0, label:'Bonus'},
-  {mult:200,spins:15, trail:1, label:'Bonus+'},   // starts trail at ×2
-  {mult:500,spins:20, trail:2, label:'Mega'},     // starts trail at ×3
+const BTIERS=[
+  {mult:3,  spins:1,  tier:1, label:'Bonus Hunt'},
+  {mult:100,spins:8,  tier:1, label:'Luck of the Bandit'},
+  {mult:50, spins:5,  tier:2, label:'Rainbow Spins'},
+  {mult:250,spins:12, tier:3, label:'All That Glitters'},
 ];
 
-async function buyBonus(tier){
+async function buyBonus(idx){
   if(spinning||isFreeSpins) return;
-  const t=BUY_TIERS[tier];
+  const t=BTIERS[idx];
   const cost=bet*t.mult;
-  if(balance<cost){setMsg('Need '+fmt(cost)+' to buy '+t.label+'!');return;}
-  balance-=cost;
-  updateBalUI();
+  if(balance<cost){setMsg('Need '+fmt(cost)+'!');return;}
+  balance-=cost;updateBalUI();
   document.getElementById('s-win').textContent='$0.00';
-
-  // Place scatter symbols for visual
-  const positions=[[0,1],[2,1],[4,1],[1,0],[3,0]].slice(0,tier===2?5:tier===1?4:3);
-  positions.forEach(([c,r])=>{grid[c][r]=SYM.SCATTER; renderCell(c,r,'drop');});
-  await sleep(500);
-  triggerBonus(t.spins, t.trail, true);
+  // Visual: place scatters
+  const pos=[[0,2],[2,2],[4,2]];
+  pos.forEach(([c,r])=>{grid[c][r]=S.SCATTER;renderCell(c,r,'drop');});
+  await sleep(400);
+  if(t.spins===1){
+    // Bonus hunt: just do an enhanced spin
+    document.getElementById('b-ov').classList.remove('show');
+    spinning=false;
+    fsTier=1;isFreeSpins=false;
+    setMsg('🎰 Bonus Hunt spin!');
+    await doSpin(false);
+  } else {
+    triggerBonus(t.spins,t.tier,'buy');
+  }
 }
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-function clearWins(){
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) getCell(c,r).classList.remove('win','explode','drop');
+// ── HELPERS ────────────────────────────────────────────────────────────────────
+function clearWinState(){
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
+    const el=getCell(c,r);
+    el.classList.remove('win','explode','drop','rainbow-flash','revealing');
+  }
+}
+function clearGoldenSquares(){
+  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) goldenSquares[c][r]=null;
 }
 function handleSpin(){
   if(spinning||isFreeSpins) return;
@@ -662,62 +869,53 @@ function handleSpin(){
 function toggleAuto(){
   if(spinning&&!autoOn) return;
   autoOn=!autoOn;
-  const btn=document.getElementById('auto-btn');
-  if(autoOn){btn.classList.add('on');btn.textContent='STOP';if(!spinning) doSpin(false);}
+  const b=document.getElementById('auto-btn');
+  if(autoOn){b.classList.add('on');b.textContent='STOP';if(!spinning) doSpin(false);}
   else stopAuto();
 }
 function stopAuto(){autoOn=false;const b=document.getElementById('auto-btn');b.classList.remove('on');b.innerHTML='AUTO<br>SPIN';}
-
 function changeBet(d){
   if(spinning) return;
-  const steps=[0.10,0.20,0.50,1,2,5,10,25,50,100,250,500];
-  let cur=steps.findIndex(s=>Math.abs(s-bet)<.001);
-  if(cur===-1) cur=3;
-  setBet(steps[Math.max(0,Math.min(steps.length-1,cur+d))]);
+  const s=[0.10,.20,.50,1,2,5,10,25,50,100,250,500];
+  let i=s.findIndex(v=>Math.abs(v-bet)<.001);if(i===-1) i=3;
+  setBet(s[Math.max(0,Math.min(s.length-1,i+d))]);
 }
 function setBet(v){
   if(spinning) return;
-  v=Math.min(v,balance||1000);
-  bet=v;
-  const f=fmt(v);
-  document.getElementById('bet-disp').textContent=f;
+  bet=Math.max(.1,Math.min(v,balance||1000));
+  const f=fmt(bet);
+  document.getElementById('bet-dsp').textContent=f;
   document.getElementById('s-bet').textContent=f;
-  // update bonus buy prices
-  BUY_TIERS.forEach((t,i)=>{ document.getElementById('bp'+i).textContent=fmt(bet*t.mult); });
-  document.querySelectorAll('.preset').forEach(b=>{
-    b.classList.toggle('on',Math.abs(parseFloat(b.textContent.replace('$',''))-v)<.001);
-  });
+  BTIERS.forEach((t,i)=>document.getElementById('bp'+i).textContent=fmt(bet*t.mult));
+  document.querySelectorAll('.pre').forEach(b=>b.classList.toggle('on',Math.abs(parseFloat(b.textContent.replace('$',''))-bet)<.001));
 }
 function updateButtons(){
   const busy=spinning||isFreeSpins;
-  const spinBtn=document.getElementById('spin-btn');
-  spinBtn.disabled=busy||balance<bet;
-  spinBtn.classList.toggle('stop-mode',spinning&&!isFreeSpins);
+  document.getElementById('spin-btn').disabled=busy||balance<bet;
   document.getElementById('auto-btn').disabled=isFreeSpins;
-  document.querySelectorAll('.buy-card').forEach(b=>b.disabled=busy||balance<bet*BUY_TIERS[0].mult);
-  // individual cost checks
-  BUY_TIERS.forEach((t,i)=>{
-    document.querySelectorAll('.buy-card')[i].disabled=busy||balance<bet*t.mult;
-  });
+  document.querySelectorAll('.bcard').forEach((b,i)=>b.disabled=busy||balance<bet*BTIERS[i].mult);
 }
-function updateBalUI(){document.getElementById('s-bal').textContent=fmt(balance);}
+function updateBalUI(){document.getElementById('s-bal').textContent=fmt(balance);updateButtons();}
 function setMsg(m){document.getElementById('msg').textContent=m;}
 function fmt(n){return '$'+Math.abs(n).toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 function resetGame(){
   if(spinning) return;
-  balance=1000; bet=1; trailStep=0; isFreeSpins=false; freeSpinsLeft=0; autoOn=false;
+  balance=1000;bet=1;spinning=false;autoOn=false;
+  isFreeSpins=false;fsLeft=0;fsTier=0;
   stopAuto();
+  clearGoldenSquares();
+  grid=Array.from({length:COLS},()=>Array(ROWS).fill(S.TEN));
   document.getElementById('fs-stat').style.display='none';
-  document.getElementById('b-overlay').classList.remove('show');
+  document.getElementById('b-ov').classList.remove('show');
   document.getElementById('s-win').textContent='$0.00';
-  buildGrid(); buildTrail(); updateTrailUI(); setBet(1); updateBalUI(); updateButtons();
-  setMsg('Spin to win, partner! 🤠');
+  document.getElementById('coin-tally').classList.remove('show');
+  buildGrid();setBet(1);updateBalUI();setMsg('Spin the reels, mon ami! 🦝');
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-buildGrid(); buildTrail(); updateTrailUI(); setBet(1); updateBalUI(); updateButtons();
+buildGrid();setBet(1);updateBalUI();updateButtons();
 </script>
 </body>
 </html>
