@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 
 # --- Config (override via .env) ---
 SYMBOL             = os.getenv("SYMBOL", "SPY")
-TRADE_AMOUNT_USD   = float(os.getenv("TRADE_AMOUNT_USD", "100"))   # dollars per trade
+TRADE_AMOUNT_USD   = float(os.getenv("TRADE_AMOUNT_USD", "20"))    # dollars per trade
 ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.3")) # % move from open to enter
 TAKE_PROFIT_PCT    = float(os.getenv("TAKE_PROFIT_PCT", "0.5"))    # % gain to exit with profit
 STOP_LOSS_PCT      = float(os.getenv("STOP_LOSS_PCT", "0.3"))      # % loss to cut position
