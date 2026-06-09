@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 # --- Config ---
 TICKERS            = os.getenv("TICKERS", "SPY,QQQ,AAPL,TSLA,NVDA").split(",")
 TRADE_AMOUNT_USD   = float(os.getenv("TRADE_AMOUNT_USD", "20"))
-ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.3"))
+ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.15"))
 TAKE_PROFIT_PCT    = float(os.getenv("TAKE_PROFIT_PCT", "0.8"))   # let winners run
 STOP_LOSS_PCT      = float(os.getenv("STOP_LOSS_PCT", "0.2"))     # cut losses fast
 POLL_SECONDS       = int(os.getenv("POLL_SECONDS", "20"))         # faster polling
