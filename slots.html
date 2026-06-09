@@ -51,75 +51,138 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100vh;
 .rcol{flex:1;display:flex;flex-direction:column;gap:3px}
 
 /* ── CELL ── */
-.cell{height:52px;background:linear-gradient(160deg,#180f06,#100a04);
-  border-radius:7px;border:1px solid #2a1808;
+.cell{height:56px;background:linear-gradient(160deg,#1c1208,#120a04);
+  border-radius:8px;border:1px solid #2a1808;
   display:flex;align-items:center;justify-content:center;
-  font-size:1.6rem;position:relative;overflow:hidden;cursor:default;
-  transition:border-color .12s,box-shadow .12s,transform .1s}
+  font-size:1.65rem;position:relative;overflow:hidden;cursor:default;
+  transition:border-color .15s,box-shadow .15s,transform .12s}
 
 /* symbol layer */
 .sym{display:flex;align-items:center;justify-content:center;width:100%;height:100%;
-  position:relative;z-index:1;transition:transform .15s}
+  position:relative;z-index:1}
 
 /* card symbol styling */
-.csym{font-size:1.05rem;font-weight:800;font-family:Georgia,serif;
+.csym{font-size:1.1rem;font-weight:800;font-family:Georgia,serif;
   color:var(--card-color);letter-spacing:-1px}
 
 /* golden square glow layer */
-.gs-glow{position:absolute;inset:0;border-radius:6px;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at center,rgba(232,160,32,.2),transparent 70%);
+.gs-glow{position:absolute;inset:0;border-radius:7px;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(232,160,32,.28),transparent 65%);
   transition:opacity .3s}
-.cell.golden .gs-glow{opacity:1}
-.cell.golden{border-color:rgba(232,160,32,.5);box-shadow:0 0 8px rgba(232,160,32,.25)}
+.cell.golden .gs-glow{opacity:1;animation:gs-shimmer 2.4s ease-in-out infinite}
+@keyframes gs-shimmer{
+  0%,100%{background:radial-gradient(ellipse at 30% 40%,rgba(245,192,64,.25),transparent 65%)}
+  50%{background:radial-gradient(ellipse at 70% 60%,rgba(245,192,64,.35),transparent 65%)}
+}
+.cell.golden{border-color:rgba(232,160,32,.6);box-shadow:0 0 10px rgba(232,160,32,.3),inset 0 0 4px rgba(232,160,32,.08)}
 
 /* win */
-.cell.win{border-color:var(--gold2);box-shadow:0 0 12px rgba(245,192,64,.55);
-  animation:cell-win .4s ease-in-out infinite alternate}
-@keyframes cell-win{from{transform:scale(1)}to{transform:scale(1.04)}}
+.cell.win{border-color:var(--gold2);
+  animation:cell-win .38s ease-in-out infinite alternate}
+@keyframes cell-win{
+  from{transform:scale(1);box-shadow:0 0 10px rgba(245,192,64,.5),0 0 0 1px rgba(245,192,64,.3)}
+  to  {transform:scale(1.06);box-shadow:0 0 22px rgba(245,192,64,.85),0 0 44px rgba(245,192,64,.2)}
+}
 
-/* spin */
-.cell.spin .sym{animation:sym-spin .08s steps(1) infinite}
-@keyframes sym-spin{0%{filter:blur(3px)brightness(1.5)}50%{filter:blur(5px)brightness(.6)}to{filter:blur(3px)brightness(1.5)}}
+/* spin — reel-scroll illusion */
+.cell.spin .sym{animation:reel-scroll .09s linear infinite}
+@keyframes reel-scroll{
+  0%  {transform:translateY(-6px) scaleY(.9);filter:blur(3px) brightness(1.6);opacity:.65}
+  40% {transform:translateY(0)    scaleY(1); filter:blur(1px) brightness(1.1);opacity:1}
+  70% {transform:translateY(4px)  scaleY(.95);filter:blur(3px) brightness(.8);opacity:.7}
+  100%{transform:translateY(-6px) scaleY(.9);filter:blur(3px) brightness(1.6);opacity:.65}
+}
 
 /* explode */
-.cell.explode .sym{animation:sym-explode .26s ease forwards}
-@keyframes sym-explode{0%{transform:scale(1);opacity:1}60%{transform:scale(1.35);opacity:.4}to{transform:scale(0);opacity:0}}
+.cell.explode{animation:cell-burst .3s ease forwards}
+.cell.explode .sym{animation:sym-shrink .3s ease forwards}
+@keyframes cell-burst{
+  0%  {box-shadow:0 0 0 0 rgba(245,192,64,.9)}
+  60% {box-shadow:0 0 0 14px rgba(245,192,64,0)}
+  100%{box-shadow:0 0 0 14px rgba(245,192,64,0);background:#1e1206}
+}
+@keyframes sym-shrink{
+  0%  {transform:scale(1);opacity:1}
+  40% {transform:scale(1.4);opacity:.6;filter:brightness(2)}
+  100%{transform:scale(0);opacity:0}
+}
 
 /* drop */
-.cell.drop .sym{animation:sym-drop .22s cubic-bezier(.2,.65,.35,1)}
-@keyframes sym-drop{from{transform:translateY(-55px);opacity:0}to{transform:translateY(0);opacity:1}}
+.cell.drop .sym{animation:sym-drop .28s cubic-bezier(.18,.89,.32,1.28)}
+@keyframes sym-drop{
+  from{transform:translateY(-62px) scaleY(.8);opacity:0;filter:blur(2px)}
+  80% {transform:translateY(3px)  scaleY(1.05);opacity:1;filter:none}
+  to  {transform:translateY(0)    scaleY(1);opacity:1;filter:none}
+}
 
-/* rainbow */
-.cell.rb-flash{animation:rb .45s ease}
-@keyframes rb{0%,100%{}50%{box-shadow:0 0 18px rgba(80,96,224,.9),0 0 36px rgba(80,96,224,.4);border-color:#7080ff}}
+/* rainbow cells */
+.cell.rb-flash{animation:rb .5s ease}
+@keyframes rb{
+  0%  {}
+  30% {box-shadow:0 0 0 3px rgba(100,120,255,.9),0 0 24px rgba(80,96,224,.7);border-color:#7080ff}
+  70% {box-shadow:0 0 0 3px rgba(100,120,255,.9),0 0 24px rgba(80,96,224,.7);border-color:#7080ff}
+  100%{}
+}
 
 /* scatter / wild / rainbow borders */
-.cell.is-sc{border-color:var(--scatter);box-shadow:0 0 8px rgba(208,80,16,.35)}
-.cell.is-wd{border-color:var(--green);box-shadow:0 0 8px rgba(26,144,64,.3)}
-.cell.is-rb{border-color:var(--rainbow);box-shadow:0 0 10px rgba(80,96,224,.4)}
+.cell.is-sc{border-color:var(--scatter);box-shadow:0 0 10px rgba(208,80,16,.4)}
+.cell.is-wd{border-color:var(--green);box-shadow:0 0 10px rgba(26,144,64,.35)}
+.cell.is-rb{border-color:var(--rainbow);box-shadow:0 0 12px rgba(80,96,224,.5),0 0 4px rgba(80,96,224,.3)}
 
 /* ── COIN REVEAL STYLES ── */
-.coin-el{width:40px;height:40px;border-radius:50%;display:flex;flex-direction:column;
+.coin-el{width:42px;height:42px;border-radius:50%;display:flex;flex-direction:column;
   align-items:center;justify-content:center;position:relative;z-index:2;flex-shrink:0}
-.coin-el.bronze{background:radial-gradient(circle at 35% 35%,#e8a060,#7a3c10);
-  box-shadow:0 0 8px rgba(200,120,48,.5),inset 0 1px 0 rgba(255,200,120,.3)}
-.coin-el.silver{background:radial-gradient(circle at 35% 35%,#e8e8e8,#606060);
-  box-shadow:0 0 8px rgba(180,180,180,.4),inset 0 1px 0 rgba(255,255,255,.3)}
-.coin-el.gold{background:radial-gradient(circle at 35% 35%,#ffe060,#a06010);
-  box-shadow:0 0 14px rgba(245,192,64,.7),inset 0 1px 0 rgba(255,240,100,.4);
-  animation:gold-spin .7s ease-in-out infinite alternate}
-@keyframes gold-spin{from{box-shadow:0 0 8px rgba(245,192,64,.4)}to{box-shadow:0 0 22px rgba(245,192,64,.9)}}
-.coin-val{font-size:.62rem;font-weight:900;line-height:1;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-.coin-lbl{font-size:.38rem;opacity:.85;text-transform:uppercase;letter-spacing:.5px;line-height:1;margin-top:1px}
-.coin-el.bronze .coin-val{color:#fff8e8}.coin-el.silver .coin-val{color:#1a1a1a}
-.clover-el{font-size:1.4rem;filter:drop-shadow(0 0 6px rgba(50,200,80,.6))}
-.pot-el{font-size:1.4rem;filter:drop-shadow(0 0 8px rgba(232,160,32,.8))}
+.coin-el.bronze{background:radial-gradient(circle at 35% 32%,#f0b070,#6a3008);
+  box-shadow:0 0 10px rgba(200,120,48,.6),inset 0 1px 0 rgba(255,210,140,.4)}
+.coin-el.silver{background:radial-gradient(circle at 35% 32%,#f0f0f0,#585858);
+  box-shadow:0 0 10px rgba(180,180,180,.5),inset 0 1px 0 rgba(255,255,255,.4)}
+.coin-el.gold{background:radial-gradient(circle at 35% 32%,#ffe868,#984808);
+  box-shadow:0 0 16px rgba(245,192,64,.8),inset 0 1px 0 rgba(255,240,100,.5);
+  animation:gold-pulse .6s ease-in-out infinite alternate}
+@keyframes gold-pulse{
+  from{box-shadow:0 0 8px rgba(245,192,64,.5),inset 0 1px 0 rgba(255,240,100,.4)}
+  to  {box-shadow:0 0 26px rgba(245,192,64,1),0 0 40px rgba(245,192,64,.3),inset 0 1px 0 rgba(255,240,100,.5)}
+}
+.coin-flip{animation:coin-flip .35s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes coin-flip{
+  0%  {transform:scaleX(0) scaleY(1.2);opacity:0}
+  50% {transform:scaleX(1.15) scaleY(.9);opacity:1}
+  100%{transform:scaleX(1) scaleY(1);opacity:1}
+}
+.coin-val{font-size:.65rem;font-weight:900;line-height:1;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7)}
+.coin-lbl{font-size:.4rem;opacity:.85;text-transform:uppercase;letter-spacing:.5px;line-height:1;margin-top:1px}
+.coin-el.bronze .coin-val{color:#fff8e8}.coin-el.silver .coin-val{color:#111}
+.clover-el{font-size:1.5rem;filter:drop-shadow(0 0 8px rgba(50,200,80,.8));animation:clover-pulse .9s ease-in-out infinite alternate}
+@keyframes clover-pulse{from{filter:drop-shadow(0 0 4px rgba(50,200,80,.5))}to{filter:drop-shadow(0 0 12px rgba(50,200,80,1))}}
+.pot-el{font-size:1.5rem;filter:drop-shadow(0 0 10px rgba(232,160,32,.9));animation:pot-spin 1.2s ease-in-out infinite alternate}
+@keyframes pot-spin{from{filter:drop-shadow(0 0 6px rgba(232,160,32,.6))}to{filter:drop-shadow(0 0 16px rgba(232,160,32,1))}}
+
+/* ── RAINBOW SWEEP ── */
+.rb-sweep{position:absolute;top:0;left:-100%;width:40%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(100,120,255,.18),rgba(200,220,255,.25),rgba(100,120,255,.18),transparent);
+  pointer-events:none;z-index:30}
+.rb-sweep.go{animation:sweep .55s ease-in forwards}
+@keyframes sweep{from{left:-40%}to{left:110%}}
 
 /* ── WIN FLASH ── */
 .wflash{position:absolute;inset:0;border-radius:10px;pointer-events:none;
-  opacity:0;transition:opacity .15s;
-  background:radial-gradient(ellipse at center,rgba(232,160,32,.12),transparent 65%)}
+  opacity:0;transition:opacity .18s;
+  background:radial-gradient(ellipse at center,rgba(245,192,64,.16),transparent 60%)}
 .wflash.on{opacity:1}
+
+/* ── BIG WIN OVERLAY ── */
+.bigwin{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  z-index:200;pointer-events:none}
+.bigwin.on{display:flex;animation:bw-in .3s ease}
+@keyframes bw-in{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.bw-inner{background:rgba(12,7,2,.92);border:2px solid var(--gold);border-radius:20px;
+  padding:20px 36px;text-align:center;box-shadow:0 0 60px rgba(232,160,32,.4);
+  backdrop-filter:blur(12px)}
+.bw-label{font-size:.7rem;letter-spacing:4px;color:var(--dim);text-transform:uppercase;margin-bottom:4px}
+.bw-amount{font-size:2.6rem;font-weight:900;color:var(--gold2);
+  text-shadow:0 0 30px rgba(245,192,64,.7),0 2px 0 rgba(0,0,0,.5);
+  animation:bw-count .08s steps(1) infinite}
+@keyframes bw-count{0%{filter:brightness(1)}50%{filter:brightness(1.4)}}
 
 /* ── BONUS OVERLAY ── */
 .bov{position:absolute;inset:0;border-radius:10px;display:none;
@@ -324,6 +387,7 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100vh;
 </head>
 <body>
 
+<div class="bigwin" id="bigwin"><div class="bw-inner"><div class="bw-label" id="bw-label">BIG WIN</div><div class="bw-amount" id="bw-amount">$0.00</div></div></div>
 <div class="hud">
   <div class="hud-box"><span class="hl">Balance</span><span class="hv" id="s-bal">$1,000.00</span></div>
   <div class="hud-box win-hud"><span class="hl">Win</span><span class="hv" id="s-win">$0.00</span></div>
@@ -346,6 +410,7 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100vh;
     <div class="reel-frame">
       <div class="reels" id="reels"></div>
       <div class="wflash" id="wf"></div>
+      <div class="rb-sweep" id="rb-sweep"></div>
       <div class="bov" id="bov">
         <div class="bov-animal">🦝</div>
         <div class="bov-title" id="bov-title">BONUS!</div>
@@ -664,22 +729,52 @@ function spinCol(c,dur){
     const id=setInterval(()=>{
       for(let r=0;r<ROWS;r++){
         const s=rnd(p),sw=gsym(c,r);
+        // restart animation on each tick so scroll loop stays fluid
+        sw.style.animation='none';sw.offsetHeight;sw.style.animation='';
         if(CARDS.includes(s)) sw.innerHTML=`<span class="csym">${s}</span>`;
         else sw.textContent=s;
         gc(c,r).className='cell spin';
       }
-      t+=70;
+      t+=65;
       if(t>=dur){
         clearInterval(id);
-        for(let r=0;r<ROWS;r++){grid[c][r]=rsym();}
-        for(let r=0;r<ROWS;r++) renderCell(c,r,null);
+        for(let r=0;r<ROWS;r++) grid[c][r]=rsym();
+        for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
         res();
       }
-    },70);
+    },65);
   });
 }
 async function spinAll(){
-  await Promise.all([500,640,780,920,1060,1200].map((d,c)=>spinCol(c,d)));
+  // stagger column starts slightly for visual wave effect
+  const durs=[520,660,800,940,1080,1220];
+  const delays=[0,40,80,120,160,200];
+  await Promise.all(durs.map((d,c)=>sleep(delays[c]).then(()=>spinCol(c,d))));
+}
+
+// ── WIN COUNTER ANIMATION ──────────────────────────────────────────────────────
+function animateWin(from,to,el,dur=600){
+  const start=performance.now();
+  const diff=to-from;
+  function tick(now){
+    const p=Math.min((now-start)/dur,1);
+    const ease=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    el.textContent=fmt(from+diff*ease);
+    if(p<1) requestAnimationFrame(tick);
+    else el.textContent=fmt(to);
+  }
+  requestAnimationFrame(tick);
+}
+
+let bigWinTimer=null;
+function showBigWin(amount,label='BIG WIN'){
+  const bw=document.getElementById('bigwin');
+  document.getElementById('bw-label').textContent=label;
+  document.getElementById('bw-amount').textContent=fmt(0);
+  bw.classList.add('on');
+  animateWin(0,amount,document.getElementById('bw-amount'),900);
+  if(bigWinTimer) clearTimeout(bigWinTimer);
+  bigWinTimer=setTimeout(()=>{bw.classList.remove('on');bigWinTimer=null;},2800);
 }
 
 // ── CLUSTER DETECTION ──────────────────────────────────────────────────────────
@@ -748,11 +843,32 @@ async function cascade(){
 }
 
 async function rainbowReveal(){
+  // flash rainbow cells
   for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) if(grid[c][r]===S.RAINBOW) gc(c,r).classList.add('rb-flash');
-  await sleep(300);
+  // sweep effect across grid
+  const sw=document.getElementById('rb-sweep');
+  sw.classList.remove('go');sw.offsetHeight;sw.classList.add('go');
+  await sleep(420);
+  // staggered coin reveal column by column
   const coinCells=[];
-  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) if(golden[c][r]){showCoin(c,r,golden[c][r]);coinCells.push({c,r,coin:golden[c][r]});}
-  await sleep(500);
+  const cols=Array.from({length:COLS},(_,c)=>c);
+  for(const c of cols){
+    let revealed=false;
+    for(let r=0;r<ROWS;r++){
+      if(golden[c][r]){
+        const coin=golden[c][r];
+        const sw2=gsym(c,r);
+        showCoin(c,r,coin);
+        // apply flip animation to the rendered coin element
+        const ce=sw2.querySelector('.coin-el,.clover-el,.pot-el');
+        if(ce){ce.classList.add('coin-flip');}
+        coinCells.push({c,r,coin});
+        revealed=true;
+      }
+    }
+    if(revealed) await sleep(70);
+  }
+  await sleep(400);
   const clovers=coinCells.filter(x=>x.coin.t==='clover');
   const hasPot=coinCells.some(x=>x.coin.t==='pot');
   let total=0;
@@ -784,7 +900,15 @@ function showTally(coinCells,total){
   if(g.gold.length)   chips.innerHTML+=`<span class="tchip gold">🥇 ${g.gold.join(' · ')}×</span>`;
   if(g.clover.length) chips.innerHTML+=`<span class="tchip clover">🍀 ×${g.clover.join('·')}</span>`;
   if(g.pot.length)    chips.innerHTML+=`<span class="tchip gold">🏆 ×2</span>`;
-  sum.textContent='= '+fmt(total*bet);
+  sum.textContent='= $0.00';
+  // animate tally sum ticking up, prefixed with '= '
+  const start2=performance.now(),to2=total*bet;
+  (function tick2(now){
+    const p=Math.min((now-start2)/500,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    sum.textContent='= '+fmt(to2*e);
+    if(p<1) requestAnimationFrame(tick2);
+    else sum.textContent='= '+fmt(to2);
+  })(performance.now());
 }
 
 // ── SPIN FLOW ──────────────────────────────────────────────────────────────────
@@ -804,10 +928,12 @@ async function doSpin(free=false){
   }
   const allWin=total+spinWin;
   if(allWin>0){
-    balance+=total;document.getElementById('s-win').textContent=fmt(allWin);updateBalUI();
-    if(allWin>=bet*50) setMsg('💎 MEGA WIN! '+fmt(allWin));
-    else if(allWin>=bet*20) setMsg('🔥 BIG WIN! '+fmt(allWin));
-    else if(allWin>=bet*5) setMsg('✨ Nice win! '+fmt(allWin));
+    balance+=total;updateBalUI();
+    animateWin(0,allWin,document.getElementById('s-win'));
+    if(allWin>=bet*100){showBigWin(allWin,'💎 MEGA WIN');setMsg('💎 MEGA WIN! '+fmt(allWin));}
+    else if(allWin>=bet*30){showBigWin(allWin,'🔥 BIG WIN');setMsg('🔥 BIG WIN! '+fmt(allWin));}
+    else if(allWin>=bet*10){showBigWin(allWin,'✨ GREAT WIN');setMsg('✨ Great win! '+fmt(allWin));}
+    else if(allWin>=bet*3) setMsg('Win: '+fmt(allWin));
     else setMsg('Win: '+fmt(allWin));
   } else if(!isFreeSpins) setMsg('No luck this time...');
   spinning=false;updateButtons();
