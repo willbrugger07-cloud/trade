@@ -1,15 +1,12 @@
 """
-Momentum trading bot for SPY.
+Aggressive momentum trading bot.
 
 Strategy:
-  - At market open, record the opening price.
-  - If price moves up >= ENTRY_MOMENTUM_PCT from open, buy $TRADE_AMOUNT worth of SPY.
-  - After entry, exit if:
-      * Price rises >= TAKE_PROFIT_PCT from entry  (take profit)
-      * Price falls <= STOP_LOSS_PCT from entry    (stop loss)
-  - Only one position open at a time per session.
-
-Configure via .env or environment variables.
+  - Watches multiple tickers simultaneously.
+  - Enters when any ticker moves +ENTRY_MOMENTUM_PCT from its session open.
+  - Exits at TAKE_PROFIT_PCT gain (let winners run) or STOP_LOSS_PCT loss (cut fast).
+  - No limit on number of trades per day.
+  - Only one open position at a time (protects the $20 balance).
 """
 
 import os
@@ -28,25 +25,24 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-# --- Config (override via .env) ---
-SYMBOL             = os.getenv("SYMBOL", "SPY")
-TRADE_AMOUNT_USD   = float(os.getenv("TRADE_AMOUNT_USD", "20"))    # dollars per trade
-ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.3")) # % move from open to enter
-TAKE_PROFIT_PCT    = float(os.getenv("TAKE_PROFIT_PCT", "0.5"))    # % gain to exit with profit
-STOP_LOSS_PCT      = float(os.getenv("STOP_LOSS_PCT", "0.3"))      # % loss to cut position
-POLL_SECONDS       = int(os.getenv("POLL_SECONDS", "30"))          # how often to check price
+# --- Config ---
+TICKERS            = os.getenv("TICKERS", "SPY,QQQ,AAPL,TSLA,NVDA").split(",")
+TRADE_AMOUNT_USD   = float(os.getenv("TRADE_AMOUNT_USD", "20"))
+ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.3"))
+TAKE_PROFIT_PCT    = float(os.getenv("TAKE_PROFIT_PCT", "0.8"))   # let winners run
+STOP_LOSS_PCT      = float(os.getenv("STOP_LOSS_PCT", "0.2"))     # cut losses fast
+POLL_SECONDS       = int(os.getenv("POLL_SECONDS", "20"))         # faster polling
 
 MARKET_OPEN  = dt_time(9, 30)
-MARKET_CLOSE = dt_time(16, 0)
+MARKET_CLOSE = dt_time(15, 50)   # stop entering new trades 10 min before close
 
 
-def current_price(symbol: str) -> float:
-    prices = rh.get_latest_price(symbol)
-    return float(prices[0])
+def get_prices(symbols: list[str]) -> dict[str, float]:
+    prices = rh.get_latest_price(symbols)
+    return {sym: float(p) for sym, p in zip(symbols, prices) if p}
 
 
 def shares_for_amount(price: float, amount_usd: float) -> float:
-    """Fractional shares rounded to 6 decimal places."""
     return round(amount_usd / price, 6)
 
 
@@ -64,86 +60,103 @@ def run():
         raise ValueError("Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD in .env")
 
     rh.login(username, password, mfa_code=mfa_code)
-    log.info("Logged in to Robinhood.")
+    log.info(f"Logged in. Watching: {', '.join(TICKERS)}")
 
-    open_price: float | None = None
-    entry_price: float | None = None
+    open_prices: dict[str, float] = {}
+    entry_symbol: str | None = None
+    entry_price: float = 0.0
     shares_held: float = 0.0
-    traded_today = False
+    total_pnl: float = 0.0
+    trade_count: int = 0
 
     try:
         while True:
             if not market_is_open():
                 if datetime.now().time() > MARKET_CLOSE:
-                    log.info("Market closed. Exiting.")
+                    log.info(f"Market closed. Trades today: {trade_count}  Total P&L: ${total_pnl:+.2f}")
                     break
                 log.info("Waiting for market open…")
                 time.sleep(30)
                 continue
 
-            price = current_price(SYMBOL)
-            log.info(f"{SYMBOL} ${price:.2f}")
+            prices = get_prices(TICKERS)
 
-            # Capture opening price on first tick
-            if open_price is None:
-                open_price = price
-                log.info(f"Opening price set: ${open_price:.2f}")
+            # Capture opening prices
+            for sym, price in prices.items():
+                if sym not in open_prices:
+                    open_prices[sym] = price
+                    log.info(f"  Open price {sym}: ${price:.2f}")
 
-            # --- Entry logic ---
-            if entry_price is None and not traded_today:
-                pct_from_open = (price - open_price) / open_price * 100
-                log.info(f"  {pct_from_open:+.2f}% from open (need +{ENTRY_MOMENTUM_PCT}% to enter)")
-                if pct_from_open >= ENTRY_MOMENTUM_PCT:
+            # --- Exit logic (priority over entry) ---
+            if entry_symbol and shares_held > 0:
+                price = prices.get(entry_symbol)
+                if price:
+                    pct = (price - entry_price) / entry_price * 100
+                    log.info(f"[IN {entry_symbol}] ${price:.2f}  {pct:+.2f}%  "
+                             f"(TP +{TAKE_PROFIT_PCT}% / SL -{STOP_LOSS_PCT}%)")
+
+                    if pct >= TAKE_PROFIT_PCT:
+                        _exit(entry_symbol, shares_held, price, entry_price, "TAKE PROFIT")
+                        total_pnl += (price - entry_price) * shares_held
+                        trade_count += 1
+                        entry_symbol, shares_held, entry_price = None, 0.0, 0.0
+                    elif pct <= -STOP_LOSS_PCT:
+                        _exit(entry_symbol, shares_held, price, entry_price, "STOP LOSS")
+                        total_pnl += (price - entry_price) * shares_held
+                        trade_count += 1
+                        entry_symbol, shares_held, entry_price = None, 0.0, 0.0
+
+            # --- Entry logic (only when flat) ---
+            if not entry_symbol:
+                best_sym = None
+                best_pct = ENTRY_MOMENTUM_PCT  # must beat threshold
+
+                for sym, price in prices.items():
+                    if sym not in open_prices:
+                        continue
+                    pct = (price - open_prices[sym]) / open_prices[sym] * 100
+                    log.info(f"  {sym} ${price:.2f}  {pct:+.2f}% from open")
+                    if pct > best_pct:
+                        best_pct = pct
+                        best_sym = sym
+
+                if best_sym:
+                    price = prices[best_sym]
                     qty = shares_for_amount(price, TRADE_AMOUNT_USD)
-                    log.info(f"  MOMENTUM TRIGGER — buying {qty} shares @ ~${price:.2f}")
-                    order = rh.order_buy_fractional_by_quantity(SYMBOL, qty)
+                    log.info(f"ENTRY: {best_sym} +{best_pct:.2f}% — buying {qty} shares @ ~${price:.2f}")
+                    order = rh.order_buy_fractional_by_quantity(best_sym, qty)
                     if order and order.get("id"):
+                        entry_symbol = best_sym
                         entry_price = price
                         shares_held = qty
                         log.info(f"  BUY order placed: {order['id']}")
                     else:
-                        log.warning(f"  Buy order failed or rejected: {order}")
-
-            # --- Exit logic ---
-            elif entry_price is not None and shares_held > 0:
-                pct_from_entry = (price - entry_price) / entry_price * 100
-                log.info(f"  {pct_from_entry:+.2f}% from entry "
-                         f"(TP +{TAKE_PROFIT_PCT}% / SL -{STOP_LOSS_PCT}%)")
-
-                should_exit = False
-                reason = ""
-                if pct_from_entry >= TAKE_PROFIT_PCT:
-                    should_exit = True
-                    reason = "TAKE PROFIT"
-                elif pct_from_entry <= -STOP_LOSS_PCT:
-                    should_exit = True
-                    reason = "STOP LOSS"
-
-                if should_exit:
-                    log.info(f"  {reason} — selling {shares_held} shares @ ~${price:.2f}")
-                    order = rh.order_sell_fractional_by_quantity(SYMBOL, shares_held)
-                    if order and order.get("id"):
-                        pnl = (price - entry_price) * shares_held
-                        log.info(f"  SELL order placed: {order['id']}  est. P&L: ${pnl:+.2f}")
-                    else:
-                        log.warning(f"  Sell order failed or rejected: {order}")
-                    entry_price = None
-                    shares_held = 0.0
-                    traded_today = True  # one trade per session
+                        log.warning(f"  Buy order failed: {order}")
 
             time.sleep(POLL_SECONDS)
 
     except KeyboardInterrupt:
-        log.info("Interrupted by user.")
-
-        # Emergency exit: sell any open position
-        if shares_held > 0:
-            log.warning(f"Emergency exit: selling {shares_held} shares of {SYMBOL}.")
-            rh.order_sell_fractional_by_quantity(SYMBOL, shares_held)
+        log.info("Interrupted.")
+        if entry_symbol and shares_held > 0:
+            price = get_prices([entry_symbol]).get(entry_symbol, entry_price)
+            log.warning(f"Emergency exit: selling {shares_held} {entry_symbol}")
+            rh.order_sell_fractional_by_quantity(entry_symbol, shares_held)
+            total_pnl += (price - entry_price) * shares_held
 
     finally:
+        log.info(f"Session summary — Trades: {trade_count}  P&L: ${total_pnl:+.2f}")
         rh.logout()
         log.info("Logged out.")
+
+
+def _exit(symbol, qty, price, entry, reason):
+    pnl = (price - entry) * qty
+    log.info(f"{reason}: selling {qty} {symbol} @ ~${price:.2f}  est. P&L: ${pnl:+.2f}")
+    order = rh.order_sell_fractional_by_quantity(symbol, qty)
+    if order and order.get("id"):
+        log.info(f"  SELL order placed: {order['id']}")
+    else:
+        log.warning(f"  Sell order failed: {order}")
 
 
 if __name__ == "__main__":
