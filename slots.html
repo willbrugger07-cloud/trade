@@ -757,10 +757,11 @@ async function rainbowReveal(){
   const hasPot=coinCells.some(x=>x.coin.t==='pot');
   let total=0;
   coinCells.filter(x=>x.coin.t!=='clover'&&x.coin.t!=='pot').forEach(({c,r,coin})=>{
-    let m=1;clovers.forEach(cl=>{if(Math.abs(cl.c-c)<=1&&Math.abs(cl.r-r)<=1)m*=cl.coin.v;});
+    let m=1;clovers.forEach(cl=>{if((Math.abs(cl.c-c)+Math.abs(cl.r-r))===1)m*=cl.coin.v;});
     total+=coin.v*m;
   });
-  if(hasPot) total*=2;
+  const potCount=coinCells.filter(x=>x.coin.t==='pot').length;
+  if(potCount>0) total+=total*potCount;
   const win=total*bet;spinWin+=win;balance+=win;
   showTally(coinCells,total);
   updateBalUI();
