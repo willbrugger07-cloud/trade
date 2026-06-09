@@ -53,3 +53,17 @@ class Card(Base):
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+
+
+def make_engine(url: str):
+    """
+    Create a separate SQLAlchemy engine + session factory for a custom DB path.
+    Used by the Pygame game client so it can store saves in the OS user-data
+    directory instead of the (possibly read-only) Steam install folder.
+
+    Returns (engine, SessionFactory).
+    """
+    eng = create_engine(url, connect_args={"check_same_thread": False})
+    Base.metadata.create_all(bind=eng)
+    factory = sessionmaker(autocommit=False, autoflush=False, bind=eng)
+    return eng, factory

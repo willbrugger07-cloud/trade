@@ -2,8 +2,20 @@ robin_stocks>=2.1.0
 python-dotenv>=1.0.0
 pandas>=2.0.0
 
-# Sports Card Simulator
-fastapi>=0.111.0
-uvicorn[standard]>=0.29.0
+# Sports Card Simulator — shared
 sqlalchemy>=2.0.0
 pydantic>=2.0.0
+
+# REST API
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Pygame GUI game
+pygame>=2.5.0
+platformdirs>=4.0.0
+
+# Steam SDK (optional — game runs without it)
+# steamworks>=0.0.7
+
+# Build
+# pyinstaller>=6.0.0
