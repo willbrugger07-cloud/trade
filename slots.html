@@ -7,364 +7,370 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#100c06;--panel:#1a1208;--cell:#0e0a05;--border:#3d2810;
-  --gold:#d4a017;--gold2:#f0c040;--dim:#8a6a30;
-  --bronze:#cd7f32;--silver:#aaa;--goldcoin:#ffd700;
-  --green:#16a34a;--red:#dc2626;--purple:#7c3aed;
-  --scatter:#e85d04;--rainbow:#6366f1;--wild:#16a34a;
+  --bg:#181008;--panel:#1e1409;--cell:#120c05;--border:#3a2510;
+  --gold:#e8a020;--gold2:#f5c040;--dim:#7a5a28;
+  --bronze:#c87830;--silver:#b0b0b0;--goldcoin:#f5c040;
+  --green:#1a9040;--red:#c02020;--scatter:#d05010;--rainbow:#5060e0;
+  --card-color:#c8a060;
 }
-html,body{height:100%;background:var(--bg);font-family:'Segoe UI',sans-serif;color:#fff;overflow-x:hidden}
-body{display:flex;flex-direction:column;align-items:center;padding:10px 6px 30px;
-  background:radial-gradient(ellipse at 50% -10%,#2a1c08 0%,#100c06 55%)}
+html,body{height:100%;background:var(--bg);font-family:'Segoe UI',system-ui,sans-serif;color:#fff;overflow-x:hidden}
+body{display:flex;flex-direction:column;align-items:center;min-height:100vh;
+  padding:8px 8px 20px;
+  background:radial-gradient(ellipse at 50% 0%,#2e1c08 0%,#181008 60%)}
 
-/* ── TOP BAR ── */
-.topbar{width:100%;max-width:700px;display:flex;gap:8px;margin-bottom:8px}
-.stat{flex:1;background:#14100a;border:1px solid var(--border);border-radius:10px;padding:7px 10px}
-.stat .lbl{font-size:.58rem;color:#5a4520;letter-spacing:1.5px;text-transform:uppercase}
-.stat .v{font-size:1.05rem;font-weight:700;color:#d4b060;white-space:nowrap}
-.stat.win-s .v{color:var(--gold2)}
-.stat.fs-s{background:#12100a;border-color:var(--gold);display:none}
-.stat.fs-s .v{color:var(--gold2)}
+/* ── TOP STATS ── */
+.hud{width:100%;max-width:680px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}
+.hud-box{background:#120c05;border:1px solid var(--border);border-radius:8px;
+  padding:6px 10px;display:flex;flex-direction:column}
+.hud-box .hl{font-size:.55rem;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase}
+.hud-box .hv{font-size:.95rem;font-weight:700;color:#e8d0a0;margin-top:1px}
+.hud-box.win-hud .hv{color:var(--gold2)}
+.hud-box.fs-hud{border-color:var(--gold);display:none}
+.hud-box.fs-hud .hv{color:var(--gold2)}
 
 /* ── MACHINE ── */
-.machine{width:100%;max-width:700px;background:var(--panel);
-  border:2px solid var(--border);border-radius:20px;overflow:hidden;
-  box-shadow:0 0 60px rgba(180,120,10,.15),0 0 0 1px #2a1c08}
+.machine{width:100%;max-width:680px;background:var(--panel);
+  border:1px solid #3a2510;border-radius:16px;overflow:visible;
+  box-shadow:0 8px 40px rgba(0,0,0,.6),0 0 0 1px #2a1808,inset 0 1px 0 rgba(255,220,100,.06)}
 
 /* ── TITLE ── */
-.title-bar{padding:10px 16px 4px;text-align:center;position:relative}
-.game-name{font-size:1.6rem;font-weight:900;letter-spacing:8px;
-  color:var(--gold);text-shadow:0 0 20px rgba(212,160,23,.4)}
-.game-tag{font-size:.58rem;color:#5a4520;letter-spacing:3px;margin-top:2px}
-.raccoon{position:absolute;right:16px;top:8px;font-size:2rem;opacity:.7}
+.top-bar{padding:8px 14px 4px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;flex-direction:column}
+.logo-text{font-size:1.4rem;font-weight:900;letter-spacing:6px;color:var(--gold);
+  text-shadow:0 0 18px rgba(232,160,32,.35);font-style:italic}
+.logo-sub{font-size:.5rem;color:var(--dim);letter-spacing:2.5px;margin-top:1px}
+.logo-raccoon{font-size:1.8rem;opacity:.85;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 
-/* ── REELS ── */
-.reels-wrap{padding:0 10px 6px;position:relative}
-.reels-bg{background:#08060200;border:2px solid #2a1c08;border-radius:14px;
-  padding:6px;position:relative;overflow:hidden;
-  background:linear-gradient(180deg,#0a0703,#0e0a05)}
+/* ── REEL AREA ── */
+.reel-area{padding:0 8px 6px}
+.reel-frame{background:#0a0703;border:1px solid #2a1808;border-radius:10px;
+  padding:5px;position:relative;overflow:hidden;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.6)}
 
-.reels{display:flex;gap:5px}
-.col{flex:1;display:flex;flex-direction:column;gap:4px}
+.reels{display:flex;gap:4px}
+.rcol{flex:1;display:flex;flex-direction:column;gap:3px}
 
 /* ── CELL ── */
-.cell{height:66px;background:var(--cell);border-radius:8px;border:1.5px solid #1e1408;
+.cell{height:52px;background:linear-gradient(160deg,#180f06,#100a04);
+  border-radius:7px;border:1px solid #2a1808;
   display:flex;align-items:center;justify-content:center;
-  font-size:2.1rem;position:relative;overflow:hidden;
-  transition:border-color .15s,box-shadow .15s}
-.cell::before{content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.03),transparent);pointer-events:none}
+  font-size:1.6rem;position:relative;overflow:hidden;cursor:default;
+  transition:border-color .12s,box-shadow .12s,transform .1s}
 
-/* golden square background layer */
-.cell .gs{position:absolute;inset:0;border-radius:7px;pointer-events:none;opacity:0;
-  background:radial-gradient(ellipse at center,rgba(212,160,23,.25),transparent 70%);
-  border:1.5px solid transparent;transition:opacity .3s,border-color .3s}
-.cell.golden .gs{opacity:1;border-color:rgba(212,160,23,.5)}
-.cell.golden{box-shadow:0 0 10px rgba(212,160,23,.3)}
+/* symbol layer */
+.sym{display:flex;align-items:center;justify-content:center;width:100%;height:100%;
+  position:relative;z-index:1;transition:transform .15s}
 
 /* card symbol styling */
-.card-sym{font-size:1.3rem;font-weight:900;font-family:'Georgia',serif}
-.card-sym.ca{color:#d4a017}.card-sym.ck{color:#b8860b}
-.card-sym.cq{color:#cd853f}.card-sym.cj{color:#a0785a}.card-sym.c10{color:#8a6040}
+.csym{font-size:1.05rem;font-weight:800;font-family:Georgia,serif;
+  color:var(--card-color);letter-spacing:-1px}
 
-/* coin reveals */
-.coin{width:46px;height:46px;border-radius:50%;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;font-weight:800;position:relative;z-index:2}
-.coin.bronze{background:radial-gradient(#cd7f32,#8b4a0a);box-shadow:0 0 10px rgba(205,127,50,.5);
-  font-size:.55rem;color:#fff5e0}
-.coin.silver{background:radial-gradient(#e0e0e0,#808080);box-shadow:0 0 12px rgba(200,200,200,.5);
-  font-size:.55rem;color:#1a1a1a}
-.coin.gold{background:radial-gradient(#ffd700,#b8860b);box-shadow:0 0 16px rgba(255,215,0,.7);
-  font-size:.55rem;color:#3a2000;animation:gold-glow .6s ease-in-out infinite alternate}
-@keyframes gold-glow{from{box-shadow:0 0 10px rgba(255,215,0,.5)}to{box-shadow:0 0 24px rgba(255,215,0,.9)}}
-.coin .coin-val{font-size:.65rem;font-weight:900;line-height:1}
-.coin .coin-lbl{font-size:.45rem;opacity:.8;text-transform:uppercase;margin-top:1px}
+/* golden square glow layer */
+.gs-glow{position:absolute;inset:0;border-radius:6px;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(232,160,32,.2),transparent 70%);
+  transition:opacity .3s}
+.cell.golden .gs-glow{opacity:1}
+.cell.golden{border-color:rgba(232,160,32,.5);box-shadow:0 0 8px rgba(232,160,32,.25)}
 
-/* clover / pot */
-.special-coin{font-size:1.6rem;z-index:2;position:relative;
-  filter:drop-shadow(0 0 6px rgba(34,197,94,.6))}
-.special-coin.pot{filter:drop-shadow(0 0 8px rgba(212,160,23,.8))}
+/* win */
+.cell.win{border-color:var(--gold2);box-shadow:0 0 12px rgba(245,192,64,.55);
+  animation:cell-win .4s ease-in-out infinite alternate}
+@keyframes cell-win{from{transform:scale(1)}to{transform:scale(1.04)}}
 
-/* spin animation */
-.cell.spin .sym-wrap{animation:sym-blur .08s steps(1) infinite}
-@keyframes sym-blur{0%{filter:blur(3px)brightness(1.4)}50%{filter:blur(6px)brightness(.6)}to{filter:blur(3px)brightness(1.4)}}
-
-/* win cluster */
-.cell.win{border-color:var(--gold2);box-shadow:0 0 14px rgba(240,192,64,.6);
-  animation:win-pulse .4s ease-in-out infinite alternate}
-@keyframes win-pulse{from{transform:scale(1)}to{transform:scale(1.04)}}
+/* spin */
+.cell.spin .sym{animation:sym-spin .08s steps(1) infinite}
+@keyframes sym-spin{0%{filter:blur(3px)brightness(1.5)}50%{filter:blur(5px)brightness(.6)}to{filter:blur(3px)brightness(1.5)}}
 
 /* explode */
-.cell.explode .sym-wrap{animation:explode .28s ease forwards}
-@keyframes explode{0%{transform:scale(1);opacity:1}60%{transform:scale(1.4);opacity:.5}to{transform:scale(0);opacity:0}}
+.cell.explode .sym{animation:sym-explode .26s ease forwards}
+@keyframes sym-explode{0%{transform:scale(1);opacity:1}60%{transform:scale(1.35);opacity:.4}to{transform:scale(0);opacity:0}}
 
-/* drop in */
-.cell.drop .sym-wrap{animation:drop-in .25s cubic-bezier(.2,.6,.3,1)}
-@keyframes drop-in{from{transform:translateY(-60px);opacity:0}to{transform:translateY(0);opacity:1}}
+/* drop */
+.cell.drop .sym{animation:sym-drop .22s cubic-bezier(.2,.65,.35,1)}
+@keyframes sym-drop{from{transform:translateY(-55px);opacity:0}to{transform:translateY(0);opacity:1}}
 
-/* rainbow flash */
-.cell.rainbow-flash{animation:rb-flash .5s ease}
-@keyframes rb-flash{0%,100%{box-shadow:none}50%{box-shadow:0 0 20px rgba(99,102,241,.9),0 0 40px rgba(99,102,241,.4)}}
+/* rainbow */
+.cell.rb-flash{animation:rb .45s ease}
+@keyframes rb{0%,100%{}50%{box-shadow:0 0 18px rgba(80,96,224,.9),0 0 36px rgba(80,96,224,.4);border-color:#7080ff}}
 
-/* coin reveal */
-.cell.revealing .sym-wrap{animation:coin-flip .35s ease}
-@keyframes coin-flip{0%{transform:scaleX(1)}40%{transform:scaleX(0)}41%{}100%{transform:scaleX(1)}}
+/* scatter / wild / rainbow borders */
+.cell.is-sc{border-color:var(--scatter);box-shadow:0 0 8px rgba(208,80,16,.35)}
+.cell.is-wd{border-color:var(--green);box-shadow:0 0 8px rgba(26,144,64,.3)}
+.cell.is-rb{border-color:var(--rainbow);box-shadow:0 0 10px rgba(80,96,224,.4)}
 
-/* scatter highlight */
-.cell.is-scatter{border-color:var(--scatter);box-shadow:0 0 10px rgba(232,93,4,.4)}
-.cell.is-wild{border-color:var(--wild);box-shadow:0 0 8px rgba(22,163,74,.3)}
-.cell.is-rainbow{border-color:var(--rainbow);box-shadow:0 0 12px rgba(99,102,241,.5)}
+/* ── COIN REVEAL STYLES ── */
+.coin-el{width:40px;height:40px;border-radius:50%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;position:relative;z-index:2;flex-shrink:0}
+.coin-el.bronze{background:radial-gradient(circle at 35% 35%,#e8a060,#7a3c10);
+  box-shadow:0 0 8px rgba(200,120,48,.5),inset 0 1px 0 rgba(255,200,120,.3)}
+.coin-el.silver{background:radial-gradient(circle at 35% 35%,#e8e8e8,#606060);
+  box-shadow:0 0 8px rgba(180,180,180,.4),inset 0 1px 0 rgba(255,255,255,.3)}
+.coin-el.gold{background:radial-gradient(circle at 35% 35%,#ffe060,#a06010);
+  box-shadow:0 0 14px rgba(245,192,64,.7),inset 0 1px 0 rgba(255,240,100,.4);
+  animation:gold-spin .7s ease-in-out infinite alternate}
+@keyframes gold-spin{from{box-shadow:0 0 8px rgba(245,192,64,.4)}to{box-shadow:0 0 22px rgba(245,192,64,.9)}}
+.coin-val{font-size:.62rem;font-weight:900;line-height:1;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.coin-lbl{font-size:.38rem;opacity:.85;text-transform:uppercase;letter-spacing:.5px;line-height:1;margin-top:1px}
+.coin-el.bronze .coin-val{color:#fff8e8}.coin-el.silver .coin-val{color:#1a1a1a}
+.clover-el{font-size:1.4rem;filter:drop-shadow(0 0 6px rgba(50,200,80,.6))}
+.pot-el{font-size:1.4rem;filter:drop-shadow(0 0 8px rgba(232,160,32,.8))}
 
-/* ── WIN FLASH OVERLAY ── */
-.win-flash{position:absolute;inset:0;border-radius:14px;pointer-events:none;
-  opacity:0;transition:opacity .2s;
-  background:radial-gradient(ellipse at center,rgba(212,160,23,.1),transparent 70%)}
-.win-flash.show{opacity:1}
+/* ── WIN FLASH ── */
+.wflash{position:absolute;inset:0;border-radius:10px;pointer-events:none;
+  opacity:0;transition:opacity .15s;
+  background:radial-gradient(ellipse at center,rgba(232,160,32,.12),transparent 65%)}
+.wflash.on{opacity:1}
 
 /* ── BONUS OVERLAY ── */
-.b-overlay{position:absolute;inset:0;border-radius:14px;
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(10,7,2,.93);backdrop-filter:blur(8px);z-index:30;text-align:center;padding:16px}
-.b-overlay.show{display:flex;animation:b-in .4s ease}
-@keyframes b-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
-.b-raccoon{font-size:3rem;animation:raccoon-hop .8s ease-in-out infinite alternate}
-@keyframes raccoon-hop{from{transform:translateY(-6px) rotate(-5deg)}to{transform:translateY(6px) rotate(5deg)}}
-.b-title{font-size:2rem;font-weight:900;color:var(--gold);letter-spacing:4px;
-  text-shadow:0 0 24px var(--gold);margin:8px 0 4px}
-.b-tier{font-size:.8rem;color:#8a6a30;letter-spacing:2px;text-transform:uppercase}
-.b-spins-num{font-size:3rem;font-weight:900;color:#fff;line-height:1.1}
-.b-spins-lbl{font-size:.7rem;color:#8a6a30;letter-spacing:2px;margin-bottom:12px}
-.b-perks{font-size:.75rem;color:#c4a050;margin:4px 0 12px;line-height:1.6}
-.b-go{padding:12px 36px;border:none;border-radius:12px;
-  background:linear-gradient(135deg,#92400e,var(--gold));color:#fff;
-  font-size:.95rem;font-weight:800;cursor:pointer;letter-spacing:1px;
-  box-shadow:0 0 24px rgba(212,160,23,.4);transition:transform .1s}
-.b-go:hover{transform:scale(1.06)}
+.bov{position:absolute;inset:0;border-radius:10px;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(10,6,2,.93);backdrop-filter:blur(8px);z-index:40;text-align:center;padding:14px}
+.bov.on{display:flex;animation:bov-in .35s ease}
+@keyframes bov-in{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.bov-animal{font-size:2.5rem;animation:hop .7s ease-in-out infinite alternate}
+@keyframes hop{from{transform:translateY(-5px)rotate(-4deg)}to{transform:translateY(5px)rotate(4deg)}}
+.bov-title{font-size:1.8rem;font-weight:900;color:var(--gold);letter-spacing:4px;
+  text-shadow:0 0 20px var(--gold);margin:6px 0 2px}
+.bov-tier{font-size:.6rem;color:var(--dim);letter-spacing:2px;text-transform:uppercase}
+.bov-num{font-size:2.8rem;font-weight:900;color:#fff;line-height:1.1;margin:4px 0}
+.bov-lbl{font-size:.6rem;color:var(--dim);letter-spacing:2px;margin-bottom:10px}
+.bov-perks{font-size:.7rem;color:#c8a060;margin-bottom:12px;line-height:1.6}
+.bov-btn{padding:11px 32px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,#6a3800,var(--gold));color:#fff;
+  font-size:.88rem;font-weight:800;cursor:pointer;letter-spacing:1px;
+  box-shadow:0 0 20px rgba(232,160,32,.35);transition:transform .1s}
+.bov-btn:hover{transform:scale(1.05)}
 
-/* ── COIN TALLY ── */
-.coin-tally{display:none;background:#0a0703;border-top:1px solid var(--border);
-  padding:6px 12px;flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
-.coin-tally.show{display:flex}
-.tally-label{font-size:.6rem;color:#5a4520;letter-spacing:1px}
-.tally-coins{display:flex;gap:4px;flex-wrap:wrap;flex:1}
-.tc{display:inline-flex;align-items:center;gap:3px;
-  border-radius:6px;padding:2px 6px;font-size:.7rem;font-weight:700}
-.tc.bronze{background:#3a2010;color:var(--bronze)}.tc.silver{background:#1a1a2a;color:var(--silver)}
-.tc.gold{background:#2a1a00;color:var(--goldcoin)}.tc.clover{background:#0a1a0a;color:#4ade80}
-.tally-total{font-size:.85rem;font-weight:700;color:var(--gold2);margin-left:auto;white-space:nowrap}
+/* ── COIN TALLY BAR ── */
+.tally{display:none;background:#0c0804;border-top:1px solid var(--border);
+  padding:5px 10px;align-items:center;gap:8px;flex-wrap:wrap}
+.tally.on{display:flex}
+.tally-lbl{font-size:.55rem;color:var(--dim);letter-spacing:1px;flex-shrink:0}
+.tally-chips{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.tchip{display:inline-flex;align-items:center;gap:2px;
+  border-radius:5px;padding:2px 7px;font-size:.65rem;font-weight:700}
+.tchip.bronze{background:#2a1408;color:var(--bronze)}
+.tchip.silver{background:#181828;color:var(--silver)}
+.tchip.gold{background:#281800;color:var(--goldcoin)}
+.tchip.clover{background:#081808;color:#4ade80}
+.tally-sum{font-size:.82rem;font-weight:700;color:var(--gold2);margin-left:auto;white-space:nowrap}
 
-/* ── MSG ── */
-.msg{min-height:26px;text-align:center;padding:5px 12px 2px;
-  font-size:.88rem;font-weight:600;color:var(--gold);
-  text-shadow:0 0 8px rgba(212,160,23,.3)}
+/* ── MSG BAR ── */
+.msgbar{min-height:24px;text-align:center;padding:3px 12px 2px;
+  font-size:.82rem;font-weight:600;color:var(--gold);
+  text-shadow:0 0 8px rgba(232,160,32,.3)}
 
 /* ── CONTROLS ── */
-.ctrl{padding:4px 12px 14px;display:flex;flex-direction:column;gap:8px}
+.ctrl{padding:2px 10px 10px;display:flex;flex-direction:column;gap:6px}
 
-.bet-row{display:flex;align-items:center;gap:6px}
-.ico{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);
-  background:#0e0a05;color:#8a6a30;font-size:1rem;cursor:pointer;
-  transition:all .12s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ico:hover{border-color:var(--gold);color:var(--gold)}
-.bet-dsp{flex:1;text-align:center;background:#080603;border:1px solid var(--border);
-  border-radius:8px;padding:5px 8px;font-size:.95rem;font-weight:700;color:#d4b060}
-.presets{display:flex;gap:4px;flex-wrap:wrap}
-.pre{padding:3px 9px;border-radius:6px;border:1px solid var(--border);
-  background:#0e0a05;color:#5a4520;font-size:.7rem;cursor:pointer;transition:all .12s}
-.pre:hover,.pre.on{border-color:var(--gold);color:var(--gold);background:#1e1408}
+/* bet row */
+.bet-row{display:flex;align-items:center;gap:5px}
+.adj{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);
+  background:var(--cell);color:var(--dim);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .12s;font-weight:700}
+.adj:hover{border-color:var(--gold);color:var(--gold)}
+.bet-val{flex:1;text-align:center;background:var(--cell);border:1px solid var(--border);
+  border-radius:7px;padding:4px 6px;font-size:.9rem;font-weight:700;color:#e8d0a0}
+.presets{display:flex;gap:3px;flex-wrap:wrap}
+.pre{padding:3px 8px;border-radius:5px;border:1px solid var(--border);
+  background:var(--cell);color:#5a4020;font-size:.68rem;cursor:pointer;
+  transition:all .12s;white-space:nowrap}
+.pre:hover,.pre.on{border-color:var(--gold);color:var(--gold);background:#201408}
 
-.act-row{display:grid;grid-template-columns:1fr 1.8fr 1fr;gap:8px}
-.spin-btn{padding:13px;border:none;border-radius:12px;
-  background:linear-gradient(135deg,#14532d,#22c55e);color:#fff;
-  font-size:1.05rem;font-weight:800;letter-spacing:2px;cursor:pointer;
-  box-shadow:0 4px 18px rgba(34,197,94,.25);transition:all .15s}
-.spin-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 24px rgba(34,197,94,.4)}
+/* action row */
+.act-row{display:grid;grid-template-columns:80px 1fr 80px;gap:6px;align-items:stretch}
+
+.spin-btn{padding:12px;border:none;border-radius:10px;
+  background:linear-gradient(160deg,#1a7035,#28c058);color:#fff;
+  font-size:1rem;font-weight:800;letter-spacing:2px;cursor:pointer;
+  box-shadow:0 3px 16px rgba(40,192,88,.25);transition:all .14s;text-transform:uppercase}
+.spin-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 22px rgba(40,192,88,.4)}
+.spin-btn:active:not(:disabled){transform:translateY(1px)}
 .spin-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
-.side-btn{padding:10px 6px;border:1px solid var(--border);border-radius:12px;
-  background:#0e0a05;color:#5a4520;font-size:.7rem;cursor:pointer;
-  transition:all .15s;text-align:center;line-height:1.4;font-weight:600}
+
+.side-btn{padding:8px 4px;border:1px solid var(--border);border-radius:10px;
+  background:var(--cell);color:#5a4020;font-size:.65rem;cursor:pointer;
+  transition:all .14s;text-align:center;line-height:1.5;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .side-btn:hover{border-color:var(--gold);color:var(--gold)}
 .side-btn.on{border-color:var(--red);color:var(--red)}
 
-/* ── BONUS BUY BUTTON ── */
-.buy-btn-wrap{border-top:1px solid var(--border);padding-top:8px}
-.open-buy-btn{width:100%;padding:11px;border:1px solid #8a4010;border-radius:12px;
-  background:linear-gradient(135deg,#1a0c04,#2a1408);color:var(--scatter);
-  font-size:.85rem;font-weight:800;letter-spacing:2px;cursor:pointer;
-  text-transform:uppercase;transition:all .15s;
-  box-shadow:0 2px 12px rgba(232,93,4,.15)}
-.open-buy-btn:hover:not(:disabled){border-color:var(--scatter);
-  box-shadow:0 4px 18px rgba(232,93,4,.3);transform:translateY(-1px)}
-.open-buy-btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+/* bonus buy open button */
+.buy-opener{width:100%;padding:9px;border:1px solid #6a3a10;border-radius:10px;
+  background:linear-gradient(160deg,#180e06,#241408);color:var(--scatter);
+  font-size:.78rem;font-weight:800;letter-spacing:2px;cursor:pointer;
+  text-transform:uppercase;transition:all .14s;
+  box-shadow:0 2px 10px rgba(208,80,16,.12)}
+.buy-opener:hover:not(:disabled){border-color:var(--scatter);
+  box-shadow:0 3px 16px rgba(208,80,16,.25);transform:translateY(-1px)}
+.buy-opener:disabled{opacity:.3;cursor:not-allowed;transform:none}
 
 /* ── BONUS BUY MODAL ── */
-.bb-modal-bg{position:fixed;inset:0;background:rgba(5,3,1,.85);
-  backdrop-filter:blur(8px);z-index:100;display:none;
-  align-items:center;justify-content:center;padding:12px}
-.bb-modal-bg.open{display:flex;animation:modal-in .25s ease}
-@keyframes modal-in{from{opacity:0}to{opacity:1}}
+.modal-bg{position:fixed;inset:0;background:rgba(8,4,1,.88);
+  backdrop-filter:blur(10px);z-index:100;display:none;
+  align-items:flex-end;justify-content:center;padding:0}
+.modal-bg.on{display:flex;animation:modal-fade .2s ease}
+@keyframes modal-fade{from{opacity:0}to{opacity:1}}
 
-.bb-modal{background:#1a1208;border:2px solid var(--border);border-radius:20px;
-  width:100%;max-width:660px;max-height:90vh;overflow-y:auto;
-  box-shadow:0 0 80px rgba(212,160,23,.2)}
+.modal{background:var(--panel);border:1px solid #4a3010;border-radius:20px 20px 0 0;
+  width:100%;max-width:680px;max-height:92vh;overflow-y:auto;
+  box-shadow:0 -8px 60px rgba(0,0,0,.7);
+  animation:modal-up .3s cubic-bezier(.25,.8,.25,1)}
+@keyframes modal-up{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
-.bb-header{padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--border)}
-.bb-header-left{display:flex;align-items:center;gap:10px}
-.bb-header-icon{font-size:1.6rem}
-.bb-header-title{font-size:1rem;font-weight:800;color:var(--gold);letter-spacing:2px}
-.bb-header-sub{font-size:.62rem;color:#5a4520;letter-spacing:1px;margin-top:1px}
-.bb-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);
-  background:#0e0a05;color:#8a6a30;font-size:1.1rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:all .15s}
-.bb-close:hover{border-color:var(--red);color:var(--red)}
+.modal-head{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel);z-index:5}
+.modal-head-l{display:flex;align-items:center;gap:10px}
+.modal-head-icon{font-size:1.4rem}
+.modal-head-title{font-size:.9rem;font-weight:800;color:var(--gold);letter-spacing:2px}
+.modal-head-sub{font-size:.55rem;color:var(--dim);letter-spacing:1px;margin-top:1px}
+.modal-close{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);
+  background:var(--cell);color:var(--dim);font-size:.9rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .12s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
 
-.bb-balance{padding:8px 18px;background:#0e0a05;border-bottom:1px solid var(--border);
-  display:flex;justify-content:space-between;font-size:.75rem;color:#5a4520}
-.bb-balance span{color:#d4b060;font-weight:700}
+.modal-info{padding:7px 16px;background:var(--cell);border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;font-size:.7rem;color:var(--dim)}
+.modal-info span{color:#e8d0a0;font-weight:700}
 
-.bb-cards{padding:14px;display:flex;flex-direction:column;gap:10px}
+.modal-cards{padding:10px 12px 16px;display:flex;flex-direction:column;gap:8px}
 
-.bb-card{background:#0e0a05;border:1.5px solid var(--border);border-radius:14px;
-  padding:14px 16px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
-.bb-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .18s;
-  background:linear-gradient(135deg,rgba(255,255,255,.02),transparent)}
-.bb-card:hover:not(.disabled)::before{opacity:1}
-.bb-card:hover:not(.disabled){transform:translateY(-2px)}
-.bb-card.disabled{opacity:.35;cursor:not-allowed}
+/* individual buy card */
+.bcard{background:var(--cell);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px 14px;position:relative;overflow:hidden;transition:border-color .15s,box-shadow .15s,transform .15s}
+.bcard.can:hover{transform:translateY(-2px)}
+.bcard.cant{opacity:.35;pointer-events:none}
 
-.bb-card.tier0:hover:not(.disabled){border-color:#6a5020;box-shadow:0 4px 16px rgba(106,80,32,.2)}
-.bb-card.tier1:hover:not(.disabled){border-color:var(--scatter);box-shadow:0 4px 18px rgba(232,93,4,.25)}
-.bb-card.tier2:hover:not(.disabled){border-color:#6366f1;box-shadow:0 4px 18px rgba(99,102,241,.25)}
-.bb-card.tier3:hover:not(.disabled){border-color:var(--gold);box-shadow:0 4px 20px rgba(212,160,23,.3)}
+.bcard.t0:hover.can{border-color:#6a5020;box-shadow:0 4px 14px rgba(100,80,32,.2)}
+.bcard.t1:hover.can{border-color:var(--scatter);box-shadow:0 4px 16px rgba(208,80,16,.22)}
+.bcard.t2:hover.can{border-color:#6080d0;box-shadow:0 4px 16px rgba(96,128,208,.2)}
+.bcard.t3{background:linear-gradient(145deg,#1c1206,#120c04)}
+.bcard.t3:hover.can{border-color:var(--gold);box-shadow:0 4px 18px rgba(232,160,32,.28)}
 
-.bb-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
-.bb-card-left{display:flex;align-items:center;gap:10px}
-.bb-card-icon{font-size:2rem;line-height:1}
-.bb-card-name{font-size:.82rem;font-weight:800;letter-spacing:1px;text-transform:uppercase}
-.bb-card-rtp{font-size:.6rem;color:#5a4520;margin-top:2px}
-.bb-card-right{text-align:right}
-.bb-card-cost{font-size:1.3rem;font-weight:900;line-height:1}
-.bb-card-cost-lbl{font-size:.58rem;color:#5a4520;letter-spacing:1px;margin-top:2px}
+.bc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.bc-left{display:flex;align-items:center;gap:10px}
+.bc-icon{font-size:1.6rem;line-height:1;flex-shrink:0}
+.bc-name{font-size:.78rem;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+.bc-rtp{font-size:.55rem;color:var(--dim);margin-top:2px;letter-spacing:.5px}
+.bc-right{text-align:right;flex-shrink:0}
+.bc-cost{font-size:1.2rem;font-weight:900;line-height:1}
+.bc-cost-lbl{font-size:.52rem;color:var(--dim);letter-spacing:1px;margin-top:2px;text-transform:uppercase}
 
-.tier0 .bb-card-name{color:#8a6a30}.tier0 .bb-card-cost{color:#8a6a30}
-.tier1 .bb-card-name{color:#ff8040}.tier1 .bb-card-cost{color:var(--scatter)}
-.tier2 .bb-card-name{color:#818cf8}.tier2 .bb-card-cost{color:#818cf8}
-.tier3 .bb-card-name{color:var(--gold)}.tier3 .bb-card-cost{color:var(--gold2)}
-.tier3{background:linear-gradient(135deg,#1e1408,#0e0a05)}
+.t0 .bc-name{color:#8a6a30}.t0 .bc-cost{color:#8a6a30}
+.t1 .bc-name{color:#e87040}.t1 .bc-cost{color:var(--scatter)}
+.t2 .bc-name{color:#8090e0}.t2 .bc-cost{color:#a0b0f0}
+.t3 .bc-name{color:var(--gold)}.t3 .bc-cost{color:var(--gold2)}
 
-.bb-card-feats{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-.feat-tag{background:#1a1208;border-radius:6px;padding:3px 8px;font-size:.62rem;
-  color:#8a6a30;border:1px solid var(--border)}
-.tier1 .feat-tag{border-color:#4a2010;color:#e08050}
-.tier2 .feat-tag{border-color:#2a2850;color:#818cf8}
-.tier3 .feat-tag{border-color:#4a3010;color:#d4a017}
+.bc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.tag{background:#180e06;border:1px solid var(--border);border-radius:5px;
+  padding:2px 7px;font-size:.58rem;color:var(--dim)}
+.t1 .tag{border-color:#3a1808;color:#c07040}
+.t2 .tag{border-color:#202848;color:#8090d0}
+.t3 .tag{border-color:#3a2808;color:#c8a040}
 
-.bb-buy-btn{width:100%;padding:10px;border:none;border-radius:10px;
-  font-size:.85rem;font-weight:800;letter-spacing:1px;cursor:pointer;
+.bc-buy{width:100%;padding:9px;border:none;border-radius:8px;
+  font-size:.78rem;font-weight:800;letter-spacing:1px;cursor:pointer;
   text-transform:uppercase;transition:all .12s}
-.tier0 .bb-buy-btn{background:#2a1c08;color:#8a6a30;border:1px solid #3d2810}
-.tier0 .bb-buy-btn:hover{background:#3d2810;color:var(--gold)}
-.tier1 .bb-buy-btn{background:linear-gradient(135deg,#4a1a00,#8a3000);color:#fff;
-  box-shadow:0 2px 10px rgba(232,93,4,.3)}
-.tier1 .bb-buy-btn:hover{box-shadow:0 4px 16px rgba(232,93,4,.5)}
-.tier2 .bb-buy-btn{background:linear-gradient(135deg,#1e2060,#3730a3);color:#fff;
-  box-shadow:0 2px 10px rgba(99,102,241,.3)}
-.tier2 .bb-buy-btn:hover{box-shadow:0 4px 16px rgba(99,102,241,.5)}
-.tier3 .bb-buy-btn{background:linear-gradient(135deg,#4a3000,#d4a017);color:#fff;
-  box-shadow:0 2px 12px rgba(212,160,23,.35)}
-.tier3 .bb-buy-btn:hover{box-shadow:0 4px 20px rgba(212,160,23,.55)}
+.t0 .bc-buy{background:#201808;color:#8a6a30;border:1px solid var(--border)}
+.t0 .bc-buy:hover{background:#2e2010;color:var(--gold)}
+.t1 .bc-buy{background:linear-gradient(135deg,#401400,#8a2800);color:#fff;
+  box-shadow:0 2px 8px rgba(208,80,16,.25)}
+.t1 .bc-buy:hover{box-shadow:0 3px 14px rgba(208,80,16,.4)}
+.t2 .bc-buy{background:linear-gradient(135deg,#181840,#2828a0);color:#fff;
+  box-shadow:0 2px 8px rgba(96,128,208,.25)}
+.t2 .bc-buy:hover{box-shadow:0 3px 14px rgba(96,128,208,.4)}
+.t3 .bc-buy{background:linear-gradient(135deg,#3a2000,var(--gold));color:#fff;
+  box-shadow:0 2px 10px rgba(232,160,32,.3)}
+.t3 .bc-buy:hover{box-shadow:0 4px 18px rgba(232,160,32,.5)}
 
-/* confirm dialog inside modal */
-.bb-confirm{display:none;position:absolute;inset:0;background:rgba(10,7,2,.95);
-  border-radius:14px;flex-direction:column;align-items:center;justify-content:center;
-  padding:16px;text-align:center;z-index:5}
-.bb-confirm.show{display:flex}
-.bb-confirm-title{font-size:.85rem;color:#8a6a30;margin-bottom:6px;letter-spacing:1px}
-.bb-confirm-amt{font-size:1.8rem;font-weight:900;color:var(--gold);margin-bottom:4px}
-.bb-confirm-sub{font-size:.7rem;color:#5a4520;margin-bottom:14px}
-.bb-confirm-btns{display:flex;gap:8px}
-.bb-confirm-yes{padding:9px 24px;border:none;border-radius:9px;background:var(--green);
-  color:#fff;font-size:.8rem;font-weight:800;cursor:pointer;transition:all .12s}
-.bb-confirm-yes:hover{background:#22c55e}
-.bb-confirm-no{padding:9px 24px;border:1px solid var(--border);border-radius:9px;
-  background:transparent;color:#8a6a30;font-size:.8rem;cursor:pointer;transition:all .12s}
-.bb-confirm-no:hover{border-color:var(--red);color:var(--red)}
+/* confirm overlay on card */
+.bc-confirm{display:none;position:absolute;inset:0;background:rgba(12,8,2,.94);
+  border-radius:11px;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:14px;z-index:5}
+.bc-confirm.on{display:flex;animation:conf-in .2s ease}
+@keyframes conf-in{from{opacity:0}to{opacity:1}}
+.conf-q{font-size:.72rem;color:var(--dim);margin-bottom:5px;letter-spacing:.5px}
+.conf-amt{font-size:1.5rem;font-weight:900;color:var(--gold);margin-bottom:3px}
+.conf-desc{font-size:.62rem;color:#6a5030;margin-bottom:12px}
+.conf-btns{display:flex;gap:8px}
+.conf-yes{padding:8px 22px;border:none;border-radius:8px;background:var(--green);
+  color:#fff;font-size:.75rem;font-weight:800;cursor:pointer;transition:background .12s}
+.conf-yes:hover{background:#22b060}
+.conf-no{padding:8px 20px;border:1px solid var(--border);border-radius:8px;
+  background:transparent;color:var(--dim);font-size:.75rem;cursor:pointer;transition:all .12s}
+.conf-no:hover{border-color:var(--red);color:var(--red)}
 
 /* ── PAYTABLE ── */
-.pt-tog{width:100%;max-width:700px;margin-top:8px;background:none;
-  border:1px solid var(--border);border-radius:9px;color:#5a4520;
-  font-size:.72rem;padding:7px;cursor:pointer;transition:all .2s;letter-spacing:1px}
+.pt-wrap{width:100%;max-width:680px;margin-top:8px}
+.pt-tog{width:100%;background:none;border:1px solid var(--border);border-radius:9px;
+  color:var(--dim);font-size:.7rem;padding:7px;cursor:pointer;transition:all .2s;letter-spacing:1px}
 .pt-tog:hover{border-color:var(--gold);color:var(--gold)}
-.pt{width:100%;max-width:700px;background:var(--panel);border:1px solid var(--border);
-  border-radius:12px;padding:14px;margin-top:6px;display:none}
-.pt.show{display:block}
-.pt h3{color:var(--gold);font-size:.68rem;letter-spacing:2px;text-align:center;margin-bottom:10px}
-.pt-g{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
-.pt-r{background:#0a0703;border-radius:7px;padding:6px 10px;
-  display:flex;justify-content:space-between;align-items:center;font-size:.75rem}
-.pt-r .ps{font-size:.95rem}.pt-r .pv{color:var(--gold);font-weight:700;font-size:.7rem;text-align:right}
-.pt-note{font-size:.65rem;color:#5a4520;text-align:center;line-height:1.8}
-.pt-note b{color:#8a6a30}
+.pt{background:var(--panel);border:1px solid var(--border);border-radius:12px;
+  padding:14px;margin-top:6px;display:none}
+.pt.on{display:block}
+.pt h3{color:var(--gold);font-size:.65rem;letter-spacing:2px;text-align:center;margin-bottom:10px}
+.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
+.pt-row{background:var(--cell);border-radius:7px;padding:5px 10px;
+  display:flex;justify-content:space-between;align-items:center;font-size:.72rem}
+.pt-row .ps{font-size:.9rem}.pt-row .pv{color:var(--gold);font-weight:700;font-size:.65rem;text-align:right}
+.pt-note{font-size:.62rem;color:#4a3818;text-align:center;line-height:1.8}
+.pt-note b{color:#7a5830}
 
-.reset-btn{margin-top:8px;background:none;border:1px solid #1a1208;color:#3a2810;
-  padding:5px 14px;border-radius:8px;cursor:pointer;font-size:.7rem;
-  transition:all .2s;width:100%;max-width:700px}
+.reset-btn{margin-top:6px;width:100%;max-width:680px;background:none;
+  border:1px solid #1e1408;color:#3a2810;padding:5px 14px;border-radius:8px;
+  cursor:pointer;font-size:.68rem;transition:all .2s}
 .reset-btn:hover{border-color:var(--red);color:var(--red)}
-
-/* ── FS tier badges ── */
-.tier-badge{display:inline-block;padding:2px 8px;border-radius:10px;
-  font-size:.65rem;font-weight:700;margin-left:6px;vertical-align:middle}
-.tb1{background:#1a0a00;color:var(--scatter)}.tb2{background:#1a1a2a;color:var(--silver)}
-.tb3{background:#2a1a00;color:var(--goldcoin)}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="stat"><div class="lbl">Balance</div><div class="v" id="s-bal">$1,000.00</div></div>
-  <div class="stat win-s"><div class="lbl">Win</div><div class="v" id="s-win">$0.00</div></div>
-  <div class="stat"><div class="lbl">Bet</div><div class="v" id="s-bet">$1.00</div></div>
-  <div class="stat fs-s" id="fs-stat"><div class="lbl">Free Spins</div><div class="v" id="s-fs">0</div></div>
+<div class="hud">
+  <div class="hud-box"><span class="hl">Balance</span><span class="hv" id="s-bal">$1,000.00</span></div>
+  <div class="hud-box win-hud"><span class="hl">Win</span><span class="hv" id="s-win">$0.00</span></div>
+  <div class="hud-box"><span class="hl">Bet</span><span class="hv" id="s-bet">$1.00</span></div>
+  <div class="hud-box fs-hud" id="fs-hud" style="grid-column:span 3">
+    <span class="hl">Free Spins Remaining</span><span class="hv" id="s-fs">0</span>
+  </div>
 </div>
 
 <div class="machine">
-  <div class="title-bar">
-    <div class="game-name">LE BANDIT</div>
-    <div class="game-tag">CLUSTER PAYS · GOLDEN SQUARES · SUPER CASCADES</div>
-    <div class="raccoon">🦝</div>
+  <div class="top-bar">
+    <div class="logo">
+      <span class="logo-text">Le Bandit</span>
+      <span class="logo-sub">Cluster Pays · Golden Squares · Super Cascades</span>
+    </div>
+    <span class="logo-raccoon">🦝</span>
   </div>
 
-  <div class="reels-wrap">
-    <div class="reels-bg">
+  <div class="reel-area">
+    <div class="reel-frame">
       <div class="reels" id="reels"></div>
-      <div class="win-flash" id="wf"></div>
-      <div class="b-overlay" id="b-ov">
-        <div class="b-raccoon">🦝</div>
-        <div class="b-title" id="b-title">BONUS!</div>
-        <div class="b-tier" id="b-tier">LUCK OF THE BANDIT</div>
-        <div class="b-spins-num" id="b-num">8</div>
-        <div class="b-spins-lbl">FREE SPINS</div>
-        <div class="b-perks" id="b-perks">Golden Squares persist between spins</div>
-        <button class="b-go" onclick="startFS()">ALLONS-Y! →</button>
+      <div class="wflash" id="wf"></div>
+      <div class="bov" id="bov">
+        <div class="bov-animal">🦝</div>
+        <div class="bov-title" id="bov-title">BONUS!</div>
+        <div class="bov-tier" id="bov-tier">LUCK OF THE BANDIT</div>
+        <div class="bov-num" id="bov-num">8</div>
+        <div class="bov-lbl">FREE SPINS</div>
+        <div class="bov-perks" id="bov-perks">Golden Squares persist between spins</div>
+        <button class="bov-btn" onclick="startFS()">ALLONS-Y →</button>
       </div>
     </div>
   </div>
 
-  <!-- Coin Tally -->
-  <div class="coin-tally" id="coin-tally">
-    <span class="tally-label">COINS</span>
-    <div class="tally-coins" id="tally-coins"></div>
-    <span class="tally-total" id="tally-total"></span>
+  <div class="tally" id="tally">
+    <span class="tally-lbl">COINS</span>
+    <div class="tally-chips" id="tally-chips"></div>
+    <span class="tally-sum" id="tally-sum"></span>
   </div>
 
-  <div class="msg" id="msg">Spin the reels, mon ami! 🦝</div>
+  <div class="msgbar" id="msg">Spin to win, partner! 🦝</div>
 
   <div class="ctrl">
     <div class="bet-row">
-      <button class="ico" onclick="changeBet(-1)">−</button>
-      <div class="bet-dsp" id="bet-dsp">$1.00</div>
-      <button class="ico" onclick="changeBet(1)">+</button>
+      <button class="adj" onclick="changeBet(-1)">−</button>
+      <div class="bet-val" id="bet-val">$1.00</div>
+      <button class="adj" onclick="changeBet(1)">+</button>
       <div class="presets">
         <button class="pre" onclick="setBet(.10)">$.10</button>
         <button class="pre" onclick="setBet(.50)">$.50</button>
@@ -374,168 +380,147 @@ body{display:flex;flex-direction:column;align-items:center;padding:10px 6px 30px
         <button class="pre" onclick="setBet(100)">$100</button>
       </div>
     </div>
-
     <div class="act-row">
       <button class="side-btn" id="auto-btn" onclick="toggleAuto()">AUTO<br>SPIN</button>
       <button class="spin-btn" id="spin-btn" onclick="handleSpin()">SPIN</button>
-      <button class="side-btn" onclick="setBet(Math.floor(balance/10)*10||bet)" style="border-color:#1a2a0a;color:#3a6a10">MAX<br>BET</button>
-    </div>
-
-    <div class="buy-btn-wrap">
-      <button class="open-buy-btn" id="open-buy-btn" onclick="openBuyModal()">
-        🎰 &nbsp;BONUS BUY
-      </button>
+      <button class="side-btn" onclick="openModal()">BONUS<br>BUY</button>
     </div>
   </div>
 </div>
 
 <!-- BONUS BUY MODAL -->
-<div class="bb-modal-bg" id="bb-modal-bg" onclick="closeBuyModalBg(event)">
-  <div class="bb-modal">
-    <div class="bb-header">
-      <div class="bb-header-left">
-        <div class="bb-header-icon">🦝</div>
+<div class="modal-bg" id="modal-bg" onclick="closeBg(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-l">
+        <span class="modal-head-icon">🎰</span>
         <div>
-          <div class="bb-header-title">BONUS BUY</div>
-          <div class="bb-header-sub">SKIP THE WAIT · GUARANTEED FEATURE</div>
+          <div class="modal-head-title">BONUS BUY</div>
+          <div class="modal-head-sub">SKIP THE BASE GAME · GUARANTEED FEATURE</div>
         </div>
       </div>
-      <button class="bb-close" onclick="closeBuyModal()">✕</button>
+      <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
-    <div class="bb-balance">
-      Balance: <span id="bb-bal">$1,000.00</span> &nbsp;·&nbsp; Bet: <span id="bb-bet">$1.00</span>
+    <div class="modal-info">
+      Balance: <span id="mb-bal">$1,000.00</span> &nbsp;·&nbsp; Current Bet: <span id="mb-bet">$1.00</span>
     </div>
+    <div class="modal-cards">
 
-    <div class="bb-cards">
-
-      <!-- Tier 0: Bonus Hunt -->
-      <div class="bb-card tier0" id="bbcard0">
-        <div class="bb-card-top">
-          <div class="bb-card-left">
-            <div class="bb-card-icon">📷</div>
-            <div>
-              <div class="bb-card-name">Bonus Hunt</div>
-              <div class="bb-card-rtp">RTP 96.34% · 3× BET</div>
-            </div>
+      <!-- T0 Bonus Hunt -->
+      <div class="bcard t0 can" id="bc0">
+        <div class="bc-top">
+          <div class="bc-left">
+            <div class="bc-icon">📷</div>
+            <div><div class="bc-name">Bonus Hunt</div><div class="bc-rtp">Boosted scatter · 3× bet</div></div>
           </div>
-          <div class="bb-card-right">
-            <div class="bb-card-cost" id="bb-cost0">$3.00</div>
-            <div class="bb-card-cost-lbl">TOTAL COST</div>
+          <div class="bc-right">
+            <div class="bc-cost" id="bcc0">$3.00</div>
+            <div class="bc-cost-lbl">Total Cost</div>
           </div>
         </div>
-        <div class="bb-card-feats">
-          <span class="feat-tag">📷 Enhanced scatter chance</span>
-          <span class="feat-tag">1 boosted spin</span>
-          <span class="feat-tag">Can trigger free spins</span>
+        <div class="bc-tags">
+          <span class="tag">Enhanced scatter rate</span>
+          <span class="tag">1 boosted spin</span>
+          <span class="tag">Can lead to free spins</span>
         </div>
-        <button class="bb-buy-btn" onclick="confirmBuy(0)">BUY BONUS</button>
-        <div class="bb-confirm" id="bbconf0">
-          <div class="bb-confirm-title">CONFIRM PURCHASE</div>
-          <div class="bb-confirm-amt" id="bbconf-amt0"></div>
-          <div class="bb-confirm-sub">Bonus Hunt · 1 boosted spin</div>
-          <div class="bb-confirm-btns">
-            <button class="bb-confirm-yes" onclick="executeBuy(0)">CONFIRM</button>
-            <button class="bb-confirm-no" onclick="cancelConfirm(0)">CANCEL</button>
+        <button class="bc-buy" onclick="askConfirm(0)">BUY BONUS</button>
+        <div class="bc-confirm" id="conf0">
+          <div class="conf-q">CONFIRM PURCHASE?</div>
+          <div class="conf-amt" id="ca0"></div>
+          <div class="conf-desc">Bonus Hunt · 1 boosted spin</div>
+          <div class="conf-btns">
+            <button class="conf-yes" onclick="doBuy(0)">CONFIRM</button>
+            <button class="conf-no" onclick="noConf(0)">CANCEL</button>
           </div>
         </div>
       </div>
 
-      <!-- Tier 1: Luck of the Bandit -->
-      <div class="bb-card tier1" id="bbcard1">
-        <div class="bb-card-top">
-          <div class="bb-card-left">
-            <div class="bb-card-icon">📷📷📷</div>
-            <div>
-              <div class="bb-card-name">Luck of the Bandit</div>
-              <div class="bb-card-rtp">RTP 96.34% · 100× BET</div>
-            </div>
+      <!-- T1 Luck of the Bandit -->
+      <div class="bcard t1 can" id="bc1">
+        <div class="bc-top">
+          <div class="bc-left">
+            <div class="bc-icon">📷📷📷</div>
+            <div><div class="bc-name">Luck of the Bandit</div><div class="bc-rtp">RTP 96.34% · 100× bet</div></div>
           </div>
-          <div class="bb-card-right">
-            <div class="bb-card-cost" id="bb-cost1">$100.00</div>
-            <div class="bb-card-cost-lbl">TOTAL COST</div>
+          <div class="bc-right">
+            <div class="bc-cost" id="bcc1">$100.00</div>
+            <div class="bc-cost-lbl">Total Cost</div>
           </div>
         </div>
-        <div class="bb-card-feats">
-          <span class="feat-tag">8 Free Spins</span>
-          <span class="feat-tag">Golden Squares persist</span>
-          <span class="feat-tag">Bronze · Silver · Gold coins</span>
-          <span class="feat-tag">Retrigger +2 spins</span>
+        <div class="bc-tags">
+          <span class="tag">8 Free Spins</span>
+          <span class="tag">Golden Squares persist</span>
+          <span class="tag">Bronze · Silver · Gold coins</span>
+          <span class="tag">Retrigger +2 spins</span>
         </div>
-        <button class="bb-buy-btn" onclick="confirmBuy(1)">BUY BONUS</button>
-        <div class="bb-confirm" id="bbconf1">
-          <div class="bb-confirm-title">CONFIRM PURCHASE</div>
-          <div class="bb-confirm-amt" id="bbconf-amt1"></div>
-          <div class="bb-confirm-sub">Luck of the Bandit · 8 Free Spins</div>
-          <div class="bb-confirm-btns">
-            <button class="bb-confirm-yes" onclick="executeBuy(1)">CONFIRM</button>
-            <button class="bb-confirm-no" onclick="cancelConfirm(1)">CANCEL</button>
+        <button class="bc-buy" onclick="askConfirm(1)">BUY BONUS</button>
+        <div class="bc-confirm" id="conf1">
+          <div class="conf-q">CONFIRM PURCHASE?</div>
+          <div class="conf-amt" id="ca1"></div>
+          <div class="conf-desc">Luck of the Bandit · 8 Free Spins</div>
+          <div class="conf-btns">
+            <button class="conf-yes" onclick="doBuy(1)">CONFIRM</button>
+            <button class="conf-no" onclick="noConf(1)">CANCEL</button>
           </div>
         </div>
       </div>
 
-      <!-- Tier 2: Rainbow Feature Spins -->
-      <div class="bb-card tier2" id="bbcard2">
-        <div class="bb-card-top">
-          <div class="bb-card-left">
-            <div class="bb-card-icon">🌈🦝</div>
-            <div>
-              <div class="bb-card-name">Rainbow Feature Spins</div>
-              <div class="bb-card-rtp">RTP 96.34% · 50× BET</div>
-            </div>
+      <!-- T2 Rainbow Feature -->
+      <div class="bcard t2 can" id="bc2">
+        <div class="bc-top">
+          <div class="bc-left">
+            <div class="bc-icon">🌈🦝</div>
+            <div><div class="bc-name">Rainbow Feature Spins</div><div class="bc-rtp">RTP 96.34% · 50× bet</div></div>
           </div>
-          <div class="bb-card-right">
-            <div class="bb-card-cost" id="bb-cost2">$50.00</div>
-            <div class="bb-card-cost-lbl">TOTAL COST</div>
+          <div class="bc-right">
+            <div class="bc-cost" id="bcc2">$50.00</div>
+            <div class="bc-cost-lbl">Total Cost</div>
           </div>
         </div>
-        <div class="bb-card-feats">
-          <span class="feat-tag">5 Feature Spins</span>
-          <span class="feat-tag">🌈 Rainbow guaranteed every spin</span>
-          <span class="feat-tag">All coin tiers available</span>
-          <span class="feat-tag">Higher activation rate</span>
+        <div class="bc-tags">
+          <span class="tag">5 Feature Spins</span>
+          <span class="tag">🌈 Rainbow every spin</span>
+          <span class="tag">All coin tiers active</span>
         </div>
-        <button class="bb-buy-btn" onclick="confirmBuy(2)">BUY BONUS</button>
-        <div class="bb-confirm" id="bbconf2">
-          <div class="bb-confirm-title">CONFIRM PURCHASE</div>
-          <div class="bb-confirm-amt" id="bbconf-amt2"></div>
-          <div class="bb-confirm-sub">Rainbow Feature Spins · 5 Spins</div>
-          <div class="bb-confirm-btns">
-            <button class="bb-confirm-yes" onclick="executeBuy(2)">CONFIRM</button>
-            <button class="bb-confirm-no" onclick="cancelConfirm(2)">CANCEL</button>
+        <button class="bc-buy" onclick="askConfirm(2)">BUY BONUS</button>
+        <div class="bc-confirm" id="conf2">
+          <div class="conf-q">CONFIRM PURCHASE?</div>
+          <div class="conf-amt" id="ca2"></div>
+          <div class="conf-desc">Rainbow Feature Spins · 5 Spins</div>
+          <div class="conf-btns">
+            <button class="conf-yes" onclick="doBuy(2)">CONFIRM</button>
+            <button class="conf-no" onclick="noConf(2)">CANCEL</button>
           </div>
         </div>
       </div>
 
-      <!-- Tier 3: All That Glitters is Gold -->
-      <div class="bb-card tier3" id="bbcard3">
-        <div class="bb-card-top">
-          <div class="bb-card-left">
-            <div class="bb-card-icon">🏆✨</div>
-            <div>
-              <div class="bb-card-name">All That Glitters Is Gold</div>
-              <div class="bb-card-rtp">RTP 96.34% · 250× BET</div>
-            </div>
+      <!-- T3 All That Glitters -->
+      <div class="bcard t3 can" id="bc3">
+        <div class="bc-top">
+          <div class="bc-left">
+            <div class="bc-icon">🏆✨</div>
+            <div><div class="bc-name">All That Glitters Is Gold</div><div class="bc-rtp">RTP 96.34% · 250× bet</div></div>
           </div>
-          <div class="bb-card-right">
-            <div class="bb-card-cost" id="bb-cost3">$250.00</div>
-            <div class="bb-card-cost-lbl">TOTAL COST</div>
+          <div class="bc-right">
+            <div class="bc-cost" id="bcc3">$250.00</div>
+            <div class="bc-cost-lbl">Total Cost</div>
           </div>
         </div>
-        <div class="bb-card-feats">
-          <span class="feat-tag">12 Free Spins</span>
-          <span class="feat-tag">🥈 Silver &amp; 🥇 Gold coins only</span>
-          <span class="feat-tag">Persistent Golden Squares</span>
-          <span class="feat-tag">🍀 Clover &amp; 🏆 Pot of Gold active</span>
-          <span class="feat-tag">Max win potential</span>
+        <div class="bc-tags">
+          <span class="tag">12 Free Spins</span>
+          <span class="tag">Silver &amp; Gold coins only</span>
+          <span class="tag">Persistent Golden Squares</span>
+          <span class="tag">🍀 Clover &amp; 🏆 Pot active</span>
+          <span class="tag">Maximum win potential</span>
         </div>
-        <button class="bb-buy-btn" onclick="confirmBuy(3)">BUY BONUS</button>
-        <div class="bb-confirm" id="bbconf3">
-          <div class="bb-confirm-title">CONFIRM PURCHASE</div>
-          <div class="bb-confirm-amt" id="bbconf-amt3"></div>
-          <div class="bb-confirm-sub">All That Glitters Is Gold · 12 Free Spins</div>
-          <div class="bb-confirm-btns">
-            <button class="bb-confirm-yes" onclick="executeBuy(3)">CONFIRM</button>
-            <button class="bb-confirm-no" onclick="cancelConfirm(3)">CANCEL</button>
+        <button class="bc-buy" onclick="askConfirm(3)">BUY BONUS</button>
+        <div class="bc-confirm" id="conf3">
+          <div class="conf-q">CONFIRM PURCHASE?</div>
+          <div class="conf-amt" id="ca3"></div>
+          <div class="conf-desc">All That Glitters Is Gold · 12 Free Spins</div>
+          <div class="conf-btns">
+            <button class="conf-yes" onclick="doBuy(3)">CONFIRM</button>
+            <button class="conf-no" onclick="noConf(3)">CANCEL</button>
           </div>
         </div>
       </div>
@@ -544,29 +529,30 @@ body{display:flex;flex-direction:column;align-items:center;padding:10px 6px 30px
   </div>
 </div>
 
-<button class="pt-tog" onclick="document.getElementById('pt').classList.toggle('show')">▾ PAYTABLE &amp; RULES</button>
-<div class="pt" id="pt">
-  <h3>— PAYTABLE (cluster size 5 / 8 / 10 / 13+) —</h3>
-  <div class="pt-g">
-    <div class="pt-r"><span class="ps">🎩 Top Hat</span><span class="pv">0.4× · 1.5× · 3× · 100×</span></div>
-    <div class="pt-r"><span class="ps">🥖 Baguette</span><span class="pv">0.3× · 1× · 2× · 50×</span></div>
-    <div class="pt-r"><span class="ps">🍺 Beer</span><span class="pv">0.2× · 0.8× · 1.5× · 30×</span></div>
-    <div class="pt-r"><span class="ps">🧀 Cheese</span><span class="pv">0.15× · 0.6× · 1× · 20×</span></div>
-    <div class="pt-r"><span class="ps">🪤 Trap</span><span class="pv">0.1× · 0.5× · 0.8× · 15×</span></div>
-    <div class="pt-r"><span class="ps">A / K</span><span class="pv">0.05× · 0.25× · 0.6× · 8×</span></div>
-    <div class="pt-r"><span class="ps">Q / J / 10</span><span class="pv">0.03× · 0.15× · 0.4× · 5×</span></div>
-    <div class="pt-r"><span class="ps">🦝 WILD</span><span class="pv">Substitutes all regular</span></div>
-  </div>
-  <div class="pt-note">
-    <b>CLUSTER PAYS</b> — 5+ identical symbols touching horizontally/vertically.<br>
-    <b>SUPER CASCADE</b> — winning symbols vanish, new ones drop. Repeat until no wins.<br>
-    <b>GOLDEN SQUARES</b> — winning cells become Golden Squares. Activated by 🌈 Rainbow.<br>
-    <b>RAINBOW REVEAL</b> — activates all Golden Squares → Bronze (0.2×–4×), Silver (5×–20×), Gold (25×–500×), 🍀 Clover (multiplies adjacent ×2–×10), 🏆 Pot of Gold (collects all coins).<br>
-    <b>SCATTER 📷</b> — 3 = 8 FS · 4 = 12 FS · 5 = 12 FS (upgraded) &nbsp;|&nbsp; Retrigger in FS = +2 spins.<br>
-    <b>MAX WIN</b> 10,000× bet &nbsp;|&nbsp; <b>RTP</b> 96.34% &nbsp;|&nbsp; <b>Volatility</b> Medium
+<div class="pt-wrap">
+  <button class="pt-tog" onclick="document.getElementById('pt').classList.toggle('on')">▾ PAYTABLE &amp; RULES</button>
+  <div class="pt" id="pt">
+    <h3>— PAYTABLE (cluster size 5 / 8 / 10 / 13+) —</h3>
+    <div class="pt-grid">
+      <div class="pt-row"><span class="ps">🎩 Top Hat</span><span class="pv">0.4× · 1.5× · 3× · 100×</span></div>
+      <div class="pt-row"><span class="ps">🥖 Baguette</span><span class="pv">0.3× · 1× · 2× · 50×</span></div>
+      <div class="pt-row"><span class="ps">🍺 Beer</span><span class="pv">0.2× · 0.8× · 1.5× · 30×</span></div>
+      <div class="pt-row"><span class="ps">🧀 Cheese</span><span class="pv">0.15× · 0.6× · 1× · 20×</span></div>
+      <div class="pt-row"><span class="ps">🪤 Trap</span><span class="pv">0.1× · 0.5× · 0.8× · 15×</span></div>
+      <div class="pt-row"><span class="ps">A / K</span><span class="pv">0.05× · 0.25× · 0.6× · 8×</span></div>
+      <div class="pt-row"><span class="ps">Q / J / 10</span><span class="pv">0.03× · 0.15× · 0.4× · 5×</span></div>
+      <div class="pt-row"><span class="ps">🦝 Wild</span><span class="pv">Substitutes all regular</span></div>
+    </div>
+    <div class="pt-note">
+      <b>CLUSTER PAYS</b> — 5+ identical symbols connected horizontally or vertically<br>
+      <b>SUPER CASCADE</b> — wins explode, new symbols drop. Repeats until no more wins<br>
+      <b>GOLDEN SQUARES</b> — exploded cells become dormant squares, activated by 🌈<br>
+      <b>RAINBOW REVEAL</b> — reveals Bronze (0.2–4×) · Silver (5–20×) · Gold (25–500×) coins, 🍀 Clover (multiplies adjacent), 🏆 Pot (collects all)<br>
+      <b>SCATTER 📷</b> — 3 = 8 FS · 4 = 12 FS · 5 = 12 FS upgraded · Retrigger = +2 spins
+    </div>
   </div>
 </div>
-<button class="reset-btn" onclick="resetGame()">↺ Reset to $1,000</button>
+<button class="reset-btn" onclick="resetGame()">↺ Reset Balance to $1,000</button>
 
 <script>
 // ── SYMBOLS ────────────────────────────────────────────────────────────────────
@@ -574,102 +560,72 @@ const S={HAT:'🎩',BAG:'🥖',BEER:'🍺',CHE:'🧀',TRP:'🪤',
   A:'A',K:'K',Q:'Q',J:'J',TEN:'10',
   WILD:'🦝',SCATTER:'📷',RAINBOW:'🌈'};
 const CARDS=[S.A,S.K,S.Q,S.J,S.TEN];
-const PREMIUMS=[S.HAT,S.BAG,S.BEER,S.CHE,S.TRP];
-const REGULARS=[...PREMIUMS,...CARDS];
 const COLS=6,ROWS=5;
 
-// Payout table: index = cluster size (capped at 12 = 13+)
+// Payout by cluster size (index = size, capped at 12)
 const PAY={
-  [S.HAT]:  [0,0,0,0,0.4,0.6,0.8,1.5,2,3,5,10,100],
-  [S.BAG]:  [0,0,0,0,0.3,0.5,0.6,1,1.5,2,4,8,50],
-  [S.BEER]: [0,0,0,0,0.2,0.3,0.4,0.8,1,1.5,3,6,30],
-  [S.CHE]:  [0,0,0,0,0.15,0.25,0.35,0.6,0.8,1,2,4,20],
-  [S.TRP]:  [0,0,0,0,0.1,0.18,0.3,0.5,0.65,0.8,1.5,3,15],
-  [S.A]:    [0,0,0,0,0.05,0.1,0.15,0.25,0.4,0.6,1,2,8],
-  [S.K]:    [0,0,0,0,0.05,0.1,0.13,0.2,0.3,0.5,0.8,1.5,6],
-  [S.Q]:    [0,0,0,0,0.04,0.08,0.1,0.15,0.2,0.4,0.6,1,5],
-  [S.J]:    [0,0,0,0,0.03,0.06,0.09,0.12,0.18,0.3,0.5,0.8,4],
-  [S.TEN]:  [0,0,0,0,0.02,0.05,0.07,0.1,0.14,0.2,0.4,0.6,3],
+  [S.HAT]: [0,0,0,0,0.4,0.6,0.8,1.5,2,3,5,10,100],
+  [S.BAG]: [0,0,0,0,0.3,0.5,0.6,1,1.5,2,4,8,50],
+  [S.BEER]:[0,0,0,0,0.2,0.3,0.4,0.8,1,1.5,3,6,30],
+  [S.CHE]: [0,0,0,0,0.15,0.25,0.35,0.6,0.8,1,2,4,20],
+  [S.TRP]: [0,0,0,0,0.1,0.18,0.28,0.5,0.65,0.8,1.5,3,15],
+  [S.A]:   [0,0,0,0,0.05,0.1,0.15,0.25,0.4,0.6,1,2,8],
+  [S.K]:   [0,0,0,0,0.05,0.1,0.13,0.2,0.3,0.5,0.8,1.5,6],
+  [S.Q]:   [0,0,0,0,0.04,0.08,0.1,0.15,0.2,0.4,0.6,1,5],
+  [S.J]:   [0,0,0,0,0.03,0.06,0.09,0.12,0.18,0.3,0.5,0.8,4],
+  [S.TEN]: [0,0,0,0,0.02,0.05,0.07,0.1,0.14,0.2,0.4,0.6,3],
 };
-function clusterPay(sym,size){
-  const t=PAY[sym]; if(!t) return 0;
-  return t[Math.min(size,12)]||0;
-}
+function cpay(sym,size){const t=PAY[sym];return t?t[Math.min(size,12)]||0:0;}
 
 // Symbol pools
-const BASE_POOL=makePool([
-  [S.TEN,14],[S.J,12],[S.Q,10],[S.K,9],[S.A,8],
-  [S.TRP,7],[S.CHE,6],[S.BEER,5],[S.BAG,4],[S.HAT,2],
-  [S.WILD,4],[S.SCATTER,2],[S.RAINBOW,3]
-]);
-const FS_POOL=makePool([
-  [S.TEN,10],[S.J,9],[S.Q,8],[S.K,7],[S.A,7],
-  [S.TRP,6],[S.CHE,5],[S.BEER,5],[S.BAG,4],[S.HAT,3],
-  [S.WILD,6],[S.SCATTER,3],[S.RAINBOW,5]
-]);
-const FS_RAINBOW_POOL=makePool([  // guaranteed rainbow mode
-  [S.TEN,8],[S.J,7],[S.Q,6],[S.K,6],[S.A,6],
-  [S.TRP,5],[S.CHE,4],[S.BEER,4],[S.BAG,3],[S.HAT,2],
-  [S.WILD,6],[S.SCATTER,3],[S.RAINBOW,12]  // heavy rainbow weight
-]);
-// Gold/silver only (tier 3 FS coins)
-const GOLD_ONLY_POOL=makePool([
-  [S.TEN,6],[S.J,5],[S.Q,4],[S.K,5],[S.A,5],
-  [S.TRP,4],[S.CHE,3],[S.BEER,3],[S.BAG,2],[S.HAT,2],
-  [S.WILD,6],[S.SCATTER,3],[S.RAINBOW,10]
-]);
+function mkPool(w){const a=[];w.forEach(([s,n])=>{for(let i=0;i<n;i++)a.push(s);});return a;}
+const BASE=mkPool([[S.TEN,14],[S.J,12],[S.Q,10],[S.K,9],[S.A,8],[S.TRP,7],[S.CHE,6],[S.BEER,5],[S.BAG,4],[S.HAT,2],[S.WILD,4],[S.SCATTER,2],[S.RAINBOW,3]]);
+const FS1=mkPool([[S.TEN,10],[S.J,9],[S.Q,8],[S.K,7],[S.A,7],[S.TRP,6],[S.CHE,5],[S.BEER,5],[S.BAG,4],[S.HAT,3],[S.WILD,6],[S.SCATTER,3],[S.RAINBOW,5]]);
+const FS2=mkPool([[S.TEN,8],[S.J,7],[S.Q,6],[S.K,6],[S.A,6],[S.TRP,5],[S.CHE,4],[S.BEER,4],[S.BAG,3],[S.HAT,2],[S.WILD,6],[S.SCATTER,3],[S.RAINBOW,12]]);
+const FS3=mkPool([[S.TEN,7],[S.J,6],[S.Q,5],[S.K,6],[S.A,6],[S.TRP,4],[S.CHE,3],[S.BEER,3],[S.BAG,2],[S.HAT,2],[S.WILD,6],[S.SCATTER,3],[S.RAINBOW,10]]);
+function pool(){return isFreeSpins?(fsTier===3?FS3:fsTier===2?FS2:FS1):BASE;}
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function rsym(){return rnd(pool());}
 
-function makePool(weights){
-  const a=[];weights.forEach(([s,n])=>{for(let i=0;i<n;i++)a.push(s);});return a;
-}
-function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function randSym(){
-  const p=isFreeSpins?(fsTier===3?GOLD_ONLY_POOL:fsTier===2?FS_RAINBOW_POOL:FS_POOL):BASE_POOL;
-  return rand(p);
-}
-
-// Coin generation
-function randCoin(tier){ // tier: 0=all, 1=silver+gold, 2=gold+big
-  if(tier===2){
-    return Math.random()<.3?{t:'clover',v:Math.ceil(Math.random()*4)*2+2}
-      :Math.random()<.15?{t:'pot',v:0}
-      :{t:'gold',v:randGoldVal()};
-  }
-  if(tier===1){
-    const r=Math.random();
-    if(r<.08) return {t:'pot',v:0};
-    if(r<.18) return {t:'clover',v:Math.ceil(Math.random()*4)*2+2};
-    if(r<.45) return {t:'gold',v:randGoldVal()};
-    return {t:'silver',v:randSilverVal()};
-  }
+// Coins
+function mkCoin(tier){
   const r=Math.random();
-  if(r<.04) return {t:'pot',v:0};
-  if(r<.1)  return {t:'clover',v:Math.ceil(Math.random()*3)*2+2};
-  if(r<.2)  return {t:'gold',v:randGoldVal()};
-  if(r<.5)  return {t:'silver',v:randSilverVal()};
-  return {t:'bronze',v:randBronzeVal()};
+  if(tier===3){
+    if(r<.08) return{t:'pot'};
+    if(r<.2) return{t:'clover',v:rnd([2,3,4,5,6,8,10])};
+    if(r<.55) return{t:'gold',v:rnd([25,30,40,50,75,100,150,200,300,500])};
+    return{t:'silver',v:rnd([5,6,8,10,12,15,20])};
+  }
+  if(tier===2){
+    if(r<.05) return{t:'pot'};
+    if(r<.14) return{t:'clover',v:rnd([2,3,4,5,6,8])};
+    if(r<.35) return{t:'gold',v:rnd([25,30,40,50,75,100,150])};
+    if(r<.65) return{t:'silver',v:rnd([5,6,8,10,12,15,20])};
+    return{t:'bronze',v:rnd([0.2,0.3,0.5,0.8,1,1.5,2,3,4])};
+  }
+  if(r<.03) return{t:'pot'};
+  if(r<.09) return{t:'clover',v:rnd([2,3,4,5,6])};
+  if(r<.18) return{t:'gold',v:rnd([25,30,40,50,75,100])};
+  if(r<.48) return{t:'silver',v:rnd([5,6,8,10,12,15,20])};
+  return{t:'bronze',v:rnd([0.2,0.3,0.5,0.8,1,1.5,2,3,4])};
 }
-function randBronzeVal(){const v=[0.2,.3,.5,.8,1,1.5,2,3,4];return rand(v);}
-function randSilverVal(){const v=[5,6,8,10,12,15,20];return rand(v);}
-function randGoldVal(){const v=[25,30,40,50,75,100,150,200,300,500];return rand(v);}
 
-// ── STATE ───────────────────────────────────────────────────────────────────────
+// ── STATE ──────────────────────────────────────────────────────────────────────
 let balance=1000,bet=1,spinning=false,autoOn=false;
 let grid=Array.from({length:COLS},()=>Array(ROWS).fill(S.TEN));
-let goldenSquares=Array.from({length:COLS},()=>Array(ROWS).fill(null)); // null or coin obj
-let isFreeSpins=false,fsLeft=0,fsTier=0; // fsTier: 1=luck,2=rainbow,3=allglitters
-let spinWin=0; // win accumulated this spin sequence
+let golden=Array.from({length:COLS},()=>Array(ROWS).fill(null));
+let isFreeSpins=false,fsLeft=0,fsTier=0,spinWin=0;
 
-// ── DOM ─────────────────────────────────────────────────────────────────────────
+// ── DOM ────────────────────────────────────────────────────────────────────────
 function buildGrid(){
   const el=document.getElementById('reels');el.innerHTML='';
   for(let c=0;c<COLS;c++){
-    const col=document.createElement('div');col.className='col';
+    const col=document.createElement('div');col.className='rcol';
     for(let r=0;r<ROWS;r++){
       const cell=document.createElement('div');cell.className='cell';cell.id=`c${c}r${r}`;
-      const gs=document.createElement('div');gs.className='gs';
-      const sw=document.createElement('div');sw.className='sym-wrap';
-      cell.appendChild(gs);cell.appendChild(sw);
+      const gs=document.createElement('div');gs.className='gs-glow';
+      const sym=document.createElement('div');sym.className='sym';
+      cell.appendChild(gs);cell.appendChild(sym);
       col.appendChild(cell);
     }
     el.appendChild(col);
@@ -677,444 +633,260 @@ function buildGrid(){
   renderAll();
 }
 
-function getCell(c,r){return document.getElementById(`c${c}r${r}`);}
-
-function renderAll(anim){
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) renderCell(c,r,anim);
-}
+function gc(c,r){return document.getElementById(`c${c}r${r}`);}
+function gsym(c,r){return gc(c,r).querySelector('.sym');}
 
 function renderCell(c,r,anim){
-  const el=getCell(c,r);
-  const sym=grid[c][r];
-  const sw=el.querySelector('.sym-wrap');
-
-  // Build sym content
-  if(CARDS.includes(sym)){
-    const cls={[S.A]:'ca',[S.K]:'ck',[S.Q]:'cq',[S.J]:'cj',[S.TEN]:'c10'}[sym];
-    sw.innerHTML=`<span class="card-sym ${cls}">${sym}</span>`;
-  } else {
-    sw.textContent=sym;
-  }
-
-  // Classes
+  const s=grid[c][r],el=gc(c,r),sw=gsym(c,r);
+  if(CARDS.includes(s)) sw.innerHTML=`<span class="csym">${s}</span>`;
+  else sw.textContent=s;
   el.className='cell';
-  if(goldenSquares[c][r]) el.classList.add('golden');
-  if(sym===S.SCATTER) el.classList.add('is-scatter');
-  if(sym===S.WILD)    el.classList.add('is-wild');
-  if(sym===S.RAINBOW) el.classList.add('is-rainbow');
+  if(golden[c][r]) el.classList.add('golden');
+  if(s===S.SCATTER) el.classList.add('is-sc');
+  if(s===S.WILD) el.classList.add('is-wd');
+  if(s===S.RAINBOW) el.classList.add('is-rb');
   if(anim) el.classList.add(anim);
 }
+function renderAll(a){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)renderCell(c,r,a);}
 
 function showCoin(c,r,coin){
-  const el=getCell(c,r);
-  const sw=el.querySelector('.sym-wrap');
-  el.classList.add('golden','revealing');
-  if(coin.t==='clover'){
-    sw.innerHTML=`<div class="special-coin">🍀</div>`;
-  } else if(coin.t==='pot'){
-    sw.innerHTML=`<div class="special-coin pot">🏆</div>`;
-  } else {
-    sw.innerHTML=`<div class="coin ${coin.t}"><div class="coin-val">${coin.v}×</div><div class="coin-lbl">${coin.t}</div></div>`;
-  }
-  setTimeout(()=>el.classList.remove('revealing'),400);
+  const sw=gsym(c,r),el=gc(c,r);
+  el.classList.add('golden');
+  if(coin.t==='clover') sw.innerHTML=`<div class="clover-el">🍀</div>`;
+  else if(coin.t==='pot') sw.innerHTML=`<div class="pot-el">🏆</div>`;
+  else sw.innerHTML=`<div class="coin-el ${coin.t}"><div class="coin-val">${coin.v}×</div><div class="coin-lbl">${coin.t}</div></div>`;
 }
 
 // ── SPIN ANIMATION ─────────────────────────────────────────────────────────────
-function spinColAnim(c,dur){
+function spinCol(c,dur){
   return new Promise(res=>{
-    let t=0;
+    const p=pool();let t=0;
     const id=setInterval(()=>{
       for(let r=0;r<ROWS;r++){
-        const sw=getCell(c,r).querySelector('.sym-wrap');
-        const s=rand(BASE_POOL);
-        if(CARDS.includes(s)){const cls={[S.A]:'ca',[S.K]:'ck',[S.Q]:'cq',[S.J]:'cj',[S.TEN]:'c10'}[s];
-          sw.innerHTML=`<span class="card-sym ${cls}">${s}</span>`;}
+        const s=rnd(p),sw=gsym(c,r);
+        if(CARDS.includes(s)) sw.innerHTML=`<span class="csym">${s}</span>`;
         else sw.textContent=s;
-        getCell(c,r).className='cell spin';
+        gc(c,r).className='cell spin';
       }
-      t+=75;
+      t+=70;
       if(t>=dur){
         clearInterval(id);
-        for(let r=0;r<ROWS;r++){grid[c][r]=randSym();}
+        for(let r=0;r<ROWS;r++){grid[c][r]=rsym();}
         for(let r=0;r<ROWS;r++) renderCell(c,r,null);
         res();
       }
-    },75);
+    },70);
   });
 }
-
-async function spinReels(){
-  const ds=[520,660,800,940,1080,1220];
-  await Promise.all(Array.from({length:COLS},(_,c)=>spinColAnim(c,ds[c])));
+async function spinAll(){
+  await Promise.all([500,640,780,920,1060,1200].map((d,c)=>spinCol(c,d)));
 }
 
 // ── CLUSTER DETECTION ──────────────────────────────────────────────────────────
-function findClusters(){
-  const globalVisited=new Set();
-  const clusters=[];
-  for(let c=0;c<COLS;c++){
-    for(let r=0;r<ROWS;r++){
-      const sym=grid[c][r];
-      if(!sym||sym===S.SCATTER||sym===S.RAINBOW||sym===S.WILD) continue;
-      if(globalVisited.has(`${c},${r}`)) continue;
-      // BFS
-      const cells=[],q=[{c,r}],vis=new Set();
-      while(q.length){
-        const {c:cc,r:rr}=q.shift();
-        const k=`${cc},${rr}`;
-        if(vis.has(k)) continue;
-        const s=grid[cc][rr];
-        if(s!==sym&&s!==S.WILD) continue;
-        vis.add(k);globalVisited.add(k);cells.push({c:cc,r:rr});
-        [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dc,dr])=>{
-          const nc=cc+dc,nr=rr+dr;
-          if(nc>=0&&nc<COLS&&nr>=0&&nr<ROWS&&!vis.has(`${nc},${nr}`)) q.push({c:nc,r:nr});
-        });
-      }
-      if(cells.length>=5) clusters.push({sym,cells,size:cells.length});
-    }
-  }
-  return clusters;
-}
-
-function countScatters(){
-  let n=0,cells=[];
+function clusters(){
+  const gvis=new Set(),res=[];
   for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
-    if(grid[c][r]===S.SCATTER){n++;cells.push({c,r});}
+    const s=grid[c][r];
+    if(!s||s===S.SCATTER||s===S.RAINBOW||s===S.WILD) continue;
+    if(gvis.has(`${c},${r}`)) continue;
+    const cells=[],q=[{c,r}],vis=new Set();
+    while(q.length){
+      const{c:cc,r:rr}=q.shift(),k=`${cc},${rr}`;
+      if(vis.has(k)) continue;
+      const ss=grid[cc][rr];
+      if(ss!==s&&ss!==S.WILD) continue;
+      vis.add(k);gvis.add(k);cells.push({c:cc,r:rr});
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dc,dr])=>{
+        const nc=cc+dc,nr=rr+dr;
+        if(nc>=0&&nc<COLS&&nr>=0&&nr<ROWS&&!vis.has(`${nc},${nr}`)) q.push({c:nc,r:nr});
+      });
+    }
+    if(cells.length>=5) res.push({s,cells,n:cells.length});
   }
-  return {n,cells};
+  return res;
 }
+function scatterCount(){let n=0,cells=[];for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)if(grid[c][r]===S.SCATTER){n++;cells.push({c,r});}return{n,cells};}
+function hasRainbow(){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)if(grid[c][r]===S.RAINBOW)return true;return false;}
+function hasGolden(){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)if(golden[c][r])return true;return false;}
 
-function hasRainbow(){
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) if(grid[c][r]===S.RAINBOW) return true;
-  return false;
-}
-
-// ── CORE LOOP ──────────────────────────────────────────────────────────────────
-async function doCascade(){
-  let totalWin=0;
-  let cascadeNum=0;
-
+// ── CASCADE LOOP ───────────────────────────────────────────────────────────────
+async function cascade(){
+  let total=0;let iter=0;
   while(true){
-    const clusters=findClusters();
-    const {n:scatterN,cells:scatterCells}=countScatters();
-
-    // On first cascade only: check scatter trigger
-    if(cascadeNum===0&&scatterN>=3&&!isFreeSpins){
-      return {totalWin,scatterN,scatterCells,bonusTriggered:true};
-    }
-    if(cascadeNum===0&&scatterN>=3&&isFreeSpins){
-      fsLeft+=2;document.getElementById('s-fs').textContent=fsLeft;
-      setMsg('📷 Retrigger! +2 free spins!');
-    }
-
-    // Check rainbow with golden squares
-    if(hasRainbow()&&hasAnyGolden()){
-      await activateRainbow();
-    }
-
-    if(clusters.length===0) break;
-
-    // Calculate win
-    let stepWin=0;
-    clusters.forEach(({sym,size})=>{stepWin+=clusterPay(sym,size)*bet;});
-    totalWin+=stepWin;
-
-    // Highlight
-    const allWinCells=new Set();
-    clusters.forEach(({cells})=>cells.forEach(({c,r})=>allWinCells.add(`${c},${r}`)));
-    allWinCells.forEach(k=>{const[c,r]=k.split(',').map(Number);getCell(c,r).classList.add('win');});
-    document.getElementById('wf').classList.add('show');
+    const cl=clusters();
+    const{n:sc,cells:scc}=scatterCount();
+    if(iter===0&&sc>=3&&!isFreeSpins) return{total,scN:sc,scCells:scc,bonus:true};
+    if(iter===0&&sc>=3&&isFreeSpins){fsLeft+=2;document.getElementById('s-fs').textContent=fsLeft;setMsg('📷 Retrigger! +2 spins!');}
+    if(hasRainbow()&&hasGolden()) await rainbowReveal();
+    if(cl.length===0) break;
+    let step=0;cl.forEach(({s,n})=>{step+=cpay(s,n)*bet;});total+=step;
+    const wcells=new Set();cl.forEach(({cells})=>cells.forEach(({c,r})=>wcells.add(`${c},${r}`)));
+    wcells.forEach(k=>{const[c,r]=k.split(',').map(Number);gc(c,r).classList.add('win');});
+    document.getElementById('wf').classList.add('on');
     await sleep(380);
-    document.getElementById('wf').classList.remove('show');
-
-    // Explode winning cells → mark golden squares
-    allWinCells.forEach(k=>{
-      const[c,r]=k.split(',').map(Number);
-      const el=getCell(c,r);
-      el.classList.remove('win');
-      el.classList.add('explode');
-      // Create golden square (random coin, tier based on FS)
-      const tier=isFreeSpins?(fsTier===3?2:fsTier===2?1:0):0;
-      goldenSquares[c][r]=randCoin(tier);
-      grid[c][r]=null;
+    document.getElementById('wf').classList.remove('on');
+    wcells.forEach(k=>{
+      const[c,r]=k.split(',').map(Number);const el=gc(c,r);
+      el.classList.remove('win');el.classList.add('explode');
+      const tier=isFreeSpins?(fsTier===3?3:fsTier===2?2:1):1;
+      golden[c][r]=mkCoin(tier);grid[c][r]=null;
     });
-    await sleep(310);
-
-    // Gravity + fill
+    await sleep(280);
     for(let c=0;c<COLS;c++){
       let w=ROWS-1;
       for(let r=ROWS-1;r>=0;r--){
         if(grid[c][r]!==null){
-          if(w!==r){grid[c][w]=grid[c][r];goldenSquares[c][w]=goldenSquares[c][r];grid[c][r]=null;goldenSquares[c][r]=null;}
-          w--;
+          if(w!==r){grid[c][w]=grid[c][r];golden[c][w]=golden[c][r];grid[c][r]=null;golden[c][r]=null;}w--;
         }
       }
-      while(w>=0){grid[c][w]=randSym();goldenSquares[c][w]=null;w--;}
+      while(w>=0){grid[c][w]=rsym();golden[c][w]=null;w--;}
     }
-    for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
-    await sleep(280);
-    cascadeNum++;
+    for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
+    await sleep(260);iter++;
   }
-
-  return {totalWin,scatterN:0,bonusTriggered:false};
+  return{total,scN:0,bonus:false};
 }
 
-function hasAnyGolden(){
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) if(goldenSquares[c][r]) return true;
-  return false;
-}
-
-async function activateRainbow(){
-  // Flash rainbow cells
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
-    if(grid[c][r]===S.RAINBOW) getCell(c,r).classList.add('rainbow-flash');
-  }
+async function rainbowReveal(){
+  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) if(grid[c][r]===S.RAINBOW) gc(c,r).classList.add('rb-flash');
   await sleep(300);
-
-  // Reveal all golden squares
   const coinCells=[];
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
-    if(goldenSquares[c][r]){
-      showCoin(c,r,goldenSquares[c][r]);
-      coinCells.push({c,r,coin:goldenSquares[c][r]});
-    }
-  }
+  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) if(golden[c][r]){showCoin(c,r,golden[c][r]);coinCells.push({c,r,coin:golden[c][r]});}
   await sleep(500);
-
-  // Collect: apply clovers first, then pot of gold
   const clovers=coinCells.filter(x=>x.coin.t==='clover');
-  const pot=coinCells.find(x=>x.coin.t==='pot');
-
-  // For each coin, apply adjacent clovers
-  let totalCoins=0;
-  const nonSpecial=coinCells.filter(x=>x.coin.t!=='clover'&&x.coin.t!=='pot');
-
-  nonSpecial.forEach(({c,r,coin})=>{
-    let mult=1;
-    clovers.forEach(cl=>{
-      if(Math.abs(cl.c-c)<=1&&Math.abs(cl.r-r)<=1) mult*=cl.coin.v;
-    });
-    totalCoins+=coin.v*mult;
+  const hasPot=coinCells.some(x=>x.coin.t==='pot');
+  let total=0;
+  coinCells.filter(x=>x.coin.t!=='clover'&&x.coin.t!=='pot').forEach(({c,r,coin})=>{
+    let m=1;clovers.forEach(cl=>{if(Math.abs(cl.c-c)<=1&&Math.abs(cl.r-r)<=1)m*=cl.coin.v;});
+    total+=coin.v*m;
   });
-
-  if(pot) totalCoins*=2; // pot of gold roughly doubles (simplified)
-
-  const coinWin=totalCoins*bet;
-  spinWin+=coinWin;
-  balance+=coinWin;
-
-  // Show tally
-  updateCoinTally(coinCells,totalCoins);
+  if(hasPot) total*=2;
+  const win=total*bet;spinWin+=win;balance+=win;
+  showTally(coinCells,total);
   updateBalUI();
-  setMsg('🌈 Rainbow activated! Coins: +'+fmt(coinWin));
-  await sleep(800);
-
-  // Clear golden squares but keep the cells (they'll be overwritten in next cascade)
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
-    if(goldenSquares[c][r]){
-      goldenSquares[c][r]=null;
-      grid[c][r]=randSym();
-      renderCell(c,r,'drop');
-    }
+  setMsg('🌈 Rainbow! Coins collected: +'+fmt(win));
+  await sleep(700);
+  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){
+    if(golden[c][r]){golden[c][r]=null;grid[c][r]=rsym();renderCell(c,r,'drop');}
   }
   await sleep(200);
 }
 
-function updateCoinTally(coinCells,total){
-  const tally=document.getElementById('coin-tally');
-  const coins=document.getElementById('tally-coins');
-  const tot=document.getElementById('tally-total');
-  tally.classList.add('show');
-  const groups={bronze:[],silver:[],gold:[],clover:[],pot:[]};
-  coinCells.forEach(({coin})=>groups[coin.t].push(coin.v));
-  coins.innerHTML='';
-  if(groups.bronze.length) coins.innerHTML+=`<span class="tc bronze">🥉 ${groups.bronze.join('·')}×</span>`;
-  if(groups.silver.length) coins.innerHTML+=`<span class="tc silver">🥈 ${groups.silver.join('·')}×</span>`;
-  if(groups.gold.length)   coins.innerHTML+=`<span class="tc gold">🥇 ${groups.gold.join('·')}×</span>`;
-  if(groups.clover.length) coins.innerHTML+=`<span class="tc clover">🍀 ×${groups.clover.join('·')}</span>`;
-  if(groups.pot.length)    coins.innerHTML+=`<span class="tc gold">🏆 ×2</span>`;
-  tot.textContent='= '+fmt(total*bet);
+function showTally(coinCells,total){
+  const t=document.getElementById('tally'),chips=document.getElementById('tally-chips'),sum=document.getElementById('tally-sum');
+  t.classList.add('on');
+  const g={bronze:[],silver:[],gold:[],clover:[],pot:[]};
+  coinCells.forEach(({coin})=>g[coin.t].push(coin.v));
+  chips.innerHTML='';
+  if(g.bronze.length) chips.innerHTML+=`<span class="tchip bronze">🥉 ${g.bronze.join(' · ')}×</span>`;
+  if(g.silver.length) chips.innerHTML+=`<span class="tchip silver">🥈 ${g.silver.join(' · ')}×</span>`;
+  if(g.gold.length)   chips.innerHTML+=`<span class="tchip gold">🥇 ${g.gold.join(' · ')}×</span>`;
+  if(g.clover.length) chips.innerHTML+=`<span class="tchip clover">🍀 ×${g.clover.join('·')}</span>`;
+  if(g.pot.length)    chips.innerHTML+=`<span class="tchip gold">🏆 ×2</span>`;
+  sum.textContent='= '+fmt(total*bet);
 }
 
-// ── SPIN FLOW ────────────────────────────────────────────────────────────────
+// ── SPIN FLOW ──────────────────────────────────────────────────────────────────
 async function doSpin(free=false){
   spinning=true;updateButtons();
-  clearWinState();
-  document.getElementById('coin-tally').classList.remove('show');
-  setMsg('');
-  document.getElementById('s-win').textContent='$0.00';
-  spinWin=0;
-
+  clearWins();document.getElementById('tally').classList.remove('on');
+  setMsg('');document.getElementById('s-win').textContent='$0.00';spinWin=0;
   if(!free){balance-=bet;updateBalUI();}
-
-  // In FS, golden squares persist (don't clear between spins) for tier 1+
-  if(!isFreeSpins||(isFreeSpins&&fsTier>=2)) {
-    // keep golden squares
-  } else if(!isFreeSpins) {
-    clearGoldenSquares();
-  }
-  if(!isFreeSpins) clearGoldenSquares();
-
-  await spinReels();
-  await sleep(80);
-
-  const {totalWin,bonusTriggered,scatterN,scatterCells}=await doCascade();
-
-  if(bonusTriggered&&!isFreeSpins){
-    scatterCells.forEach(({c,r})=>getCell(c,r).classList.add('win'));
+  if(!isFreeSpins) clearGolden();
+  await spinAll();await sleep(60);
+  const{total,bonus,scN,scCells}=await cascade();
+  if(bonus&&!isFreeSpins){
+    scCells.forEach(({c,r})=>gc(c,r).classList.add('win'));
     await sleep(400);
-    const spins=scatterN===3?8:scatterN===4?12:12;
-    const tier=scatterN>=5?3:scatterN===4?3:1;
-    triggerBonus(spins,tier,'scatter');
-    spinning=false;updateButtons();return;
+    const sp=scN===3?8:scN>=4?12:12,tier=scN>=5?3:scN>=4?3:1;
+    showBonus(sp,tier,'');spinning=false;updateButtons();return;
   }
-
-  const allWin=totalWin+spinWin;
+  const allWin=total+spinWin;
   if(allWin>0){
-    balance+=totalWin; // spinWin already added in activateRainbow
-    document.getElementById('s-win').textContent=fmt(allWin);
-    updateBalUI();
+    balance+=total;document.getElementById('s-win').textContent=fmt(allWin);updateBalUI();
     if(allWin>=bet*50) setMsg('💎 MEGA WIN! '+fmt(allWin));
     else if(allWin>=bet*20) setMsg('🔥 BIG WIN! '+fmt(allWin));
-    else if(allWin>=bet*5) setMsg('✨ Win! '+fmt(allWin));
+    else if(allWin>=bet*5) setMsg('✨ Nice win! '+fmt(allWin));
     else setMsg('Win: '+fmt(allWin));
-  } else if(!isFreeSpins){
-    setMsg('No luck this time...');
-  }
-
+  } else if(!isFreeSpins) setMsg('No luck this time...');
   spinning=false;updateButtons();
-
   if(isFreeSpins){
-    fsLeft--;
-    document.getElementById('s-fs').textContent=fsLeft;
-    if(fsLeft>0){await sleep(1000);if(isFreeSpins) await doSpin(true);}
-    else endFS();
-    return;
+    fsLeft--;document.getElementById('s-fs').textContent=fsLeft;
+    if(fsLeft>0){await sleep(900);if(isFreeSpins) await doSpin(true);}
+    else endFS();return;
   }
-
-  if(autoOn&&!isFreeSpins){
-    if(balance<bet){stopAuto();setMsg('Not enough balance!');return;}
-    await sleep(700);
-    if(autoOn) await doSpin(false);
-  }
+  if(autoOn&&balance>=bet){await sleep(650);if(autoOn) await doSpin(false);}
+  else if(autoOn){stopAuto();setMsg('Not enough balance!');}
 }
 
-// ── BONUS ────────────────────────────────────────────────────────────────────
-function triggerBonus(spins,tier,source){
+function showBonus(spins,tier,src){
   fsLeft=spins;fsTier=tier;
-  const names={1:'LUCK OF THE BANDIT',2:'RAINBOW SPINS',3:'ALL THAT GLITTERS IS GOLD'};
-  const perks={
-    1:'Golden Squares persist between spins',
-    2:'🌈 Rainbow guaranteed every spin',
-    3:'🥈 Silver & 🥇 Gold coins only · Squares persist'
-  };
-  document.getElementById('b-title').textContent=source==='buy'?'BONUS BUY!':'BONUS!';
-  document.getElementById('b-tier').textContent=names[tier]||names[1];
-  document.getElementById('b-num').textContent=spins;
-  document.getElementById('b-perks').textContent=perks[tier]||perks[1];
-  document.getElementById('b-ov').classList.add('show');
+  const names={1:'LUCK OF THE BANDIT',2:'RAINBOW FEATURE SPINS',3:'ALL THAT GLITTERS IS GOLD'};
+  const perks={1:'Golden Squares persist · All coin tiers',2:'🌈 Rainbow guaranteed every spin',3:'Silver & Gold coins only · Persistent squares'};
+  document.getElementById('bov-title').textContent=src==='buy'?'BONUS BUY!':'BONUS!';
+  document.getElementById('bov-tier').textContent=names[tier]||names[1];
+  document.getElementById('bov-num').textContent=spins;
+  document.getElementById('bov-perks').textContent=perks[tier]||perks[1];
+  document.getElementById('bov').classList.add('on');
 }
-
 function startFS(){
-  document.getElementById('b-ov').classList.remove('show');
-  isFreeSpins=true;
-  document.getElementById('fs-stat').style.display='block';
+  document.getElementById('bov').classList.remove('on');
+  isFreeSpins=true;clearGolden();
+  document.getElementById('fs-hud').style.display='block';
   document.getElementById('s-fs').textContent=fsLeft;
-  clearGoldenSquares();
   setMsg('🦝 Free Spins! Bonne chance!');
-  setTimeout(async()=>await doSpin(true),400);
+  setTimeout(async()=>await doSpin(true),350);
 }
-
 function endFS(){
   isFreeSpins=false;fsTier=0;
-  document.getElementById('fs-stat').style.display='none';
-  clearGoldenSquares();
-  setMsg('🎉 Free Spins over!');
-  updateButtons();
+  document.getElementById('fs-hud').style.display='none';
+  clearGolden();setMsg('🎉 Free Spins complete!');updateButtons();
 }
 
-// ── BONUS BUY MODAL ───────────────────────────────────────────────────────────
-const BTIERS=[
-  {mult:3,  spins:1,  tier:1, label:'Bonus Hunt'},
-  {mult:100,spins:8,  tier:1, label:'Luck of the Bandit'},
-  {mult:50, spins:5,  tier:2, label:'Rainbow Feature Spins'},
-  {mult:250,spins:12, tier:3, label:'All That Glitters Is Gold'},
+// ── MODAL ──────────────────────────────────────────────────────────────────────
+const TIERS=[
+  {m:3,  sp:1,  tier:1},
+  {m:100,sp:8,  tier:1},
+  {m:50, sp:5,  tier:2},
+  {m:250,sp:12, tier:3},
 ];
-
-function openBuyModal(){
+function openModal(){
   if(spinning||isFreeSpins) return;
-  updateBuyModal();
-  document.getElementById('bb-modal-bg').classList.add('open');
-  document.body.style.overflow='hidden';
+  updateModal();document.getElementById('modal-bg').classList.add('on');document.body.style.overflow='hidden';
 }
-function closeBuyModal(){
-  document.getElementById('bb-modal-bg').classList.remove('open');
-  document.body.style.overflow='';
-  // cancel any open confirms
-  [0,1,2,3].forEach(i=>document.getElementById('bbconf'+i).classList.remove('show'));
-}
-function closeBuyModalBg(e){if(e.target===document.getElementById('bb-modal-bg')) closeBuyModal();}
-
-function updateBuyModal(){
-  document.getElementById('bb-bal').textContent=fmt(balance);
-  document.getElementById('bb-bet').textContent=fmt(bet);
-  BTIERS.forEach((t,i)=>{
-    const cost=bet*t.mult;
-    document.getElementById('bb-cost'+i).textContent=fmt(cost);
-    const card=document.getElementById('bbcard'+i);
-    if(balance<cost) card.classList.add('disabled'); else card.classList.remove('disabled');
+function closeModal(){document.getElementById('modal-bg').classList.remove('on');document.body.style.overflow='';[0,1,2,3].forEach(noConf);}
+function closeBg(e){if(e.target===document.getElementById('modal-bg')) closeModal();}
+function updateModal(){
+  document.getElementById('mb-bal').textContent=fmt(balance);
+  document.getElementById('mb-bet').textContent=fmt(bet);
+  TIERS.forEach((t,i)=>{
+    document.getElementById('bcc'+i).textContent=fmt(bet*t.m);
+    document.getElementById('bc'+i).className='bcard t'+i+(balance>=bet*t.m?' can':' cant');
   });
 }
-
-function confirmBuy(idx){
-  if(document.getElementById('bbcard'+idx).classList.contains('disabled')) return;
-  const cost=bet*BTIERS[idx].mult;
-  document.getElementById('bbconf-amt'+idx).textContent=fmt(cost);
-  document.getElementById('bbconf'+idx).classList.add('show');
+function askConfirm(i){
+  if(!document.getElementById('bc'+i).classList.contains('can')) return;
+  document.getElementById('ca'+i).textContent=fmt(bet*TIERS[i].m);
+  document.getElementById('conf'+i).classList.add('on');
 }
-function cancelConfirm(idx){
-  document.getElementById('bbconf'+idx).classList.remove('show');
-}
-
-async function executeBuy(idx){
-  const t=BTIERS[idx];
-  const cost=bet*t.mult;
-  if(balance<cost){setMsg('Not enough balance!');closeBuyModal();return;}
-  closeBuyModal();
-  balance-=cost;updateBalUI();
+function noConf(i){document.getElementById('conf'+i).classList.remove('on');}
+async function doBuy(i){
+  const t=TIERS[i],cost=bet*t.m;
+  if(balance<cost){setMsg('Not enough balance!');closeModal();return;}
+  closeModal();balance-=cost;updateBalUI();
   document.getElementById('s-win').textContent='$0.00';
-  // Visual: place scatters
-  const pos=[[0,2],[2,2],[4,2]];
-  pos.forEach(([c,r])=>{grid[c][r]=S.SCATTER;renderCell(c,r,'drop');});
-  await sleep(400);
-  if(t.spins===1){
-    fsTier=1;isFreeSpins=false;
-    setMsg('🎰 Bonus Hunt spin!');
-    await doSpin(false);
-  } else {
-    triggerBonus(t.spins,t.tier,'buy');
-  }
+  [[0,2],[2,2],[4,2]].forEach(([c,r])=>{grid[c][r]=S.SCATTER;renderCell(c,r,'drop');});
+  await sleep(350);
+  if(t.sp===1){fsTier=1;isFreeSpins=false;setMsg('🎰 Bonus Hunt!');await doSpin(false);}
+  else showBonus(t.sp,t.tier,'buy');
 }
 
 // ── HELPERS ────────────────────────────────────────────────────────────────────
-function clearWinState(){
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++){
-    const el=getCell(c,r);
-    el.classList.remove('win','explode','drop','rainbow-flash','revealing');
-  }
-}
-function clearGoldenSquares(){
-  for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) goldenSquares[c][r]=null;
-}
-function handleSpin(){
-  if(spinning||isFreeSpins) return;
-  if(balance<bet){setMsg('Not enough balance!');return;}
-  doSpin(false);
-}
+function clearWins(){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) gc(c,r).classList.remove('win','explode','drop','rb-flash');}
+function clearGolden(){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) golden[c][r]=null;}
+function handleSpin(){if(spinning||isFreeSpins||balance<bet){if(balance<bet)setMsg('Not enough balance!');return;}doSpin(false);}
 function toggleAuto(){
-  if(spinning&&!autoOn) return;
-  autoOn=!autoOn;
+  if(spinning&&!autoOn) return;autoOn=!autoOn;
   const b=document.getElementById('auto-btn');
   if(autoOn){b.classList.add('on');b.textContent='STOP';if(!spinning) doSpin(false);}
   else stopAuto();
@@ -1122,24 +894,23 @@ function toggleAuto(){
 function stopAuto(){autoOn=false;const b=document.getElementById('auto-btn');b.classList.remove('on');b.innerHTML='AUTO<br>SPIN';}
 function changeBet(d){
   if(spinning) return;
-  const s=[0.10,.20,.50,1,2,5,10,25,50,100,250,500];
-  let i=s.findIndex(v=>Math.abs(v-bet)<.001);if(i===-1) i=3;
+  const s=[.1,.2,.5,1,2,5,10,25,50,100,250,500];
+  let i=s.findIndex(v=>Math.abs(v-bet)<.001);if(i<0) i=3;
   setBet(s[Math.max(0,Math.min(s.length-1,i+d))]);
 }
 function setBet(v){
   if(spinning) return;
-  bet=Math.max(.1,Math.min(v,balance||1000));
+  bet=Math.max(.1,v);
   const f=fmt(bet);
-  document.getElementById('bet-dsp').textContent=f;
+  document.getElementById('bet-val').textContent=f;
   document.getElementById('s-bet').textContent=f;
-  updateBuyModal();
   document.querySelectorAll('.pre').forEach(b=>b.classList.toggle('on',Math.abs(parseFloat(b.textContent.replace('$',''))-bet)<.001));
+  updateModal();
 }
 function updateButtons(){
   const busy=spinning||isFreeSpins;
   document.getElementById('spin-btn').disabled=busy||balance<bet;
   document.getElementById('auto-btn').disabled=isFreeSpins;
-  document.getElementById('open-buy-btn').disabled=busy;
 }
 function updateBalUI(){document.getElementById('s-bal').textContent=fmt(balance);updateButtons();}
 function setMsg(m){document.getElementById('msg').textContent=m;}
@@ -1148,22 +919,15 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 function resetGame(){
   if(spinning) return;
-  balance=1000;bet=1;spinning=false;autoOn=false;
-  isFreeSpins=false;fsLeft=0;fsTier=0;
-  stopAuto();
-  clearGoldenSquares();
-  grid=Array.from({length:COLS},()=>Array(ROWS).fill(S.TEN));
-  document.getElementById('fs-stat').style.display='none';
-  document.getElementById('b-ov').classList.remove('show');
+  balance=1000;bet=1;spinning=false;autoOn=false;isFreeSpins=false;fsLeft=0;fsTier=0;spinWin=0;
+  stopAuto();clearGolden();grid=Array.from({length:COLS},()=>Array(ROWS).fill(S.TEN));
+  document.getElementById('fs-hud').style.display='none';
+  document.getElementById('bov').classList.remove('on');
   document.getElementById('s-win').textContent='$0.00';
-  document.getElementById('coin-tally').classList.remove('show');
-  buildGrid();setBet(1);updateBalUI();setMsg('Spin the reels, mon ami! 🦝');
+  document.getElementById('tally').classList.remove('on');
+  buildGrid();setBet(1);updateBalUI();setMsg('Spin to win, partner! 🦝');
 }
 
-// safe no-op until modal exists
-function updateBuyModalSafe(){try{updateBuyModal();}catch(e){}}
-
-// ── INIT ──────────────────────────────────────────────────────────────────────
 buildGrid();setBet(1);updateBalUI();updateButtons();
 </script>
 </body>
