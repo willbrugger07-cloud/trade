@@ -31,6 +31,10 @@ public class SportsCard : ScriptableObject
     [Header("Stats")]
     [Range(75, 99)] public int overallRating;
 
+    // Convenience aliases used by newer scripts
+    public Sprite portrait     => cardFrontSprite;
+    public int    seriesYear   => year;
+
     // Modified at runtime by MarketManager each day — never serialized to disk
     [System.NonSerialized] public float currentMarketValue;
 

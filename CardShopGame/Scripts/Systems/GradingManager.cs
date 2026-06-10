@@ -41,7 +41,7 @@ public class GradingManager : MonoBehaviour
     /// </summary>
     public bool SubmitCard(CardInstance card)
     {
-        if (card.isGradingPending || card.psaGrade.HasValue)
+        if (card.isGradingPending || card.isGraded)
         {
             NotificationSystem.Show("Card is already graded or pending.");
             return false;

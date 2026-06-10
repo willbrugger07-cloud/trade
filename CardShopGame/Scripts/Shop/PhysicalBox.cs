@@ -8,10 +8,19 @@ using UnityEngine;
 public class PhysicalBox : MonoBehaviour
 {
     public enum BoxState { Sealed, Opened, Empty }
-    public BoxState State { get; private set; } = BoxState.Sealed;
+    public BoxState State { get; set; } = BoxState.Sealed;
 
+    public string     productId;
     public CardPackSO packTemplate;
     public int        packsInside = 6;
+
+    public bool IsEmpty => State == BoxState.Empty;
+
+    /// <summary>
+    /// Stub — cards are managed by InventoryManager.
+    /// RestockerAI / CardShelf call this; returns null safely.
+    /// </summary>
+    public CardInstance ExtractOne() => null;
 
     private Rigidbody _rb;
     private Collider  _col;

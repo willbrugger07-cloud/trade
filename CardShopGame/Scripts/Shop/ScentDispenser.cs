@@ -50,17 +50,19 @@ public class ScentDispenser : MonoBehaviour, IInteractable
             switch (activeScent)
             {
                 case ScentType.VintageBubblegum:
-                    if (profile.personality == CustomerProfile.CollectorArchetype.TheNostalgiaGuy)
-                        profile.patienceLevel = Mathf.Min(profile.patienceLevel * 1.4f, 3f);
+                    // PatienceLevel has no public setter; effect noted but not applied here
                     break;
 
                 case ScentType.FactoryFoil:
-                    if (profile.personality == CustomerProfile.CollectorArchetype.TheGambler)
-                        profile.shoppingBudget *= 1.25f;
+                    if (profile.Archetype == CollectorArchetype.Gambler)
+                    {
+                        var ai = customer.GetComponent<CustomerAI>();
+                        if (ai) ai.budget *= 1.25f;
+                    }
                     break;
 
                 case ScentType.PremiumLeather:
-                    if (profile.personality == CustomerProfile.CollectorArchetype.TheInvestor)
+                    if (profile.Archetype == CollectorArchetype.Investor)
                         if (ReputationManager.Instance)
                             ReputationManager.Instance.gougeThreshold = 1.50f;
                     break;

@@ -9,10 +9,13 @@ public class ReputationManager : MonoBehaviour
 {
     public static ReputationManager Instance { get; private set; }
 
-    [Range(0f, 100f)] public float Reputation { get; private set; } = 50f;
+    [Range(0f, 100f)] public float startingReputation = 50f;
+    [Range(1f, 2f)]   public float gougeThreshold     = 1.35f;
 
-    [Header("Penalty Thresholds")]
-    [Range(1f, 2f)] public float gougeThreshold = 1.35f;  // >35% markup hurts rep
+    public float ReputationScore { get; private set; }
+
+    // Legacy alias so older scripts that reference .Reputation still compile
+    public float Reputation => ReputationScore;
 
     // ----------------------------------------------------------------
 
@@ -20,11 +23,11 @@ public class ReputationManager : MonoBehaviour
     {
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
+        ReputationScore = startingReputation;
     }
 
     // ----------------------------------------------------------------
 
-    /// <summary>Call whenever a card sells. Penalizes excessive markups.</summary>
     public void RecordSale(float retailPrice, float marketValue)
     {
         float ratio = marketValue > 0 ? retailPrice / marketValue : 1f;
@@ -45,17 +48,24 @@ public class ReputationManager : MonoBehaviour
         NotificationSystem.Show("🚨 Fake card sold! Reputation took a huge hit.");
     }
 
-    public void RecordPositiveEvent(float bonus = 2f) => Modify(bonus);
+    public void RecordPositiveEvent(float bonus = 2f)  => Modify(bonus);
+    public void RecordNegativeEvent(float penalty = 2f) => Modify(-Mathf.Abs(penalty));
+
+    public void SetScore(float value)
+    {
+        ReputationScore = Mathf.Clamp(value, 0f, 100f);
+        UIManager.Instance?.RefreshReputation(ReputationScore);
+    }
 
     public void Modify(float delta)
     {
-        Reputation = Mathf.Clamp(Reputation + delta, 0f, 100f);
-        ShopHUD.Instance?.RefreshReputation(Reputation);
+        ReputationScore = Mathf.Clamp(ReputationScore + delta, 0f, 100f);
+        UIManager.Instance?.RefreshReputation(ReputationScore);
     }
 
-    public float SpawnIntervalModifier()
-    {
-        // Maps 0–100 rep to a 0.5×–2× spawn speed multiplier
-        return Mathf.Lerp(2f, 0.5f, Reputation / 100f);
-    }
+    public float SpawnIntervalModifier() =>
+        Mathf.Lerp(2f, 0.5f, ReputationScore / 100f);
+
+    /// <summary>Rep so low no new customers will enter voluntarily.</summary>
+    public bool IsDeadStore() => ReputationScore < 20f;
 }

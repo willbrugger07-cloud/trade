@@ -26,11 +26,38 @@ public class ProductInventoryManager : MonoBehaviour
 
     // ----------------------------------------------------------------
 
+    /// <summary>
+    /// Wholesale cost spikes during peak season (demand >= 1.4×) — buying
+    /// off-season and holding is the intended strategy.
+    /// Fire sale: end-of-season (day 14 of 15 cycle) cuts cost by 25%.
+    /// </summary>
+    public float GetAdjustedWholesaleCost(ProductConfigData config)
+    {
+        float base_ = config.wholesaleCost;
+        if (SportsSeasonManager.Instance == null) return base_;
+
+        var sport = CardSport.Basketball;
+        foreach (CardSport s in System.Enum.GetValues(typeof(CardSport)))
+            if (config.parentSeriesName.Contains(s.ToString())) { sport = s; break; }
+
+        float demand = SportsSeasonManager.Instance.GetDemandMultiplier(sport);
+
+        // Peak season: wholesale is expensive
+        if (demand >= 1.40f) base_ *= 1.30f;
+
+        // Fire sale: last day of season, clear out at 25% off
+        int daysLeft = 15 - (DayCycleManager.Instance.CurrentDay % 15);
+        if (daysLeft == 1 && demand >= 1.40f) base_ *= 0.75f;
+
+        return Mathf.Round(base_ * 100f) / 100f;
+    }
+
     public bool OrderStock(ProductConfigData config, int qty)
     {
         if (config == null || qty <= 0) return false;
 
-        float total = Mathf.Round(config.wholesaleCost * qty * 100f) / 100f;
+        float unitCost = GetAdjustedWholesaleCost(config);
+        float total    = Mathf.Round(unitCost * qty * 100f) / 100f;
         if (!ShopManager.Instance.SpendFunds(total, $"Order {qty}x {config.parentSeriesName} {config.boxFormat}"))
             return false;
 
@@ -57,7 +84,7 @@ public class ProductInventoryManager : MonoBehaviour
 
             ProductConfigData.PackFormat.HobbyBox =>
                 FindObjectsOfType<PremiumDisplayCase>()
-                    .FirstOrDefault(d => d.DisplayedCard == null)
+                    .FirstOrDefault(d => d.FeaturedCard == null)
                     ?.transform,
 
             ProductConfigData.PackFormat.BreakersDelight =>
@@ -192,8 +219,8 @@ public class ProductInventoryManager : MonoBehaviour
             float demand = 1f;
             if (SportsSeasonManager.Instance != null)
             {
-                var sport = SportsCard.CardSport.Basketball;
-                foreach (SportsCard.CardSport s in System.Enum.GetValues(typeof(SportsCard.CardSport)))
+                var sport = CardSport.Basketball;
+                foreach (CardSport s in System.Enum.GetValues(typeof(CardSport)))
                     if (config.parentSeriesName.Contains(s.ToString())) { sport = s; break; }
                 demand = SportsSeasonManager.Instance.GetDemandMultiplier(sport);
             }

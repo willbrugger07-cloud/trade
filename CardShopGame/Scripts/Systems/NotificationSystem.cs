@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using TMPro;
@@ -13,6 +14,9 @@ public class NotificationSystem : MonoBehaviour
     [SerializeField] private CanvasGroup _group;
     [SerializeField] private float _displaySeconds = 3f;
 
+    /// <summary>Fired on every Show() call. UIManager subscribes to drive its banner.</summary>
+    public static event Action<string> OnNotification;
+
     private Coroutine _current;
 
     private void Awake()
@@ -20,11 +24,12 @@ public class NotificationSystem : MonoBehaviour
         if (_instance != null) { Destroy(gameObject); return; }
         _instance = this;
         DontDestroyOnLoad(gameObject);
-        _group.alpha = 0f;
+        if (_group) _group.alpha = 0f;
     }
 
     public static void Show(string message)
     {
+        OnNotification?.Invoke(message);
         if (_instance == null) { Debug.Log($"[Notification] {message}"); return; }
         _instance.ShowInternal(message);
     }

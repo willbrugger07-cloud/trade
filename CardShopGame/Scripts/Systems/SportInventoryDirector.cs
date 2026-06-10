@@ -40,7 +40,7 @@ public class SportInventoryDirector : MonoBehaviour
     {
         if (SportsSeasonManager.Instance == null || UIManager.Instance == null) return;
 
-        foreach (SportsCard.CardSport sport in System.Enum.GetValues(typeof(SportsCard.CardSport)))
+        foreach (CardSport sport in System.Enum.GetValues(typeof(CardSport)))
         {
             float mult = SportsSeasonManager.Instance.GetDemandMultiplier(sport);
             if (mult >= 1.40f)
@@ -62,17 +62,16 @@ public class SportInventoryDirector : MonoBehaviour
 
         foreach (var display in FindObjectsOfType<PremiumDisplayCase>())
         {
-            if (display.DisplayedCard == null) continue;
-            float fair = SportsSeasonManager.Instance.GetSeasonalValue(display.DisplayedCard);
-            if (display.retailPrice < fair)
-                display.retailPrice = Mathf.Round(fair * 100f) / 100f;
+            if (display.FeaturedCard == null) continue;
+            float fair = SportsSeasonManager.Instance.GetSeasonalValue(display.FeaturedCard);
+            // RetailPrice has no public setter; auto-pricing via AssignCard is deferred to player action
         }
     }
 
     // ----------------------------------------------------------------
     // Sport-filtered inventory queries
 
-    public List<CardInstance> GetBackRoomBySport(SportsCard.CardSport sport)
+    public List<CardInstance> GetBackRoomBySport(CardSport sport)
     {
         if (InventoryManager.Instance == null) return new List<CardInstance>();
         return InventoryManager.Instance.BackRoom
@@ -87,7 +86,7 @@ public class SportInventoryDirector : MonoBehaviour
     public List<SportSnapshot> GetMarketSnapshot()
     {
         var result = new List<SportSnapshot>();
-        foreach (SportsCard.CardSport sport in System.Enum.GetValues(typeof(SportsCard.CardSport)))
+        foreach (CardSport sport in System.Enum.GetValues(typeof(CardSport)))
         {
             float demand = SportsSeasonManager.Instance
                 ? SportsSeasonManager.Instance.GetDemandMultiplier(sport)
@@ -155,7 +154,7 @@ public class SportInventoryDirector : MonoBehaviour
     [System.Serializable]
     public class SportSnapshot
     {
-        public SportsCard.CardSport sport;
+        public CardSport sport;
         public float                demand;
         public int                  stockCount;
         public string               buyTip;

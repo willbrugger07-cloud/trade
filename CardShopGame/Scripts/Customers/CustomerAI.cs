@@ -26,11 +26,14 @@ public class CustomerAI : MonoBehaviour
     public IReadOnlyList<CardInstance> Cart => _cart;
     private readonly List<CardInstance> _cart = new();
 
+    [Header("Feedback")]
+    public GameObject reactionBubblePrefab;    // world-space canvas with a TMP label
+    public float      bubbleLifetime = 2.5f;
+
     private NavMeshAgent _agent;
     private enum State { Entering, Browsing, InQueue, WaitingPayment, Leaving }
     private State _state;
 
-    // Set by CustomerSpawner
     [HideInInspector] public Transform exitPoint;
 
     // ----------------------------------------------------------------
@@ -38,7 +41,23 @@ public class CustomerAI : MonoBehaviour
     private void Start()
     {
         _agent = GetComponent<NavMeshAgent>();
+
+        // Dead store — rep too low, customer turns around immediately
+        if (ReputationManager.Instance != null && ReputationManager.Instance.IsDeadStore())
+        {
+            ShowBubble("Heard this place is terrible…");
+            StartCoroutine(LeaveImmediately());
+            return;
+        }
+
         StartCoroutine(LifeCycle());
+    }
+
+    private IEnumerator LeaveImmediately()
+    {
+        yield return new WaitForSeconds(1f);
+        if (exitPoint) yield return MoveTo(exitPoint.position);
+        Destroy(gameObject);
     }
 
     private IEnumerator LifeCycle()
@@ -85,14 +104,33 @@ public class CustomerAI : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(1.5f, 3.5f));
 
             var card = shelf.TakeCard();
-            if (card != null && card.GetSalePrice() <= budget)
+            if (card != null)
             {
-                _cart.Add(card);
-                budget -= card.GetSalePrice();
-            }
-            else if (card != null)
-            {
-                shelf.StockCard(card);   // put back — too expensive
+                float price          = card.GetSalePrice();
+                float seasonalFair   = SportsSeasonManager.Instance != null
+                    ? SportsSeasonManager.Instance.GetSeasonalValue(card)
+                    : price;
+                float markupRatio    = seasonalFair > 0 ? price / seasonalFair : 1f;
+
+                if (price <= budget && markupRatio <= 1.35f)
+                {
+                    _cart.Add(card);
+                    budget -= price;
+                    ReputationManager.Instance?.RecordSale(price, card.data.currentMarketValue);
+                }
+                else
+                {
+                    shelf.StockCard(card);
+                    if (markupRatio > 1.35f)
+                    {
+                        ShowBubble("Too expensive!");
+                        ReputationManager.Instance?.RecordNegativeEvent(1f);
+                    }
+                    else
+                    {
+                        ShowBubble("Can't afford it…");
+                    }
+                }
             }
             if (budget <= 0) break;
         }
@@ -166,8 +204,18 @@ public class CustomerAI : MonoBehaviour
 
     // ---------------------------------------------------------------- helpers
 
-    /// <summary>Called by CheckoutRegister after the player processes payment.</summary>
     public void ConfirmPaymentAndLeave() => _state = State.Leaving;
+
+    private void ShowBubble(string text)
+    {
+        if (!reactionBubblePrefab) return;
+        var go  = Instantiate(reactionBubblePrefab,
+                              transform.position + Vector3.up * 2f,
+                              Quaternion.identity);
+        var tmp = go.GetComponentInChildren<TMPro.TextMeshPro>();
+        if (tmp) tmp.text = text;
+        Destroy(go, bubbleLifetime);
+    }
 
     private IEnumerator MoveTo(Vector3 pos)
     {

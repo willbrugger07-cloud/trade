@@ -102,7 +102,7 @@ public class UIManager : MonoBehaviour
             fundsText.text = $"${ShopManager.Instance.shopFunds:N2}";
 
         if (reputationText && ReputationManager.Instance)
-            reputationText.text = $"Rep {ReputationManager.Instance.ReputationScore:F0}";
+            reputationText.text = $"Rep {ReputationManager.Instance.ReputationScore:F0}/100";
     }
 
     // ----------------------------------------------------------------
@@ -157,8 +157,8 @@ public class UIManager : MonoBehaviour
         var sm = ShopManager.Instance;
         var rm = ReputationManager.Instance;
 
-        float revenue  = dc ? dc.DailyRevenue  : 0f;
-        float expenses = dc ? dc.DailyExpenses : 0f;
+        float revenue  = (sm != null) ? sm.DailyRevenue  : (dc != null ? dc.DailyRevenue  : 0f);
+        float expenses = dc != null ? dc.DailyExpenses : 0f;
         float net      = revenue - expenses;
 
         if (eodDayLabel)   eodDayLabel.text   = dc ? $"Day {dc.CurrentDay} Summary" : "Summary";
@@ -170,9 +170,15 @@ public class UIManager : MonoBehaviour
             eodNetText.color = net >= 0f ? Color.green : Color.red;
         }
         if (eodRepText && rm) eodRepText.text = $"Reputation  {rm.ReputationScore:F0} / 100";
+    }
 
-        eodPanel.SetActive(true);
-        AudioManager.Play("end_of_day_bell");
+    /// <summary>Called by ReputationManager.Modify() so the HUD stays in sync.</summary>
+    public void RefreshReputation(float score)
+    {
+        if (reputationText) reputationText.text = $"Rep {score:F0}/100";
+        if (reputationText) reputationText.color = score < 25f ? Color.red
+                                                  : score < 50f ? Color.yellow
+                                                  : Color.white;
     }
 
     private void OnEodConfirm()

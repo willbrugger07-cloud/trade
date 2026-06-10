@@ -20,6 +20,8 @@ public class ShoplifterAI : MonoBehaviour, IInteractable
     private bool _isFleeing;
     private Transform _exitPoint;
 
+    public bool isShoplifting => _isFleeing;
+
     // ----------------------------------------------------------------
 
     private void Start()
@@ -93,6 +95,21 @@ public class ShoplifterAI : MonoBehaviour, IInteractable
             if (v > bestV) { bestV = v; best = shelf; }
         }
         return best;
+    }
+
+    /// <summary>Called by SecurityCCTVSystem alarm trigger.</summary>
+    public void FreezeAndSurrender()
+    {
+        StopAllCoroutines();
+        _agent.ResetPath();
+        _isFleeing = false;
+        if (_stolenCard != null)
+        {
+            InventoryManager.Instance.AddToBackRoom(_stolenCard);
+            _stolenCard = null;
+        }
+        ReputationManager.Instance?.RecordPositiveEvent(1.5f);
+        Destroy(gameObject, 0.5f);
     }
 
     private void LeaveEmpty()

@@ -6,22 +6,22 @@ using UnityEngine;
 /// </summary>
 public static class HobbyTerminology
 {
-    public static string GetRookieLabel(SportsCard.CardSport sport) =>
+    public static string GetRookieLabel(CardSport sport) =>
         sport switch
         {
-            SportsCard.CardSport.Baseball => "1st Bowman Chrome Prospect",
-            SportsCard.CardSport.Hockey   => "Young Guns Rookie",
-            _                             => "Rookie Card (RC)",
+            CardSport.Baseball => "1st Bowman Chrome Prospect",
+            CardSport.Hockey   => "Young Guns Rookie",
+            _                  => "Rookie Card (RC)",
         };
 
-    public static string GetCaseHitName(SportsCard.CardSport sport) =>
+    public static string GetCaseHitName(CardSport sport) =>
         sport switch
         {
-            SportsCard.CardSport.Basketball => "Downtown Insert",
-            SportsCard.CardSport.Football   => "Kaboom! Glow Parallel",
-            SportsCard.CardSport.Baseball   => "Heavy Lumber / Home Run Challenge",
-            SportsCard.CardSport.Hockey     => "Clear Cut / Exquisite Patch",
-            _                               => "Ultra-Rare Case Hit",
+            CardSport.Basketball => "Downtown Insert",
+            CardSport.Football   => "Kaboom! Glow Parallel",
+            CardSport.Baseball   => "Heavy Lumber / Home Run Challenge",
+            CardSport.Hockey     => "Clear Cut / Exquisite Patch",
+            _                    => "Ultra-Rare Case Hit",
         };
 
     public static string GetSeasonLabel(SportsSeasonManager.SportsSeason season) =>
@@ -38,7 +38,7 @@ public static class HobbyTerminology
     /// Friendly flavour tip shown in the order terminal so the player knows
     /// which boxes are cheap to buy now and which to sit on for profit.
     /// </summary>
-    public static string GetSeasonBuyTip(SportsCard.CardSport sport)
+    public static string GetSeasonBuyTip(CardSport sport)
     {
         if (SportsSeasonManager.Instance == null) return "";
 

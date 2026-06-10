@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,25 +8,33 @@ using UnityEngine;
 /// </summary>
 public class CardShelf : MonoBehaviour, IInteractable
 {
+    public enum ShelfType { Standard, PegRack, GlassCase }
+
     [Header("Configuration")]
-    public int maxCapacity = 10;
+    public ShelfType shelfType     = ShelfType.Standard;
+    public int       maxCapacity   = 10;
+    public float     retailPrice;              // price tag on this shelf slot
     public Transform customerInteractionPoint;
 
-    // Runtime state
-    private readonly List<CardInstance> _stock = new();
-    public IReadOnlyList<CardInstance> Stock => _stock;
+    // Raised when stock level changes — ShelfLabelSlot subscribes
+    public event Action OnShelfStockChanged;
 
-    public bool HasStock    => _stock.Count > 0;
+    // The card type assigned to this shelf (can be null for unassigned slots)
+    public SportsCard stockedCard { get; private set; }
+
+    private readonly List<CardInstance> _stock = new();
+    public IReadOnlyList<CardInstance> Stock   => _stock;
+
+    public bool HasStock     => _stock.Count > 0;
     public bool NeedsRestock => _stock.Count < maxCapacity / 2;
-    public int  StockCount  => _stock.Count;
+    public int  StockCount   => _stock.Count;
+    public int  currentStock => _stock.Count;
 
     [Header("Visuals")]
-    [Tooltip("Child objects that represent a stacked card on the shelf")]
     public List<GameObject> stackVisuals;
 
     // ----------------------------------------------------------------
 
-    /// <summary>Called by player to move a card from back room to shelf.</summary>
     public bool StockCard(CardInstance card)
     {
         if (_stock.Count >= maxCapacity)
@@ -33,32 +42,47 @@ public class CardShelf : MonoBehaviour, IInteractable
             NotificationSystem.Show("Shelf is full!");
             return false;
         }
+
+        if (stockedCard == null) stockedCard = card.data;
+        if (retailPrice  <= 0f)  retailPrice  = card.GetSalePrice();
+
         _stock.Add(card);
         InventoryManager.Instance.RemoveFromBackRoom(card);
-        RefreshVisuals();
+        Refresh();
         return true;
     }
 
-    /// <summary>Called by CustomerAI to take one card.</summary>
+    /// <summary>Called by RestockerAI when it carries a PhysicalBox to this shelf.</summary>
+    public void RestockFromBox(PhysicalBox box)
+    {
+        if (box == null) return;
+        while (!box.IsEmpty && _stock.Count < maxCapacity)
+        {
+            var card = box.ExtractOne();
+            if (card == null) break;
+            _stock.Add(card);
+        }
+        Refresh();
+    }
+
     public CardInstance TakeCard()
     {
         if (!HasStock) return null;
         var card = _stock[_stock.Count - 1];
         _stock.RemoveAt(_stock.Count - 1);
-        RefreshVisuals();
+        Refresh();
         return card;
     }
 
-    // IInteractable — player presses E near shelf
     public void Interact(PlayerInteraction player)
     {
-        // Open the restocking UI for this shelf
         InventoryUI.Instance?.OpenForShelf(this);
     }
 
-    private void RefreshVisuals()
+    private void Refresh()
     {
         for (int i = 0; i < stackVisuals.Count; i++)
             stackVisuals[i].SetActive(i < _stock.Count);
+        OnShelfStockChanged?.Invoke();
     }
 }

@@ -64,7 +64,7 @@ public class PremiumDisplayCase : MonoBehaviour, IInteractable
 
     private void RefreshVisuals()
     {
-        if (glowEffect) glowEffect.SetActive(IsOccupied && FeaturedCard?.psaGrade.HasValue == true);
+        if (glowEffect) glowEffect.SetActive(IsOccupied && FeaturedCard?.isGraded == true);
         if (cardMeshRenderer)
             cardMeshRenderer.material = IsOccupied ? null : emptyMaterial;
     }
