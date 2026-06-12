@@ -13,8 +13,11 @@ import os
 import time
 import logging
 from datetime import datetime, time as dt_time
+from zoneinfo import ZoneInfo
 import robin_stocks.robinhood as rh
 from dotenv import load_dotenv
+
+ET = ZoneInfo("America/New_York")
 
 load_dotenv()
 
@@ -47,7 +50,7 @@ def shares_for_amount(price: float, amount_usd: float) -> float:
 
 
 def market_is_open() -> bool:
-    now = datetime.now().time()
+    now = datetime.now(ET).time()
     return MARKET_OPEN <= now <= MARKET_CLOSE
 
 
@@ -72,7 +75,7 @@ def run():
     try:
         while True:
             if not market_is_open():
-                if datetime.now().time() > MARKET_CLOSE:
+                if datetime.now(ET).time() > MARKET_CLOSE:
                     log.info(f"Market closed. Trades today: {trade_count}  Total P&L: ${total_pnl:+.2f}")
                     break
                 log.info("Waiting for market open…")
