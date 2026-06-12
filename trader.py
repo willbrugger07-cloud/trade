@@ -29,7 +29,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # --- Config ---
-TICKERS            = os.getenv("TICKERS", "SPY,QQQ,AAPL,TSLA,NVDA").split(",")
+TICKERS            = os.getenv("TICKERS", "SPY,QQQ,AAPL,TSLA,NVDA,MSFT,AMZN,META,AMD,GOOGL,NFLX,PLTR,SOFI,RIVN,COIN").split(",")
 TRADE_AMOUNT_USD   = float(os.getenv("TRADE_AMOUNT_USD", "20"))
 ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.15"))
 TAKE_PROFIT_PCT    = float(os.getenv("TAKE_PROFIT_PCT", "0.8"))   # let winners run
