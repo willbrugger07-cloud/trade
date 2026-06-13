@@ -268,6 +268,16 @@ body::after{
 .cell.is-wd{border-color:#40d060;box-shadow:0 0 14px rgba(60,200,80,.45)}
 .cell.is-rb{border-color:#8090ff;box-shadow:0 0 16px rgba(100,120,255,.55)}
 
+/* ── SCATTER ANTICIPATION ── */
+.reel-frame.anticipate{
+  animation:anticipate-pulse .35s ease-in-out infinite alternate;
+}
+@keyframes anticipate-pulse{
+  from{box-shadow:inset 0 12px 24px rgba(0,0,0,.8),inset 0 -12px 24px rgba(0,0,0,.8),0 0 6px rgba(255,140,0,.1)}
+  to  {box-shadow:inset 0 12px 24px rgba(0,0,0,.6),inset 0 -12px 24px rgba(0,0,0,.6),0 0 30px rgba(255,140,0,.6),0 0 60px rgba(255,100,0,.3)}
+}
+.cell.spin.anticipating{background:rgba(255,140,0,.06)!important}
+
 /* ── RAINBOW SWEEP ── */
 .rb-sweep{
   position:absolute;top:0;left:-50%;width:35%;height:100%;
@@ -663,7 +673,7 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:300;display:n
     <!-- Stats -->
     <div class="stat-row">
       <div class="stat-box"><span class="sl">Balance</span><span class="sv" id="s-bal">$1,000.00</span></div>
-      <div class="stat-box win-stat"><span class="sl">Win</span><span class="sv" id="s-win">$0.00</span></div>
+      <div class="stat-box win-stat"><span class="sl">Last Win</span><span class="sv" id="s-win">$0.00</span></div>
       <div class="stat-box"><span class="sl">Bet</span><span class="sv" id="s-bet">$1.00</span></div>
       <div class="stat-box fs-stat" id="fs-hud" style="grid-column:span 3">
         <span class="sl">Free Spins Left</span><span class="sv" id="s-fs">0</span>
@@ -690,6 +700,11 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:300;display:n
       <button class="side-btn" id="auto-btn" onclick="toggleAuto()">AUTO<br>SPIN</button>
       <button class="spin-btn" id="spin-btn" onclick="handleSpin()"><span>SPIN</span></button>
       <button class="buy-btn" onclick="openModal()">BONUS<br>BUY</button>
+    </div>
+    <!-- Session total win bar -->
+    <div id="session-bar" style="margin-top:6px;padding:5px 10px;background:rgba(255,200,60,.05);border:1px solid rgba(255,200,60,.12);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:.48rem;color:#7a6030;letter-spacing:1.5px;text-transform:uppercase">Session Total Win</span>
+      <span style="font-size:.9rem;font-weight:900;color:#f8d060;text-shadow:0 0 8px rgba(255,200,60,.35)" id="s-total">$0.00</span>
     </div>
   </div>
 
@@ -873,10 +888,12 @@ function cpay(sym,size){const t=PAY[sym];return t?t[Math.min(size,12)]||0:0;}
 
 // Symbol pools
 function mkPool(w){const a=[];w.forEach(([s,n])=>{for(let i=0;i<n;i++)a.push(s);});return a;}
-const BASE=mkPool([[S.TEN,14],[S.J,12],[S.Q,10],[S.K,9],[S.A,8],[S.TRP,7],[S.CHE,6],[S.BEER,5],[S.BAG,4],[S.HAT,2],[S.WILD,4],[S.SCATTER,2],[S.RAINBOW,3]]);
-const FS1=mkPool([[S.TEN,10],[S.J,9],[S.Q,8],[S.K,7],[S.A,7],[S.TRP,6],[S.CHE,5],[S.BEER,5],[S.BAG,4],[S.HAT,3],[S.WILD,6],[S.SCATTER,3],[S.RAINBOW,5]]);
-const FS2=mkPool([[S.TEN,8],[S.J,7],[S.Q,6],[S.K,6],[S.A,6],[S.TRP,5],[S.CHE,4],[S.BEER,4],[S.BAG,3],[S.HAT,2],[S.WILD,6],[S.SCATTER,3],[S.RAINBOW,12]]);
-const FS3=mkPool([[S.TEN,7],[S.J,6],[S.Q,5],[S.K,6],[S.A,6],[S.TRP,4],[S.CHE,3],[S.BEER,3],[S.BAG,2],[S.HAT,2],[S.WILD,6],[S.SCATTER,3],[S.RAINBOW,10]]);
+// Rebalanced pools — fewer symbol types per pool = easier clusters
+// Cards cut to 3 types, wilds doubled, regular syms boosted
+const BASE=mkPool([[S.Q,10],[S.K,9],[S.A,8],[S.TRP,9],[S.CHE,8],[S.BEER,7],[S.BAG,6],[S.HAT,4],[S.WILD,9],[S.SCATTER,3],[S.RAINBOW,1]]);
+const FS1=mkPool([[S.Q,8],[S.K,7],[S.A,7],[S.TRP,8],[S.CHE,7],[S.BEER,7],[S.BAG,6],[S.HAT,5],[S.WILD,12],[S.SCATTER,4],[S.RAINBOW,5]]);
+const FS2=mkPool([[S.Q,6],[S.K,6],[S.A,6],[S.TRP,6],[S.CHE,6],[S.BEER,6],[S.BAG,5],[S.HAT,4],[S.WILD,12],[S.SCATTER,4],[S.RAINBOW,12]]);
+const FS3=mkPool([[S.Q,5],[S.K,5],[S.A,5],[S.TRP,5],[S.CHE,5],[S.BEER,5],[S.BAG,4],[S.HAT,4],[S.WILD,12],[S.SCATTER,4],[S.RAINBOW,10]]);
 function pool(){return isFreeSpins?(fsTier===3?FS3:fsTier===2?FS2:FS1):BASE;}
 function rnd(a){return a[Math.floor(Math.random()*a.length)];}
 function rsym(){return rnd(pool());}
@@ -908,7 +925,7 @@ function mkCoin(tier){
 let balance=1000,bet=1,spinning=false,autoOn=false;
 let grid=Array.from({length:COLS},()=>Array(ROWS).fill(S.TEN));
 let golden=Array.from({length:COLS},()=>Array(ROWS).fill(null));
-let isFreeSpins=false,fsLeft=0,fsTier=0,spinWin=0;
+let isFreeSpins=false,fsLeft=0,fsTier=0,spinWin=0,sessionTotalWin=0;
 
 // ── DOM ────────────────────────────────────────────────────────────────────────
 function buildGrid(){
@@ -951,28 +968,37 @@ function showCoin(c,r,coin){
 }
 
 // ── SPIN ANIMATION ─────────────────────────────────────────────────────────────
-function spinCol(c,dur){
-  return new Promise(res=>{
-    const p=pool();let t=0;
-    const id=setInterval(()=>{
-      for(let r=0;r<ROWS;r++){
-        gsym(c,r).innerHTML=symHTML(rnd(p));
-        gc(c,r).className='cell spin';
-      }
-      t+=65;
-      if(t>=dur){
-        clearInterval(id);
-        for(let r=0;r<ROWS;r++) grid[c][r]=rsym();
-        for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
-        res();
-      }
-    },65);
-  });
+const spinIntervals={};
+function startSpinVisual(c){
+  const p=pool();
+  spinIntervals[c]=setInterval(()=>{
+    for(let r=0;r<ROWS;r++){gsym(c,r).innerHTML=symHTML(rnd(p));gc(c,r).className='cell spin';}
+  },65);
+}
+async function landCol(c){
+  clearInterval(spinIntervals[c]);spinIntervals[c]=null;
+  // preserve golden cells — only fill non-golden slots
+  for(let r=0;r<ROWS;r++) if(!golden[c][r]) grid[c][r]=rsym();
+  for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
+  await sleep(60);
 }
 async function spinAll(){
-  const durs=[520,660,800,940,1080,1220];
-  const delays=[0,40,80,120,160,200];
-  await Promise.all(durs.map((d,c)=>sleep(delays[c]).then(()=>spinCol(c,d))));
+  // All reels spin at once, then land left→right one at a time
+  for(let c=0;c<COLS;c++) startSpinVisual(c);
+  await sleep(500); // min spin time before first reel lands
+  let scattersLanded=0;
+  for(let c=0;c<COLS;c++){
+    if(c>0) await sleep(280);
+    // Anticipation: 2 scatters seen, more reels to go → dramatic tease pause
+    if(scattersLanded>=2&&c<COLS-1){
+      document.getElementById('reel-frame').classList.add('anticipate');
+      await sleep(700);
+      document.getElementById('reel-frame').classList.remove('anticipate');
+      await sleep(150);
+    }
+    await landCol(c);
+    for(let r=0;r<ROWS;r++) if(grid[c][r]===S.SCATTER) scattersLanded++;
+  }
 }
 
 // ── WIN COUNTER ────────────────────────────────────────────────────────────────
@@ -1081,13 +1107,16 @@ async function cascade(){
     });
     await sleep(280);
     for(let c=0;c<COLS;c++){
-      let w=ROWS-1;
+      // collect falling symbols (non-null grid cells; golden cells already have grid=null)
+      const syms=[];
+      for(let r=0;r<ROWS;r++) if(grid[c][r]!==null) syms.push(grid[c][r]);
+      // clear all grid slots (golden slots stay untouched since grid was already null)
+      for(let r=0;r<ROWS;r++) grid[c][r]=null;
+      // fill non-golden slots from bottom: existing symbols first, then new ones
+      let si=syms.length-1;
       for(let r=ROWS-1;r>=0;r--){
-        if(grid[c][r]!==null){
-          if(w!==r){grid[c][w]=grid[c][r];golden[c][w]=golden[c][r];grid[c][r]=null;golden[c][r]=null;}w--;
-        }
+        if(!golden[c][r]) grid[c][r]=si>=0?syms[si--]:rsym();
       }
-      while(w>=0){grid[c][w]=rsym();golden[c][w]=null;w--;}
     }
     for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
     await sleep(260);iter++;
@@ -1124,6 +1153,7 @@ async function rainbowReveal(){
   const potCount=coinCells.filter(x=>x.coin.t==='pot').length;
   if(potCount>0) total+=total*potCount;
   const win=total*bet;spinWin+=win;balance+=win;
+  sessionTotalWin+=win;document.getElementById('s-total').textContent=fmt(sessionTotalWin);
   showTally(coinCells,total);
   updateBalUI();
   setMsg('🌈 Rainbow! +'+fmt(win));
@@ -1172,6 +1202,7 @@ async function doSpin(free=false){
   const allWin=total+spinWin;
   if(allWin>0){
     balance+=total;updateBalUI();
+    sessionTotalWin+=total;document.getElementById('s-total').textContent=fmt(sessionTotalWin);
     animateWin(0,allWin,document.getElementById('s-win'));
     if(allWin>=bet*100){showBigWin(allWin,'💎 MEGA WIN');setMsg('💎 MEGA WIN! '+fmt(allWin));}
     else if(allWin>=bet*30){showBigWin(allWin,'🔥 BIG WIN');setMsg('🔥 BIG WIN! '+fmt(allWin));}
@@ -1283,7 +1314,8 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
 function resetGame(){
   if(spinning) return;
-  balance=1000;bet=1;spinning=false;autoOn=false;isFreeSpins=false;fsLeft=0;fsTier=0;spinWin=0;
+  balance=1000;bet=1;spinning=false;autoOn=false;isFreeSpins=false;fsLeft=0;fsTier=0;spinWin=0;sessionTotalWin=0;
+  document.getElementById('s-total').textContent='$0.00';
   stopAuto();clearGolden();grid=Array.from({length:COLS},()=>Array(ROWS).fill(S.TEN));
   document.getElementById('fs-hud').style.display='none';
   document.getElementById('bov').classList.remove('on');
