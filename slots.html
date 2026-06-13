@@ -635,7 +635,7 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:300;display:n
 
     <div class="machine-panel">
       <!-- REEL FRAME -->
-      <div class="reel-frame">
+      <div class="reel-frame" id="reel-frame">
         <div class="reels" id="reels"></div>
         <div class="wflash" id="wf"></div>
         <div class="rb-sweep" id="rb-sweep"></div>
@@ -1227,7 +1227,7 @@ async function doSpin(free=false){
       else if(allWin>=bet*10){showBigWin(allWin,'✨ GREAT WIN');setMsg('✨ Great win! '+fmt(allWin));}
       else setMsg('Win: '+fmt(allWin));
     } else if(!isFreeSpins) setMsg('No luck this time...');
-  }catch(e){console.error('doSpin error',e);}
+  }catch(e){console.error('doSpin error',e);for(let c=0;c<COLS;c++){clearInterval(spinIntervals[c]);spinIntervals[c]=null;}}
   spinning=false;updateButtons();
   if(isFreeSpins){
     fsLeft--;document.getElementById('s-fs').textContent=fsLeft;
