@@ -564,6 +564,7 @@ body::after{
 .t1 .tag{border-color:rgba(220,100,30,.2);color:#c07040}
 .t2 .tag{border-color:rgba(80,120,220,.2);color:#7090c8}
 .t3 .tag{border-color:rgba(240,180,40,.2);color:#c09040}
+.tag b{color:inherit;opacity:.95}
 .bc-buy{
   width:100%;padding:9px;border:none;border-radius:8px;
   font-size:.76rem;font-weight:800;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .12s;
@@ -707,16 +708,32 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:300;display:n
     <div class="modal-info">
       Balance: <span id="mb-bal">$1,000.00</span> &nbsp;·&nbsp; Bet: <span id="mb-bet">$1.00</span>
     </div>
+
+    <!-- HOW IT WORKS -->
+    <div style="margin:0 12px 4px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;font-size:.65rem;line-height:1.8;color:#8a6040">
+      <div style="color:#e8c870;font-weight:800;font-size:.68rem;letter-spacing:1px;margin-bottom:6px">⚙ HOW IT WORKS</div>
+      <div>🟡 <b style="color:#c8a050">Collectors</b> — winning cluster cells turn into golden collector squares and stay on the board</div>
+      <div>🌈 <b style="color:#8090e8">Rainbow</b> — lands randomly and activates all collectors, revealing coin multipliers</div>
+      <div>🥉🥈🥇 <b style="color:#c0a060">Coins</b> — Bronze (0.2–4×) · Silver (5–20×) · Gold (25–500×) · value × your bet</div>
+      <div>🍀 <b style="color:#50d070">Clover</b> — multiplies the value of all 4 adjacent collectors</div>
+      <div>🏆 <b style="color:#f0b830">Pot of Gold</b> — multiplies total coin payout by the number of pots revealed</div>
+    </div>
+
     <div class="modal-cards">
 
       <div class="bcard t0 can" id="bc0">
         <div class="bc-top">
           <div class="bc-left"><div class="bc-icon">📷</div>
-            <div><div class="bc-name">Bonus Hunt</div><div class="bc-rtp">Boosted scatter · 3× bet</div></div>
+            <div><div class="bc-name">Bonus Hunt</div><div class="bc-rtp">Scatter boost · 3× bet</div></div>
           </div>
           <div><div class="bc-cost" id="bcc0">$3.00</div><div class="bc-cost-lbl">Total</div></div>
         </div>
-        <div class="bc-tags"><span class="tag">1 boosted spin</span><span class="tag">Enhanced scatter rate</span></div>
+        <div class="bc-tags">
+          <span class="tag">1 boosted spin</span>
+          <span class="tag">High scatter rate</span>
+          <span class="tag">Collectors active</span>
+          <span class="tag">Can trigger free spins</span>
+        </div>
         <button class="bc-buy" onclick="askConfirm(0)">BUY BONUS</button>
         <div class="bc-confirm" id="conf0">
           <div class="conf-q">CONFIRM PURCHASE?</div><div class="conf-amt" id="ca0"></div>
@@ -727,12 +744,18 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:300;display:n
 
       <div class="bcard t1 can" id="bc1">
         <div class="bc-top">
-          <div class="bc-left"><div class="bc-icon">🎩🎩🎩</div>
+          <div class="bc-left"><div class="bc-icon">🎩🟡🌈</div>
             <div><div class="bc-name">Luck of the Bandit</div><div class="bc-rtp">RTP 96.34% · 100× bet</div></div>
           </div>
           <div><div class="bc-cost" id="bcc1">$100.00</div><div class="bc-cost-lbl">Total</div></div>
         </div>
-        <div class="bc-tags"><span class="tag">8 Free Spins</span><span class="tag">Golden Squares persist</span><span class="tag">Retrigger +2</span></div>
+        <div class="bc-tags">
+          <span class="tag">8 Free Spins</span>
+          <span class="tag">🟡 Collectors persist between spins</span>
+          <span class="tag">🌈 Rainbow activates random multipliers</span>
+          <span class="tag">🥉🥈🥇 All coin tiers active</span>
+          <span class="tag">Retrigger +2 spins</span>
+        </div>
         <button class="bc-buy" onclick="askConfirm(1)">BUY BONUS</button>
         <div class="bc-confirm" id="conf1">
           <div class="conf-q">CONFIRM PURCHASE?</div><div class="conf-amt" id="ca1"></div>
@@ -743,32 +766,46 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:300;display:n
 
       <div class="bcard t2 can" id="bc2">
         <div class="bc-top">
-          <div class="bc-left"><div class="bc-icon">🌈🦝</div>
-            <div><div class="bc-name">Rainbow Feature</div><div class="bc-rtp">RTP 96.34% · 50× bet</div></div>
+          <div class="bc-left"><div class="bc-icon">🌈🟡✨</div>
+            <div><div class="bc-name">Rainbow Feature Spins</div><div class="bc-rtp">RTP 96.34% · 50× bet</div></div>
           </div>
           <div><div class="bc-cost" id="bcc2">$50.00</div><div class="bc-cost-lbl">Total</div></div>
         </div>
-        <div class="bc-tags"><span class="tag">5 Feature Spins</span><span class="tag">🌈 Rainbow every spin</span></div>
+        <div class="bc-tags">
+          <span class="tag">5 Feature Spins</span>
+          <span class="tag">🌈 <b>Guaranteed rainbow every spin</b></span>
+          <span class="tag">🟡 Collectors activate each spin</span>
+          <span class="tag">🥉🥈🥇 Random multiplier on every collector</span>
+          <span class="tag">🍀 Clover &amp; 🏆 Pot of Gold active</span>
+        </div>
         <button class="bc-buy" onclick="askConfirm(2)">BUY BONUS</button>
         <div class="bc-confirm" id="conf2">
           <div class="conf-q">CONFIRM PURCHASE?</div><div class="conf-amt" id="ca2"></div>
-          <div class="conf-desc">Rainbow Feature · 5 Spins</div>
+          <div class="conf-desc">Rainbow Feature Spins · 5 Spins</div>
           <div class="conf-btns"><button class="conf-yes" onclick="doBuy(2)">CONFIRM</button><button class="conf-no" onclick="noConf(2)">CANCEL</button></div>
         </div>
       </div>
 
       <div class="bcard t3 can" id="bc3">
         <div class="bc-top">
-          <div class="bc-left"><div class="bc-icon">🏆✨</div>
-            <div><div class="bc-name">All That Glitters</div><div class="bc-rtp">RTP 96.34% · 250× bet</div></div>
+          <div class="bc-left"><div class="bc-icon">🏆🥇💎</div>
+            <div><div class="bc-name">All That Glitters Is Gold</div><div class="bc-rtp">RTP 96.34% · 250× bet</div></div>
           </div>
           <div><div class="bc-cost" id="bcc3">$250.00</div><div class="bc-cost-lbl">Total</div></div>
         </div>
-        <div class="bc-tags"><span class="tag">12 Free Spins</span><span class="tag">Silver &amp; Gold only</span><span class="tag">🍀 Clover · 🏆 Pot active</span></div>
+        <div class="bc-tags">
+          <span class="tag">12 Free Spins</span>
+          <span class="tag">🟡 Collectors persist all spins</span>
+          <span class="tag">🌈 Rainbow activates random multipliers</span>
+          <span class="tag">🥈🥇 Silver &amp; Gold coins only</span>
+          <span class="tag">🍀 Clover multiplies adjacent collectors</span>
+          <span class="tag">🏆 Pot of Gold multiplies total payout</span>
+          <span class="tag" style="border-color:rgba(240,180,40,.4);color:#f0b830">Max win 10,000× bet</span>
+        </div>
         <button class="bc-buy" onclick="askConfirm(3)">BUY BONUS</button>
         <div class="bc-confirm" id="conf3">
           <div class="conf-q">CONFIRM PURCHASE?</div><div class="conf-amt" id="ca3"></div>
-          <div class="conf-desc">All That Glitters · 12 Free Spins</div>
+          <div class="conf-desc">All That Glitters Is Gold · 12 Free Spins</div>
           <div class="conf-btns"><button class="conf-yes" onclick="doBuy(3)">CONFIRM</button><button class="conf-no" onclick="noConf(3)">CANCEL</button></div>
         </div>
       </div>
