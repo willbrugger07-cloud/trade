@@ -975,37 +975,25 @@ function startSpinVisual(c){
   const p=pool();
   spinIntervals[c]=setInterval(()=>{
     for(let r=0;r<ROWS;r++){
-      if(golden[c][r]) continue; // golden cells stay visible during spin
+      if(golden[c][r]) continue;
       const sym=gsym(c,r);if(!sym) continue;
       sym.innerHTML=symHTML(rnd(p));
       gc(c,r).className='cell spin';
     }
   },65);
 }
-async function landCol(c){
-  clearInterval(spinIntervals[c]);spinIntervals[c]=null;
-  // preserve golden cells — only fill non-golden slots
-  for(let r=0;r<ROWS;r++) if(!golden[c][r]) grid[c][r]=rsym();
-  for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
-  await sleep(60);
-}
+function stopSpinVisual(c){clearInterval(spinIntervals[c]);spinIntervals[c]=null;}
+
 async function spinAll(){
-  // All reels spin at once, then land left→right one at a time
   for(let c=0;c<COLS;c++) startSpinVisual(c);
-  await sleep(500); // min spin time before first reel lands
-  let scattersLanded=0;
+  // Land each column left-to-right: first after 600ms, then every 280ms
   for(let c=0;c<COLS;c++){
-    if(c>0) await sleep(280);
-    // Anticipation: 2 scatters seen, more reels to go → dramatic tease pause
-    if(scattersLanded>=2&&c<COLS-1){
-      document.getElementById('reel-frame').classList.add('anticipate');
-      await sleep(700);
-      document.getElementById('reel-frame').classList.remove('anticipate');
-      await sleep(150);
-    }
-    await landCol(c);
-    for(let r=0;r<ROWS;r++) if(grid[c][r]===S.SCATTER) scattersLanded++;
+    await sleep(c===0?600:280);
+    stopSpinVisual(c);
+    for(let r=0;r<ROWS;r++) if(!golden[c][r]) grid[c][r]=rsym();
+    for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
   }
+  await sleep(80);
 }
 
 // ── WIN COUNTER ────────────────────────────────────────────────────────────────
