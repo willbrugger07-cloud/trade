@@ -972,7 +972,12 @@ const spinIntervals={};
 function startSpinVisual(c){
   const p=pool();
   spinIntervals[c]=setInterval(()=>{
-    for(let r=0;r<ROWS;r++){gsym(c,r).innerHTML=symHTML(rnd(p));gc(c,r).className='cell spin';}
+    for(let r=0;r<ROWS;r++){
+      if(golden[c][r]) continue; // golden cells stay visible during spin
+      const sym=gsym(c,r);if(!sym) continue;
+      sym.innerHTML=symHTML(rnd(p));
+      gc(c,r).className='cell spin';
+    }
   },65);
 }
 async function landCol(c){
@@ -1187,28 +1192,30 @@ function showTally(coinCells,total){
 // ── SPIN FLOW ──────────────────────────────────────────────────────────────────
 async function doSpin(free=false){
   spinning=true;updateButtons();
-  clearWins();document.getElementById('tally').classList.remove('on');
-  setMsg('');document.getElementById('s-win').textContent='$0.00';spinWin=0;
-  if(!free){balance-=bet;updateBalUI();}
-  if(!isFreeSpins) clearGolden();
-  await spinAll();await sleep(60);
-  const{total,bonus,scN,scCells}=await cascade();
-  if(bonus&&!isFreeSpins){
-    scCells.forEach(({c,r})=>gc(c,r).classList.add('win'));
-    await sleep(400);
-    const sp=scN===3?8:12,tier=scN>=5?3:scN>=4?3:1;
-    showBonus(sp,tier,'');spinning=false;updateButtons();return;
-  }
-  const allWin=total+spinWin;
-  if(allWin>0){
-    balance+=total;updateBalUI();
-    sessionTotalWin+=total;document.getElementById('s-total').textContent=fmt(sessionTotalWin);
-    animateWin(0,allWin,document.getElementById('s-win'));
-    if(allWin>=bet*100){showBigWin(allWin,'💎 MEGA WIN');setMsg('💎 MEGA WIN! '+fmt(allWin));}
-    else if(allWin>=bet*30){showBigWin(allWin,'🔥 BIG WIN');setMsg('🔥 BIG WIN! '+fmt(allWin));}
-    else if(allWin>=bet*10){showBigWin(allWin,'✨ GREAT WIN');setMsg('✨ Great win! '+fmt(allWin));}
-    else setMsg('Win: '+fmt(allWin));
-  } else if(!isFreeSpins) setMsg('No luck this time...');
+  try{
+    clearWins();document.getElementById('tally').classList.remove('on');
+    setMsg('');document.getElementById('s-win').textContent='$0.00';spinWin=0;
+    if(!free){balance-=bet;updateBalUI();}
+    if(!isFreeSpins) clearGolden();
+    await spinAll();await sleep(60);
+    const{total,bonus,scN,scCells}=await cascade();
+    if(bonus&&!isFreeSpins){
+      scCells.forEach(({c,r})=>gc(c,r).classList.add('win'));
+      await sleep(400);
+      const sp=scN===3?8:12,tier=scN>=5?3:scN>=4?3:1;
+      showBonus(sp,tier,'');spinning=false;updateButtons();return;
+    }
+    const allWin=total+spinWin;
+    if(allWin>0){
+      balance+=total;updateBalUI();
+      sessionTotalWin+=total;document.getElementById('s-total').textContent=fmt(sessionTotalWin);
+      animateWin(0,allWin,document.getElementById('s-win'));
+      if(allWin>=bet*100){showBigWin(allWin,'💎 MEGA WIN');setMsg('💎 MEGA WIN! '+fmt(allWin));}
+      else if(allWin>=bet*30){showBigWin(allWin,'🔥 BIG WIN');setMsg('🔥 BIG WIN! '+fmt(allWin));}
+      else if(allWin>=bet*10){showBigWin(allWin,'✨ GREAT WIN');setMsg('✨ Great win! '+fmt(allWin));}
+      else setMsg('Win: '+fmt(allWin));
+    } else if(!isFreeSpins) setMsg('No luck this time...');
+  }catch(e){console.error('doSpin error',e);}
   spinning=false;updateButtons();
   if(isFreeSpins){
     fsLeft--;document.getElementById('s-fs').textContent=fsLeft;
