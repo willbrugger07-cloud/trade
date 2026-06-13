@@ -890,13 +890,15 @@ function cpay(sym,size){const t=PAY[sym];return t?t[Math.min(size,12)]||0:0;}
 function mkPool(w){const a=[];w.forEach(([s,n])=>{for(let i=0;i<n;i++)a.push(s);});return a;}
 // Rebalanced pools — fewer symbol types per pool = easier clusters
 // Cards cut to 3 types, wilds doubled, regular syms boosted
-const BASE=mkPool([[S.Q,10],[S.K,9],[S.A,8],[S.TRP,9],[S.CHE,8],[S.BEER,7],[S.BAG,6],[S.HAT,4],[S.WILD,9],[S.SCATTER,3],[S.RAINBOW,1]]);
-const FS1=mkPool([[S.Q,8],[S.K,7],[S.A,7],[S.TRP,8],[S.CHE,7],[S.BEER,7],[S.BAG,6],[S.HAT,5],[S.WILD,12],[S.SCATTER,4],[S.RAINBOW,5]]);
-const FS2=mkPool([[S.Q,6],[S.K,6],[S.A,6],[S.TRP,6],[S.CHE,6],[S.BEER,6],[S.BAG,5],[S.HAT,4],[S.WILD,12],[S.SCATTER,4],[S.RAINBOW,12]]);
-const FS3=mkPool([[S.Q,5],[S.K,5],[S.A,5],[S.TRP,5],[S.CHE,5],[S.BEER,5],[S.BAG,4],[S.HAT,4],[S.WILD,12],[S.SCATTER,4],[S.RAINBOW,10]]);
+const BASE=mkPool([[S.Q,10],[S.K,9],[S.A,8],[S.TRP,9],[S.CHE,8],[S.BEER,7],[S.BAG,6],[S.HAT,4],[S.WILD,4],[S.SCATTER,3],[S.RAINBOW,1]]);
+const FS1=mkPool([[S.Q,8],[S.K,7],[S.A,7],[S.TRP,8],[S.CHE,7],[S.BEER,7],[S.BAG,6],[S.HAT,5],[S.WILD,6],[S.SCATTER,4],[S.RAINBOW,5]]);
+const FS2=mkPool([[S.Q,6],[S.K,6],[S.A,6],[S.TRP,6],[S.CHE,6],[S.BEER,6],[S.BAG,5],[S.HAT,4],[S.WILD,8],[S.SCATTER,4],[S.RAINBOW,12]]);
+const FS3=mkPool([[S.Q,5],[S.K,5],[S.A,5],[S.TRP,5],[S.CHE,5],[S.BEER,5],[S.BAG,4],[S.HAT,4],[S.WILD,8],[S.SCATTER,4],[S.RAINBOW,10]]);
 function pool(){return isFreeSpins?(fsTier===3?FS3:fsTier===2?FS2:FS1):BASE;}
 function rnd(a){return a[Math.floor(Math.random()*a.length)];}
 function rsym(){return rnd(pool());}
+// Used when refilling after rainbow — never produces another rainbow
+function rsymSafe(){let s;do{s=rsym();}while(s===S.RAINBOW);return s;}
 
 // Coins
 function mkCoin(tier){
@@ -1091,7 +1093,7 @@ function hasGolden(){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)if(golden[c][
 // ── CASCADE LOOP ───────────────────────────────────────────────────────────────
 async function cascade(){
   let total=0,iter=0;
-  while(true){
+  while(iter<20){
     const cl=clusters();
     const{n:sc,cells:scc}=scatterCount();
     if(iter===0&&sc>=3&&!isFreeSpins) return{total,scN:sc,scCells:scc,bonus:true};
@@ -1163,9 +1165,19 @@ async function rainbowReveal(){
   updateBalUI();
   setMsg('🌈 Rainbow! +'+fmt(win));
   await sleep(700);
-  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){
-    if(golden[c][r]){golden[c][r]=null;grid[c][r]=rsym();renderCell(c,r,'drop');}
+  // Clear golden + ALL rainbow cells, then apply proper gravity per column
+  for(let c=0;c<COLS;c++){
+    for(let r=0;r<ROWS;r++){
+      if(golden[c][r]){golden[c][r]=null;grid[c][r]=null;}
+      if(grid[c][r]===S.RAINBOW) grid[c][r]=null;
+    }
+    const syms=[];
+    for(let r=0;r<ROWS;r++) if(grid[c][r]!==null) syms.push(grid[c][r]);
+    for(let r=0;r<ROWS;r++) grid[c][r]=null;
+    let si=syms.length-1;
+    for(let r=ROWS-1;r>=0;r--) grid[c][r]=si>=0?syms[si--]:rsymSafe();
   }
+  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++) renderCell(c,r,'drop');
   await sleep(200);
 }
 
