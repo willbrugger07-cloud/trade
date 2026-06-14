@@ -17,6 +17,8 @@ export const STORAGE_KEYS = {
   settings: 'user_settings',
 } as const;
 
+export const FREE_HABIT_LIMIT = 3;
+
 export const PRICING = {
   monthly: '$4.99/month',
   yearly: '$34.99/year',
