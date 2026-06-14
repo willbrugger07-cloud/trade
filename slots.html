@@ -250,6 +250,7 @@ body::after{
 /* ── EXPLODE ── */
 .cell.explode{animation:cell-pop .34s cubic-bezier(.4,0,.2,1) forwards}
 .cell.explode .sym{animation:sym-pop .34s cubic-bezier(.4,0,.2,1) forwards}
+.cell.golden.explode .sym{animation:none!important;opacity:1!important;transform:none!important}
 @keyframes cell-pop{
   0%  {box-shadow:0 0 0 0 rgba(255,185,40,.9)}
   40% {box-shadow:0 0 0 18px rgba(255,185,40,.0)}
@@ -926,9 +927,9 @@ function mkPool(w){const a=[];w.forEach(([s,n])=>{for(let i=0;i<n;i++)a.push(s);
 // ~30% hit rate, no rainbow in base game.
 const BASE=mkPool([[S.TEN,12],[S.J,11],[S.Q,10],[S.K,9],[S.A,8],[S.TRP,7],[S.CHE,6],[S.BEER,5],[S.BAG,4],[S.HAT,3],[S.WILD,3],[S.SCATTER,2],[S.RAINBOW,0]]);
 // Free spin pools: fewer card types, more wilds, rainbow appears
-const FS1=mkPool([[S.Q,8],[S.K,7],[S.A,7],[S.TRP,8],[S.CHE,7],[S.BEER,6],[S.BAG,5],[S.HAT,4],[S.WILD,6],[S.SCATTER,3],[S.RAINBOW,2]]);
-const FS2=mkPool([[S.Q,6],[S.K,6],[S.A,6],[S.TRP,6],[S.CHE,6],[S.BEER,5],[S.BAG,4],[S.HAT,3],[S.WILD,8],[S.SCATTER,3],[S.RAINBOW,5]]);
-const FS3=mkPool([[S.Q,5],[S.K,5],[S.A,5],[S.TRP,5],[S.CHE,5],[S.BEER,4],[S.BAG,4],[S.HAT,3],[S.WILD,8],[S.SCATTER,3],[S.RAINBOW,4]]);
+const FS1=mkPool([[S.Q,8],[S.K,7],[S.A,7],[S.TRP,8],[S.CHE,7],[S.BEER,6],[S.BAG,5],[S.HAT,4],[S.WILD,6],[S.SCATTER,1],[S.RAINBOW,2]]);
+const FS2=mkPool([[S.Q,6],[S.K,6],[S.A,6],[S.TRP,6],[S.CHE,6],[S.BEER,5],[S.BAG,4],[S.HAT,3],[S.WILD,8],[S.SCATTER,1],[S.RAINBOW,5]]);
+const FS3=mkPool([[S.Q,5],[S.K,5],[S.A,5],[S.TRP,5],[S.CHE,5],[S.BEER,4],[S.BAG,4],[S.HAT,3],[S.WILD,8],[S.SCATTER,1],[S.RAINBOW,4]]);
 function pool(){return isFreeSpins?(fsTier===3?FS3:fsTier===2?FS2:FS1):BASE;}
 function rnd(a){return a[Math.floor(Math.random()*a.length)];}
 function rsym(){return rnd(pool());}
@@ -1141,7 +1142,8 @@ async function cascade(){
       const tier=isFreeSpins?(fsTier===3?3:fsTier===2?2:1):1;
       golden[c][r]=mkCoin(tier);grid[c][r]=null;
     });
-    await sleep(280);
+    await sleep(360); // let explode animation fully finish (0.34s)
+    wcells.forEach(k=>{const[c,r]=k.split(',').map(Number);gc(c,r).classList.remove('explode');});
     for(let c=0;c<COLS;c++){
       // collect falling symbols (non-null grid cells; golden cells already have grid=null)
       const syms=[];
