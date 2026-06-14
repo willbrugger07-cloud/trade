@@ -309,6 +309,11 @@ body::after{
   background:radial-gradient(circle at 32% 28%,#ffffff,#d0d0d0,#707070);
   box-shadow:0 0 14px rgba(200,200,200,.6),inset 0 2px 0 rgba(255,255,255,.6);
 }
+.coin-el.gold-hidden{
+  background:radial-gradient(circle at 32% 28%,#ffe040,#d4960a,#8a5800);
+  box-shadow:0 0 16px rgba(255,190,30,.7),inset 0 2px 0 rgba(255,240,100,.5);
+  animation:gold-glow .7s ease-in-out infinite alternate;
+}
 .coin-el.gold{
   background:radial-gradient(circle at 32% 28%,#fff080,#f8c030,#b05010);
   box-shadow:0 0 24px rgba(255,200,40,1),0 0 40px rgba(255,180,20,.4),inset 0 2px 0 rgba(255,250,150,.6);
@@ -950,10 +955,11 @@ function gc(c,r){return document.getElementById(`c${c}r${r}`);}
 function gsym(c,r){return gc(c,r).querySelector('.sym');}
 
 function renderCell(c,r,anim){
-  const s=grid[c][r],el=gc(c,r),sw=gsym(c,r);
+  const el=gc(c,r);
+  if(golden[c][r]){showCoin(c,r,golden[c][r]);if(anim) el.classList.add(anim);return;}
+  const s=grid[c][r],sw=gsym(c,r);
   sw.innerHTML=symHTML(s);
   el.className='cell';
-  if(golden[c][r]) el.classList.add('golden');
   if(s===S.SCATTER) el.classList.add('is-sc');
   if(s===S.WILD) el.classList.add('is-wd');
   if(s===S.RAINBOW) el.classList.add('is-rb');
@@ -961,12 +967,17 @@ function renderCell(c,r,anim){
 }
 function renderAll(a){for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)renderCell(c,r,a);}
 
-function showCoin(c,r,coin){
+function showCoin(c,r,coin,reveal=false){
   const sw=gsym(c,r),el=gc(c,r);
   el.classList.add('golden');
-  if(coin.t==='clover') sw.innerHTML=`<div class="clover-el">🍀</div>`;
-  else if(coin.t==='pot') sw.innerHTML=`<div class="pot-el">🏆</div>`;
-  else sw.innerHTML=`<div class="coin-el ${coin.t}"><div class="coin-val">${coin.v}×</div><div class="coin-lbl">${coin.t}</div></div>`;
+  if(!reveal){
+    // Face-down: show as a plain gold coin until rainbow reveals it
+    sw.innerHTML=`<div class="coin-el gold-hidden"><div class="coin-val" style="font-size:1.4rem">🪙</div></div>`;
+  } else {
+    if(coin.t==='clover') sw.innerHTML=`<div class="clover-el">🍀</div>`;
+    else if(coin.t==='pot') sw.innerHTML=`<div class="pot-el">🏆</div>`;
+    else sw.innerHTML=`<div class="coin-el ${coin.t}"><div class="coin-val">${coin.v}×</div><div class="coin-lbl">${coin.t}</div></div>`;
+  }
 }
 
 // ── SPIN ANIMATION ─────────────────────────────────────────────────────────────
@@ -1129,7 +1140,7 @@ async function rainbowReveal(){
     let revealed=false;
     for(let r=0;r<ROWS;r++){
       if(golden[c][r]){
-        showCoin(c,r,golden[c][r]);
+        showCoin(c,r,golden[c][r],true);
         const ce=gsym(c,r).querySelector('.coin-el,.clover-el,.pot-el');
         if(ce) ce.classList.add('coin-flip');
         coinCells.push({c,r,coin:golden[c][r]});
