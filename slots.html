@@ -213,14 +213,15 @@ body::after{
   50%{background:radial-gradient(ellipse at 65% 65%,rgba(255,210,60,.42),transparent 65%)}
 }
 .cell.golden{
-  background:rgba(30,22,4,.55);
-  border-color:rgba(240,180,40,.6);
-  box-shadow:0 0 16px rgba(240,180,40,.3),inset 0 0 10px rgba(240,180,40,.1);
-  animation:golden-border-pulse 2.4s cubic-bezier(.4,0,.6,1) infinite;
+  background:linear-gradient(135deg,rgba(60,40,0,.9),rgba(40,28,0,.95));
+  border-color:#f0b830;
+  border-width:2px;
+  box-shadow:0 0 18px rgba(255,190,30,.55),0 0 6px rgba(255,190,30,.3),inset 0 0 12px rgba(240,160,10,.2);
+  animation:golden-border-pulse 1.8s ease-in-out infinite;
 }
 @keyframes golden-border-pulse{
-  0%,100%{box-shadow:0 0 10px rgba(240,180,40,.25),inset 0 0 6px rgba(240,180,40,.08)}
-  50%{box-shadow:0 0 24px rgba(255,200,60,.5),inset 0 0 14px rgba(240,180,40,.16)}
+  0%,100%{box-shadow:0 0 10px rgba(255,180,20,.4),0 0 4px rgba(255,180,20,.2)}
+  50%{box-shadow:0 0 28px rgba(255,210,40,.85),0 0 50px rgba(255,170,0,.3)}
 }
 
 /* ── WIN ANIMATION ── */
@@ -1003,7 +1004,7 @@ function showCoin(c,r,coin,reveal=false){
   el.classList.add('golden');
   if(!reveal){
     // Face-down: show as a plain gold coin until rainbow reveals it
-    sw.innerHTML=`<div class="coin-el gold-hidden"><div class="coin-val" style="font-size:1.4rem">🪙</div></div>`;
+    sw.innerHTML=`<div class="coin-el gold-hidden"><div class="coin-val" style="font-size:1.6rem;line-height:1">💰</div></div>`;
   } else {
     if(coin.t==='clover') sw.innerHTML=`<div class="clover-el">🍀</div>`;
     else if(coin.t==='pot') sw.innerHTML=`<div class="pot-el">🏆</div>`;
@@ -1240,6 +1241,8 @@ async function doSpin(free=false){
     setMsg('');document.getElementById('s-win').textContent='$0.00';spinWin=0;
     if(!free){balance-=bet;updateBalUI();}
     if(!isFreeSpins) clearGolden();
+    // Force-render any persisting golden cells so they're visible before spin starts
+    if(isFreeSpins) for(let c=0;c<COLS;c++) for(let r=0;r<ROWS;r++) if(golden[c][r]) showCoin(c,r,golden[c][r]);
     await spinAll();await sleep(60);
     const{total,bonus,scN,scCells}=await cascade();
     if(bonus&&!isFreeSpins){
