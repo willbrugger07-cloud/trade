@@ -7,3 +7,13 @@ venv/
 dist/
 build/
 .DS_Store
+
+# Node / Expo (HabitCoach)
+node_modules/
+.expo/
+web-build/
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.env.local
