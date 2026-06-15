@@ -358,19 +358,51 @@ function onLevelUp() {
   if (XP.level % 10 === 0) { S.superNovaSpins = 5; document.body.classList.add('supernova'); }
 }
 
-// ─── PARTICLES ───────────────────────────────────────────────────────────────
-function spawnParticles(x, y, count, color) {
+// ─── PARTICLE POOL ───────────────────────────────────────────────────────────
+// Pre-allocate 120 particle nodes. Never create or delete during gameplay —
+// pull from pool, animate, return. Eliminates GC pauses from burst emitters.
+const PARTICLE_POOL_SIZE = 120;
+const _pPool   = [];  // idle nodes
+const _pActive = [];  // [{ node, returnAt }]
+
+function _initParticlePool() {
   const stage = el('reel-stage');
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < PARTICLE_POOL_SIZE; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
-    const angle = (Math.random() * 360) * Math.PI / 180;
-    const dist  = 40 + Math.random() * 80;
-    const dur   = (0.5 + Math.random() * 0.4).toFixed(2);
-    const size  = 4 + Math.random() * 6;
-    p.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px;background:${color};--dx:${(Math.cos(angle)*dist).toFixed(1)}px;--dy:${(Math.sin(angle)*dist).toFixed(1)}px;--dur:${dur}s;`;
+    p.style.display = 'none';
     stage.appendChild(p);
-    setTimeout(() => p.remove(), parseFloat(dur) * 1000 + 100);
+    _pPool.push(p);
+  }
+}
+
+// Reclaim expired particles back to the pool (called each spawn)
+function _recycleParticles(now) {
+  let i = _pActive.length;
+  while (i--) {
+    const item = _pActive[i];
+    if (now >= item.returnAt) {
+      item.node.style.display = 'none';
+      _pPool.push(item.node);
+      _pActive.splice(i, 1);
+    }
+  }
+}
+
+function spawnParticles(x, y, count, color) {
+  const now = performance.now();
+  _recycleParticles(now);
+  for (let i = 0; i < count; i++) {
+    const p = _pPool.pop();
+    if (!p) break;  // pool exhausted — skip rather than allocate
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 40 + Math.random() * 80;
+    const dur   = 0.5 + Math.random() * 0.4;
+    const size  = (4 + Math.random() * 6) | 0;
+    const dx    = (Math.cos(angle) * dist).toFixed(1);
+    const dy    = (Math.sin(angle) * dist).toFixed(1);
+    p.style.cssText = `display:block;position:absolute;left:${x}px;top:${y}px;width:${size}px;height:${size}px;border-radius:50%;background:${color};--dx:${dx}px;--dy:${dy}px;--dur:${dur.toFixed(2)}s;animation:particleFly ${dur.toFixed(2)}s ease-out forwards;`;
+    _pActive.push({ node: p, returnAt: now + dur * 1000 + 80 });
   }
 }
 
@@ -487,30 +519,38 @@ class ReelColumn {
     this._buildRibbon(Array.from({length: this.rows}, () => this._randSym()));
     this._setTranslate(0);
 
-    const startMs  = performance.now();
-    const MAX_VEL  = -26;   // px/frame, negative → ribbon scrolls up (symbols scroll down visually)
-    const ACCEL_MS = 380;
-    const FREEZE_Y = -(SPIN_PAD - this.rows) * this.cellSize; // stop 'rows' cells before final zone
+    // ── Time-delta accumulator ──────────────────────────────────────────────
+    // Physics in px/ms so spin speed is identical at 60Hz, 120Hz, 144Hz, 240Hz.
+    // A fixed px/frame loop would spin 2.4× faster on a 144Hz display.
+    const MAX_VEL_PX_MS = 1.56;  // ~1560 px/sec = comfortable spin speed
+    const ACCEL_MS      = 380;
+    const FREEZE_Y      = -(SPIN_PAD - this.rows) * this.cellSize;
+    const startMs       = performance.now();
+    let   lastTs        = startMs;
 
     const tick = (now) => {
       if (!this.spinning) return;
-      const elapsed = now - startMs;
-      const t = Math.min(elapsed / ACCEL_MS, 1);
-      const vel = MAX_VEL * (t * t);   // ease-in²
-      this.velocity = vel;
 
-      const newY = this.currentY + vel;
+      // Delta-time: cap at 50ms to prevent spiral-of-death on tab unfocus
+      const dt      = Math.min(now - lastTs, 50);
+      lastTs        = now;
+      const elapsed = now - startMs;
+
+      const t   = Math.min(elapsed / ACCEL_MS, 1);
+      const vel = -MAX_VEL_PX_MS * (t * t);   // px/ms, negative = up
+      this.velocity = vel * 60;                // store as px/sec for blur
+
+      const delta = vel * dt;                  // actual px to move this frame
+      const newY  = this.currentY + delta;
 
       if (newY <= FREEZE_Y && !this.landing) {
-        // Hold position: spin padding exhausted but landing not triggered yet
-        // Stay visible at the freeze point so the reel appears to hover
         this.animFrame = requestAnimationFrame(tick);
         return;
       }
 
       this._setTranslate(newY);
-      this._setBlur(Math.abs(vel * 60));
-      updateReelHum(Math.abs(vel * 60));
+      this._setBlur(Math.abs(this.velocity));
+      updateReelHum(Math.abs(this.velocity));
       this.animFrame = requestAnimationFrame(tick);
     };
     this.animFrame = requestAnimationFrame(tick);
@@ -1080,6 +1120,7 @@ el('btn-rotate-seed').addEventListener('click',async()=>{ await fetch(API+'/clie
   try {
     await loadSession();
     GRID.build(6, 6);
+    _initParticlePool();
     connectWS();
     const fakeTick=()=>{ addFeedItem(FAKE_USERS[Math.floor(Math.random()*FAKE_USERS.length)],Math.random()*120+1,Math.random()*60+0.5); setTimeout(fakeTick,6000+Math.random()*14000); };
     setTimeout(fakeTick,4000);
