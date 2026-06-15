@@ -7,23 +7,25 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0a0a0f;--bg2:#0f0f1a;--bg3:#1a1a2e;
-  --purple:#b300ff;--cyan:#00ffff;--pink:#ff006e;--green:#00e701;--gold:#ffd700;--red:#ff4400;
+  /* Dark Synth Minimalist palette */
+  --bg:#0B0E14;--bg2:#111520;--bg3:#161B28;
+  --border:#1F2937;
+  --purple:#c026d3;--cyan:#22d3ee;--pink:#f43f5e;--green:#10b981;--gold:#f59e0b;--red:#ef4444;
 }
 body{background:var(--bg);color:#fff;font-family:'Courier New',monospace;overflow:hidden;height:100vh;display:flex;flex-direction:column;user-select:none}
-#header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg2);border-bottom:1px solid #222;flex-shrink:0}
+#header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
 .logo{font-size:20px;font-weight:bold;letter-spacing:3px;color:var(--cyan);text-shadow:0 0 20px var(--cyan)}
 .hud-val{font-size:22px;font-weight:bold;transition:color 0.3s}.hud-lbl{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px}.hud-box{text-align:center}
 #balance-val{color:var(--green)}#win-val{color:var(--gold)}#mult-val{color:var(--purple)}
-#leaderboard{background:#0a0a12;border-top:1px solid #1a1a2e;padding:4px 12px;display:flex;align-items:center;gap:8px;font-size:10px;overflow:hidden;height:26px;flex-shrink:0}
+#leaderboard{background:#0a0d13;border-top:1px solid var(--border);padding:4px 12px;display:flex;align-items:center;gap:8px;font-size:10px;overflow:hidden;height:26px;flex-shrink:0}
 #ticker-label{color:#555;white-space:nowrap;letter-spacing:1px}
 #ticker-content{display:flex;gap:24px;animation:ticker 30s linear infinite;white-space:nowrap}
 @keyframes ticker{from{transform:translateX(100vw)}to{transform:translateX(-200%)}}
 .tick-item{color:#888}.tick-item span{color:var(--gold);font-weight:bold}
 #main{display:flex;flex:1;overflow:hidden}
 #sidebar-left,#sidebar-right{width:180px;background:var(--bg2);display:flex;flex-direction:column;flex-shrink:0}
-#sidebar-left{border-right:1px solid #1a1a2e}#sidebar-right{border-left:1px solid #1a1a2e}
-.sidebar-title{font-size:10px;color:#666;letter-spacing:2px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid #1a1a2e}
+#sidebar-left{border-right:1px solid var(--border)}#sidebar-right{border-left:1px solid var(--border)}
+.sidebar-title{font-size:10px;color:#666;letter-spacing:2px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border)}
 #win-feed{flex:1;overflow-y:auto;padding:4px}
 #win-feed::-webkit-scrollbar{width:3px}#win-feed::-webkit-scrollbar-thumb{background:#333}
 .feed-item{padding:4px 6px;border-radius:3px;margin-bottom:2px;font-size:10px;border-left:2px solid var(--cyan);background:#0d0d1a;animation:feedIn 0.3s ease}
@@ -33,24 +35,36 @@ body{background:var(--bg);color:#fff;font-family:'Courier New',monospace;overflo
 #voltage-label{font-size:10px;color:#666;letter-spacing:2px;margin-bottom:6px;text-transform:uppercase}
 #voltage-display{font-size:36px;font-weight:bold;color:var(--purple);text-shadow:0 0 20px var(--purple);text-align:center}
 #cascade-count{font-size:11px;color:#555;text-align:center;margin-top:2px}
-#voltage-bar{height:4px;background:#1a1a2e;border-radius:2px;margin-top:8px;overflow:hidden}
+#voltage-bar{height:4px;background:var(--border);border-radius:2px;margin-top:8px;overflow:hidden}
 #voltage-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));width:0%;transition:width 0.3s}
-#prism-info{padding:12px;border-top:1px solid #1a1a2e;display:none}
+#prism-info{padding:12px;border-top:1px solid var(--border);display:none}
 #prism-spins{font-size:24px;font-weight:bold;color:var(--cyan);text-align:center}
 #prism-label{font-size:10px;color:#666;text-align:center;text-transform:uppercase;letter-spacing:1px}
-#seeds-panel{padding:8px;border-top:1px solid #1a1a2e;font-size:8px;color:#333;word-break:break-all}
+#seeds-panel{padding:8px;border-top:1px solid var(--border);font-size:8px;color:#333;word-break:break-all}
 /* CENTER */
 #center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
 /* REEL STAGE */
 #reel-stage{position:relative;display:flex;gap:3px}
-.reel-track{overflow:hidden;border-radius:6px;position:relative;border:1px solid #1a1a2e;background:var(--bg3)}
+.reel-track{overflow:hidden;border-radius:4px;position:relative;border:1px solid rgba(31,41,55,0.7);background:var(--bg3)}
+/* Razor-thin inner vignette to give each reel depth */
+.reel-track::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 100% 100% at 50% 50%,transparent 55%,rgba(0,0,0,0.55) 100%);pointer-events:none;z-index:5}
 .reel-ribbon{position:absolute;left:0;right:0;top:0;will-change:transform}
-.reel-cell{display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;flex-shrink:0;transition:none}
+.reel-cell{display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;flex-shrink:0;transition:filter 0.2s,opacity 0.2s}
+/* Cascade dim: non-winning cells fade back during a cascade */
+#reel-stage.cascade-active .reel-cell{filter:brightness(0.38) saturate(0.15);transition:filter 0.22s,opacity 0.22s}
+#reel-stage.cascade-active .reel-cell.winning{filter:none!important;transition:none}
 .reel-cell.winning{z-index:2}
-.reel-cell.winning::after{content:'';position:absolute;inset:-2px;border-radius:6px;border:2px solid var(--gold);box-shadow:0 0 12px var(--gold),0 0 24px var(--gold)44;animation:winPulse 0.8s ease infinite alternate}
+.reel-cell.winning::after{content:'';position:absolute;inset:-2px;border-radius:4px;border:2px solid #fff;box-shadow:0 0 10px #fff,0 0 22px var(--gold);animation:winPulse 0.7s ease infinite alternate}
 .reel-cell.scatter-impact{animation:scatterImpact 0.15s ease}
-@keyframes winPulse{from{box-shadow:0 0 8px var(--gold)}to{box-shadow:0 0 24px var(--gold),0 0 48px var(--gold)88}}
+@keyframes winPulse{from{box-shadow:0 0 6px #fff,0 0 14px var(--gold)}to{box-shadow:0 0 18px #fff,0 0 36px var(--gold),0 0 60px var(--gold)66}}
 @keyframes scatterImpact{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+/* Pre-charge spring: grid pulls up before spin fires */
+@keyframes preCharge{0%{transform:translateY(0)}60%{transform:translateY(-14px)}100%{transform:translateY(0)}}
+.pre-charging{animation:preCharge 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards}
+/* LASER NEXUS SVG */
+#laser-svg{position:absolute;inset:0;pointer-events:none;z-index:10;overflow:visible}
+.laser-beam{stroke-linecap:round;filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px var(--purple));animation:laserPulse 0.6s ease infinite alternate}
+@keyframes laserPulse{from{stroke-opacity:0.75}to{stroke-opacity:1}}
 /* WIN OVERLAY */
 #bigwin-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;pointer-events:none;opacity:0}
 #bigwin-overlay.show{animation:bigwinAnim 1.8s ease forwards}
@@ -61,7 +75,23 @@ body{background:var(--bg);color:#fff;font-family:'Courier New',monospace;overflo
 @keyframes shake{0%,100%{transform:translate(0)}15%{transform:translate(-3px,-2px)}30%{transform:translate(2px,1px)}50%{transform:translate(-2px,2px)}70%{transform:translate(1px,-2px)}}
 .shake{animation:shake 0.3s ease}
 /* FOOTER */
-#footer{background:var(--bg2);border-top:1px solid #222;padding:10px 16px;flex-shrink:0}
+/* RISK LADDER */
+#risk-overlay{display:none;position:absolute;inset:0;background:#000000dd;z-index:310;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#risk-overlay.show{display:flex}
+#risk-title{font-size:18px;letter-spacing:3px;color:var(--cyan)}
+#risk-win-display{font-size:13px;color:#888}
+#risk-ladder{display:flex;flex-direction:column-reverse;gap:4px;width:220px}
+.rung{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border:1px solid;border-radius:3px;font-size:13px;font-weight:bold;letter-spacing:1px;transition:all 0.15s}
+.rung.r4{border-color:var(--pink);color:var(--pink);background:#f43f5e11}
+.rung.r3{border-color:var(--gold);color:var(--gold);background:#f59e0b11}
+.rung.r2{border-color:var(--cyan);color:var(--cyan);background:#22d3ee11}
+.rung.r1{border-color:var(--green);color:var(--green);background:#10b98111}
+.rung.bust{border-color:#444;color:#555;background:transparent}
+.rung.active{transform:scaleX(1.04);filter:brightness(1.5)}
+#risk-indicator-wrap{width:220px;position:relative;height:14px}
+#risk-indicator{position:absolute;width:16px;height:14px;background:var(--green);border-radius:2px;box-shadow:0 0 10px var(--green);top:0;transition:left 0.05s linear}
+#risk-btn-row{display:flex;gap:10px}
+#footer{background:var(--bg2);border-top:1px solid var(--border);padding:10px 16px;flex-shrink:0}
 #controls{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap}
 .btn{padding:8px 18px;border:1px solid;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:bold;letter-spacing:1px;transition:all 0.15s;text-transform:uppercase}
 .btn:hover{filter:brightness(1.3)}.btn:disabled{opacity:0.4;cursor:not-allowed;filter:none}
@@ -73,7 +103,7 @@ select{background:var(--bg3);color:#fff;border:1px solid #333;padding:8px 12px;b
 #bet-display{font-size:18px;font-weight:bold;color:var(--gold);min-width:70px;text-align:center}
 .bet-arrow{background:transparent;color:#666;border:1px solid #333;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:14px}
 .bet-arrow:hover{color:#fff;border-color:#666}
-#bonus-bar{background:#080810;border-top:1px solid #1a1a2e;padding:6px 16px;display:flex;gap:8px;justify-content:center;flex-shrink:0;flex-wrap:wrap}
+#bonus-bar{background:#0a0d13;border-top:1px solid var(--border);padding:6px 16px;display:flex;gap:8px;justify-content:center;flex-shrink:0;flex-wrap:wrap}
 .buy-btn{padding:5px 14px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;font-weight:bold;letter-spacing:1px;border:1px solid;transition:all 0.15s;text-transform:uppercase}
 .buy-btn:hover{filter:brightness(1.4)}
 .buy-ante{color:var(--green);border-color:var(--green);background:transparent}.buy-ante.active{background:#00e70122}
@@ -118,6 +148,8 @@ select{background:var(--bg3);color:#fff;border:1px solid #333;padding:8px 12px;b
 /* PARTICLE BURST */
 .particle{position:absolute;pointer-events:none;border-radius:50%;animation:particleFly var(--dur,0.7s) ease-out forwards}
 @keyframes particleFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0.2);opacity:0}}
+/* QUANTUM CORE SPIN */
+@keyframes qgsSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 /* XP BAR */
 #xp-section{padding:10px 12px;border-top:1px solid #1a1a2e}
 #xp-label{font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between}
@@ -154,7 +186,9 @@ body.mega-win.show-win #reel-stage{filter:saturate(1);transition:filter 1.2s}
   <div id="center">
     <div id="error-toast"></div>
     <div id="prism-banner">✦ PRISM PHASE ✦</div>
-    <div id="reel-stage"></div>
+    <div id="reel-stage">
+      <svg id="laser-svg" width="100%" height="100%"></svg>
+    </div>
     <div id="bigwin-overlay"><div id="bigwin-text"></div></div>
     <!-- GAMBLER -->
     <div id="gambler-overlay">
@@ -166,6 +200,23 @@ body.mega-win.show-win #reel-stage{filter:saturate(1);transition:filter 1.2s}
         <div class="g-light c3" data-i="2">◉</div>
       </div>
       <button id="gambler-decline" class="btn btn-outline" style="font-size:11px">Decline</button>
+    </div>
+    <!-- RISK LADDER -->
+    <div id="risk-overlay">
+      <div id="risk-title">⚡ RISK LADDER</div>
+      <div id="risk-win-display"></div>
+      <div id="risk-ladder">
+        <div class="rung r4" id="rung4">10× <span style="font-size:9px;opacity:0.6">ELITE</span></div>
+        <div class="rung r3" id="rung3">5×  <span style="font-size:9px;opacity:0.6">RARE</span></div>
+        <div class="rung r2" id="rung2">2×</div>
+        <div class="rung r1" id="rung1">1.5×</div>
+        <div class="rung bust" id="rung0">BUST</div>
+      </div>
+      <div id="risk-indicator-wrap"><div id="risk-indicator"></div></div>
+      <div id="risk-btn-row">
+        <button class="btn btn-spin" id="risk-tap" style="font-size:13px;padding:8px 24px">TAP TO STOP</button>
+        <button class="btn btn-outline" id="risk-collect" style="font-size:11px">Collect</button>
+      </div>
     </div>
     <!-- VERIFY -->
     <div id="verify-modal">
@@ -200,6 +251,14 @@ body.mega-win.show-win #reel-stage{filter:saturate(1);transition:filter 1.2s}
       <div id="xp-label"><span>XP LEVEL</span><span id="xp-level">1</span></div>
       <div id="xp-bar"><div id="xp-fill"></div></div>
     </div>
+    <!-- QUANTUM CORE METER -->
+    <div id="qgs-panel" style="display:none;padding:10px 12px;border-top:1px solid var(--border)">
+      <div style="font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between"><span id="qgs-tier">OVERCHARGE</span><span id="qgs-spins" style="color:var(--cyan)">—</span></div>
+      <div id="qgs-core" style="width:56px;height:56px;border-radius:50%;border:2px solid var(--purple);margin:6px auto;display:flex;align-items:center;justify-content:center;flex-direction:column;animation:qgsSpin 2s linear infinite;font-size:8px;color:#888">
+        <div id="qgs-count" style="font-size:9px;color:var(--purple);font-weight:bold">0/50</div>
+      </div>
+      <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden"><div id="qgs-fill" style="height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));width:0%;transition:width 0.3s"></div></div>
+    </div>
     <div id="seeds-panel">NONCE: <span id="nonce-disp">0</span><br><span id="hash-prev" style="color:#222">—</span></div>
   </div>
 </div>
@@ -231,9 +290,10 @@ body.mega-win.show-win #reel-stage{filter:saturate(1);transition:filter 1.2s}
 <div id="bonus-bar">
   <button class="buy-btn buy-ante" id="btn-ante">⚡ LIVE WIRE +25%</button>
   <button class="buy-btn buy-t1" id="btn-buy1">OVERLOAD T1 — 100×</button>
-  <button class="buy-btn buy-t2" id="btn-buy2">OVERLOAD T2 — 250×</button>
+  <button class="buy-btn buy-t2" id="btn-buy2">LASER-LINK — 250×</button>
   <button class="buy-btn buy-t3" id="btn-buy3">SINGULARITY — 500×</button>
   <button class="buy-btn buy-t4" id="btn-buy4">MULTI-CHASER — 150×</button>
+  <button class="buy-btn" id="btn-chaos" style="color:#f43f5e;border-color:#f43f5e;background:transparent">💀 CHAOS — 600×</button>
 </div>
 
 <script>
@@ -241,7 +301,8 @@ body.mega-win.show-win #reel-stage{filter:saturate(1);transition:filter 1.2s}
 
 // ─── SYMBOL DEFS ─────────────────────────────────────────────────────────────
 const SYMS   = ['','▲','■','●','◆','⬡','⚡','★','◉','◈'];
-const COLORS = ['','#ff006e','#b300ff','#00ffff','#00e701','#ffd700','#ffffff','#ff4400','#7700aa','#00ffff'];
+// Colors tuned to Dark Synth Minimalist palette — saturated, distinct, not "neon sign"
+const COLORS = ['','#f43f5e','#c026d3','#22d3ee','#10b981','#f59e0b','#e2e8f0','#ef4444','#7c3aed','#22d3ee'];
 const TIERS  = ['','low','low','mid','mid','high','special','special','special','special'];
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -422,6 +483,170 @@ const el   = id => document.getElementById(id);
 const r2   = n  => Math.round(n*100)/100;
 const fmt  = n  => '$'+Math.abs(n).toFixed(2);
 const sleep= ms => new Promise(r=>setTimeout(r,ms));
+
+// ─── PRE-CHARGE SPRING ───────────────────────────────────────────────────────
+// Grid pulls up 14px over 80ms before spin fires (spring-load feel)
+function preChargeGrid() {
+  return new Promise(resolve => {
+    const stage = el('reel-stage');
+    stage.classList.add('pre-charging');
+    stage.addEventListener('animationend', () => {
+      stage.classList.remove('pre-charging');
+      resolve();
+    }, { once: true });
+  });
+}
+
+// ─── LASER NEXUS ─────────────────────────────────────────────────────────────
+let _activeLaserLines = []; // [{ax,ay,bx,by}] in pixel coords
+
+function drawLasers(grid, rows, cols, cellSize) {
+  _activeLaserLines = [];
+  const svg = el('laser-svg');
+  svg.innerHTML = '';
+
+  // Find all capacitor (multiplier) positions
+  const nodes = [];
+  const gap = 3; // px gap between reel tracks
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (grid[r * cols + c] === 6) { // SYM.CAPACITOR
+        nodes.push({
+          r, c,
+          px: c * (cellSize + gap) + cellSize / 2,
+          py: r * cellSize + cellSize / 2,
+        });
+      }
+    }
+  }
+  if (nodes.length < 2) return;
+
+  // Draw beams between all node pairs
+  for (let i = 0; i < nodes.length - 1; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      // Outer glow beam (thick, low opacity)
+      const glow = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      glow.setAttribute('x1', a.px); glow.setAttribute('y1', a.py);
+      glow.setAttribute('x2', b.px); glow.setAttribute('y2', b.py);
+      glow.setAttribute('stroke', '#c026d3');
+      glow.setAttribute('stroke-width', '8');
+      glow.setAttribute('stroke-opacity', '0.3');
+      svg.appendChild(glow);
+      // Inner bright beam
+      const beam = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      beam.setAttribute('x1', a.px); beam.setAttribute('y1', a.py);
+      beam.setAttribute('x2', b.px); beam.setAttribute('y2', b.py);
+      beam.setAttribute('stroke', '#fff');
+      beam.setAttribute('stroke-width', '1.5');
+      beam.className.baseVal = 'laser-beam';
+      svg.appendChild(beam);
+      _activeLaserLines.push({ ax: a.px, ay: a.py, bx: b.px, by: b.py });
+    }
+  }
+}
+
+function clearLasers() {
+  el('laser-svg').innerHTML = '';
+  _activeLaserLines = [];
+}
+
+/**
+ * Laser Nexus intersection engine.
+ * Returns true if any cell in the cluster lies within hitRadius of a laser line.
+ * Uses the perpendicular point-to-line-segment distance formula:
+ *   d = |A·px + B·py + C| / sqrt(A²+B²)
+ *   where A=(y2-y1), B=(x1-x2), C=(x2·y1 - y2·x1)
+ * A bounding-box pre-check skips nodes outside the beam's spatial zone.
+ */
+function clusterIntersectsLaser(cluster, cellSize) {
+  if (!_activeLaserLines.length || !cluster.coords) return false;
+  const gap = 3;
+  const hitRadius = cellSize * 0.48;
+
+  for (const [row, col] of cluster.coords) {
+    const px = col * (cellSize + gap) + cellSize / 2;
+    const py = row * cellSize + cellSize / 2;
+
+    for (const { ax, ay, bx, by } of _activeLaserLines) {
+      // Fast bounding-box rejection (with hitRadius tolerance)
+      if (px < Math.min(ax, bx) - hitRadius || px > Math.max(ax, bx) + hitRadius) continue;
+      if (py < Math.min(ay, by) - hitRadius || py > Math.max(ay, by) + hitRadius) continue;
+
+      // Perpendicular distance to infinite line
+      const A = by - ay, B = ax - bx, C = bx * ay - by * ax;
+      const denom = Math.sqrt(A * A + B * B);
+      if (denom === 0) continue;
+      const d = Math.abs(A * px + B * py + C) / denom;
+
+      if (d < hitRadius) return true;
+    }
+  }
+  return false;
+}
+
+// ─── RISK LADDER MINI-GAME ───────────────────────────────────────────────────
+// Bouncing indicator moves left→right across the ladder stages.
+// Player taps to freeze it. Zone hit determines multiplier.
+const LADDER_STAGES = [
+  { id: 'rung0', mult: 0,   label: 'BUST',  zone: [0,    0.18] },
+  { id: 'rung1', mult: 1.5, label: '1.5×',  zone: [0.18, 0.38] },
+  { id: 'rung2', mult: 2,   label: '2×',    zone: [0.38, 0.58] },
+  { id: 'rung3', mult: 5,   label: '5×',    zone: [0.58, 0.74] },
+  { id: 'rung4', mult: 10,  label: '10×',   zone: [0.74, 1.0 ] },
+];
+
+function riskLadder(baseWin, bet) {
+  return new Promise(resolve => {
+    const ov = el('risk-overlay');
+    el('risk-win-display').textContent = `Base win: ${fmt(baseWin)} (${(baseWin/bet).toFixed(1)}×)`;
+    ov.classList.add('show');
+
+    const ind  = el('risk-indicator');
+    const wrap = el('risk-indicator-wrap');
+    const W    = 220 - 16; // wrap width minus indicator width
+    let pos    = 0;        // 0..1
+    let dir    = 1;
+    let speed  = 0.012;    // fraction per frame, increases with each use
+    let raf    = null;
+    let done   = false;
+
+    const tick = () => {
+      if (done) return;
+      pos += speed * dir;
+      if (pos >= 1) { pos = 1; dir = -1; }
+      if (pos <= 0) { pos = 0; dir =  1; }
+      ind.style.left = (pos * W) + 'px';
+
+      // Light up the active rung
+      LADDER_STAGES.forEach(s => {
+        const el_ = el(s.id);
+        if (pos >= s.zone[0] && pos < s.zone[1]) el_.classList.add('active');
+        else el_.classList.remove('active');
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    const settle = () => {
+      if (done) return;
+      done = true;
+      cancelAnimationFrame(raf);
+      const stage = LADDER_STAGES.find(s => pos >= s.zone[0] && pos < s.zone[1])
+                  || LADDER_STAGES[0];
+      ov.classList.remove('show');
+      LADDER_STAGES.forEach(s => el(s.id)?.classList.remove('active'));
+      speed = Math.min(speed + 0.004, 0.032); // slightly faster each time
+      resolve(stage.mult);
+    };
+
+    el('risk-tap').onclick     = settle;
+    el('risk-collect').onclick = () => { done = true; cancelAnimationFrame(raf); ov.classList.remove('show'); LADDER_STAGES.forEach(s=>el(s.id)?.classList.remove('active')); resolve(1); };
+    document.addEventListener('keydown', function kd(e) {
+      if (e.code === 'Space') { e.preventDefault(); settle(); document.removeEventListener('keydown', kd); }
+    });
+  });
+}
 
 // ─── REEL ENGINE ─────────────────────────────────────────────────────────────
 // Each column has a tall ribbon: [SPIN_PAD random cells][rows final cells]
@@ -833,42 +1058,60 @@ async function playback(data) {
     return;
   }
 
-  // ── Anticipation: extend last reel if big win or bonus ──
-  // We have the manifest, so we know the outcome before showing it.
-  // Slowing the last reel on a genuine big win creates drama without deception.
+  // ── Anticipation ──
   let extraLastMs = 0;
   if (bonus_triggered || mult >= 50) extraLastMs = 1200;
   else if (mult >= 20) extraLastMs = 600;
-
-  // Near-miss detection: if exactly 2 scatters in final grid, extend last reel
-  // (natural outcome only — no RNG manipulation)
   const totalScatters = final_grid ? final_grid.filter(s => s === 9).length : 0;
-  if (totalScatters === 2 && !bonus_triggered) {
-    extraLastMs = Math.max(extraLastMs, 900);
-  }
+  if (totalScatters === 2 && !bonus_triggered) extraLastMs = Math.max(extraLastMs, 900);
 
-  // 1. Spin
+  // 1. Pre-charge spring + spin
+  await preChargeGrid();
   GRID.spinAll();
   await sleep(1400);
 
-  // 2. Land with stagger (last reel extended if anticipation)
+  // 2. Land
   await GRID.landAll(final_grid, [], { extraLastMs });
+
+  // Draw Laser Nexus after grid settles (capacitor positions now visible)
+  drawLasers(final_grid, rows, cols, GRID.cellSize);
 
   // 3. Cascades
   if (cascades.length === 0) {
     el('win-val').textContent = fmt(0);
     addXP(2);
+    clearLasers();
     return;
   }
 
-  let cascadeIdx = 0;
+  let cIdx = 0;
   for (const step of cascades) {
     await sleep(180);
+
+    // Dim non-winning cells
+    el('reel-stage').classList.add('cascade-active');
     GRID.highlightWinning(step.winning_clusters);
+
+    // Laser intersection check: clusters crossing a laser beam get extra delay + sparks
+    let laserHit = false;
+    for (const cl of step.winning_clusters) {
+      if (clusterIntersectsLaser(cl, GRID.cellSize)) {
+        laserHit = true;
+        // Flash the laser beams white on hit
+        el('laser-svg').querySelectorAll('.laser-beam').forEach(l => {
+          l.setAttribute('stroke', '#f43f5e');
+          setTimeout(() => l.setAttribute('stroke', '#fff'), 180);
+        });
+        // Extra intense particle burst along intersection
+        spawnWinParticles([cl]);
+        vibrate([20, 10, 60]);
+      }
+    }
+
     spawnWinParticles(step.winning_clusters);
     updateVoltage(step.voltage_multiplier, step.sequence);
     el('win-val').textContent = fmt(step.total_win_so_far);
-    playCascadeArpeggio(cascadeIdx++);
+    playCascadeArpeggio(cIdx++);
     vibrate([15]);
 
     if (step.winning_clusters.length) {
@@ -876,21 +1119,26 @@ async function playback(data) {
       showFloatWin(fmt(step.payout), cl.coords[0][0], cl.coords[0][1], COLORS[cl.symbol_id]);
     }
 
-    await sleep(580);
+    await sleep(laserHit ? 730 : 580); // brief extra hold on laser intersection
+    el('reel-stage').classList.remove('cascade-active');
     GRID.clearHighlights();
+    clearLasers();
 
     if (step.next_grid) {
       await GRID.cascadeAll(step.next_grid);
+      // Re-draw lasers for new grid state
+      drawLasers(step.next_grid, rows, cols, GRID.cellSize);
     }
-    await sleep(260);
+    await sleep(240);
   }
+
+  clearLasers();
 
   // 4. Final
   el('win-val').textContent = fmt(total_win);
   addXP(Math.ceil(cascades.length * 5 + mult));
 
   if (mult >= 500) {
-    // Mega celebration: desaturate then dramatic reveal
     document.body.classList.add('mega-win');
     await sleep(400);
     document.body.classList.add('show-win');
@@ -972,10 +1220,22 @@ async function spin(opts={}) {
     scrollNumber('balance-val', S.balance - manifest.total_win, S.balance, 500);
     addFeedItem('You', manifest.total_win / effectiveBet, manifest.total_win);
 
-    if (!S.inPrism && manifest.scatter_count >= 3) await enterPrism(manifest.scatter_count, 1);
+    if (!S.inPrism && manifest.scatter_count >= 3) await enterQuantumBonus(manifest.scatter_count, 1);
 
-    if (!S.inPrism && !S.autoRunning && manifest.total_win/effectiveBet >= WIN.BIG) {
-      await gamblerPulse(manifest.total_win, effectiveBet);
+    // Risk Ladder: offered after wins ≥ 5× bet, not during auto-play
+    if (!S.inPrism && !S.autoRunning && manifest.total_win/effectiveBet >= 5) {
+      const mult = await riskLadder(manifest.total_win, effectiveBet);
+      if (mult === 0) {
+        // Bust: deduct the win that was just credited
+        S.balance = r2(S.balance - manifest.total_win);
+        scrollNumber('balance-val', S.balance + manifest.total_win, S.balance, 300);
+        el('win-val').textContent = fmt(0);
+      } else if (mult > 1) {
+        const bonus = r2(manifest.total_win * (mult - 1));
+        S.balance = r2(S.balance + bonus);
+        scrollNumber('balance-val', S.balance - bonus, S.balance, 400);
+        el('win-val').textContent = fmt(manifest.total_win * mult);
+      }
     }
 
   } catch(e) {
@@ -1010,6 +1270,120 @@ async function enterPrism(sc, startMult) {
   S.inPrism=false;
   el('prism-banner').style.display='none'; el('prism-info').style.display='none';
   showBigWin(prismTotal, S.anteBet?S.bet*1.25:S.bet);
+}
+
+// ─── QUANTUM GRID SHIFT ─────────────────────────────────────────────────────
+// 3-tier progressive bonus: Overcharge → Singularity (7×7) → God Mode
+const QGS = {
+  active: false,
+  tier: 0,        // 1=Overcharge, 2=Singularity, 3=GodMode
+  cleared: 0,     // total symbols cleared this bonus round
+  spins: 0,
+  total: 0,
+  TIER2_THRESH: 50,
+  TIER3_THRESH: 120,
+  stickyPositions: new Map(), // colIdx+rowIdx → sym (sticky multipliers in Tier 1)
+};
+const TIER_BG    = ['','#0a0e1f','#1a0033','#000000'];
+const TIER_GLOW  = ['','#3b82f6','#f43f5e','#7c3aed'];
+const TIER_NAMES = ['','OVERCHARGE','SINGULARITY','GOD MODE'];
+
+function qgsUpdateHUD() {
+  if (!QGS.active) return;
+  const next = QGS.tier === 1 ? QGS.TIER2_THRESH : QGS.TIER3_THRESH;
+  el('qgs-fill').style.width = (Math.min(QGS.cleared, next) / next * 100) + '%';
+  el('qgs-count').textContent = QGS.cleared + ' / ' + next;
+  el('qgs-tier').textContent = TIER_NAMES[QGS.tier];
+  el('qgs-spins').textContent = QGS.spins;
+  // Core spin speed: faster as tier threshold approaches
+  const pct = Math.min(QGS.cleared / next, 1);
+  el('qgs-core').style.animationDuration = (2 - pct * 1.4).toFixed(2) + 's';
+  el('qgs-core').style.boxShadow = `0 0 ${20 + pct * 40}px ${TIER_GLOW[QGS.tier]}`;
+}
+
+function qgsSetTierTheme(tier) {
+  const bg = TIER_BG[tier] || '#0B0E14';
+  document.body.style.setProperty('--bg', bg);
+  document.body.style.setProperty('--bg2', bg === '#000000' ? '#0a0a0a' : bg);
+  document.querySelector('#reel-stage').style.borderColor = TIER_GLOW[tier] || 'transparent';
+  // Flash transition
+  const flash = document.createElement('div');
+  flash.style.cssText = `position:fixed;inset:0;background:${TIER_GLOW[tier]};opacity:0.25;pointer-events:none;z-index:999;animation:bigwinAnim 0.6s ease forwards;`;
+  document.body.appendChild(flash); setTimeout(() => flash.remove(), 700);
+  playTone(440, 0.2, 0.8, 'sine'); playTone(660, 0.15, 0.6, 'sine');
+  vibrate([30, 20, 100, 20, 150]);
+}
+
+function qgsCountCleared(cascades) {
+  let n = 0;
+  for (const step of cascades) for (const cl of step.winning_clusters) n += cl.coords?.length || 0;
+  return n;
+}
+
+async function enterQuantumBonus(sc, startMult = 1) {
+  QGS.active = true; QGS.tier = 1; QGS.cleared = 0; QGS.spins = 10 + (sc - 3) * 5;
+  QGS.total = 0; QGS.stickyPositions.clear();
+  S.inPrism = true;
+
+  el('qgs-panel').style.display = 'block';
+  el('prism-banner').textContent = '✦ OVERCHARGE PHASE ✦';
+  el('prism-banner').style.display = 'block';
+  el('prism-info').style.display = 'block';
+  qgsSetTierTheme(1);
+  playPrism();
+
+  while (QGS.spins > 0 && QGS.active) {
+    QGS.spins--;
+    qgsUpdateHUD();
+
+    const spinOpts = {
+      inPrism: true,
+      prismStartMult: startMult,
+      ...(QGS.tier === 3 ? { bonusHighPay: true, volatility: 10 } : {}),
+    };
+    const data = await apiSpin(spinOpts).catch(() => null);
+    if (!data) break;
+    const m = data.manifest;
+
+    await playback(data);
+    QGS.total += m.total_win;
+    S.balance = data.balance_after;
+    if (m.scatter_count >= 3) QGS.spins += 5;
+
+    // Count symbols cleared in this spin's cascades
+    const cleared = qgsCountCleared(m.cascades || []);
+    QGS.cleared += cleared;
+    qgsUpdateHUD();
+
+    // Tier transitions
+    if (QGS.tier === 1 && QGS.cleared >= QGS.TIER2_THRESH) {
+      QGS.tier = 2; QGS.cleared = 0; QGS.spins += 5;
+      el('prism-banner').textContent = '✦ SINGULARITY PHASE ✦';
+      qgsSetTierTheme(2);
+      // Expand grid to 7×7 (server still returns 6×6; we scale visually)
+      GRID.build(7, 7);
+    } else if (QGS.tier === 2 && QGS.cleared >= QGS.TIER3_THRESH) {
+      QGS.tier = 3; QGS.cleared = 0; QGS.spins += 3;
+      el('prism-banner').textContent = '✦ GOD MODE COLLAPSE ✦';
+      qgsSetTierTheme(3);
+      document.body.classList.add('supernova');
+    }
+
+    el('win-val').textContent = fmt(QGS.total);
+    if (!S.turbo) await sleep(200);
+  }
+
+  // Reset
+  QGS.active = false; S.inPrism = false;
+  el('qgs-panel').style.display = 'none';
+  el('prism-banner').style.display = 'none';
+  el('prism-info').style.display = 'none';
+  document.body.style.removeProperty('--bg');
+  document.body.style.removeProperty('--bg2');
+  document.querySelector('#reel-stage').style.borderColor = '';
+  document.body.classList.remove('supernova');
+  GRID.build(6, 6); // restore
+  showBigWin(QGS.total, S.anteBet ? S.bet * 1.25 : S.bet);
 }
 
 // ─── GAMBLER'S PULSE ─────────────────────────────────────────────────────────
@@ -1052,15 +1426,33 @@ function stopAuto(){ S.autoRunning=false; S.bet=S.baseBet; updateBetUI(); el('bt
 // ─── BONUS BUYS ───────────────────────────────────────────────────────────────
 async function bonusBuy(tier){
   if(S.spinning||S.inPrism) return;
-  const costs={1:100,2:250,3:500,4:150};
+  const costs={1:100,2:250,3:500,4:150,5:600};
   const cost=S.bet*costs[tier];
   if(S.balance<cost){showError(`Need ${fmt(cost)}`);return;}
   if(!confirm(`Spend ${fmt(cost)}?`)) return;
   S.balance=r2(S.balance-cost); scrollNumber('balance-val',S.balance+cost,S.balance,300);
-  if(tier===1) await enterPrism(3,1);
-  else if(tier===2) await enterPrism(3,10);
-  else if(tier===3){ S.prismStartMult=100; await enterPrism(3,100); }
+  if(tier===1) await enterQuantumBonus(3,1);
+  else if(tier===2) await enterQuantumBonus(3,10);  // Laser-Link: enters Overcharge with 10× volt
+  else if(tier===3){ await enterQuantumBonus(3,100); }
   else if(tier===4){ S.multiChaser=!S.multiChaser; el('btn-buy4').classList.toggle('active',S.multiChaser); }
+  else if(tier===5){
+    // Chaos Mode: 5 ultra-volatile spins, vol=10, no low-pays
+    // Server receives bonusHighPay=true to scrub low-weight symbols
+    S.chaosSpinsLeft = 5;
+    document.body.style.setProperty('--bg','#1a0a0a');
+    showError('💀 CHAOS MODE: 5 SPINS — LOW PAYS ELIMINATED');
+    for(let i=0; i<5 && !S.spinning; i++){
+      S.chaosSpinsLeft--;
+      const data = await apiSpin({volatility:10, bonusHighPay:true}).catch(()=>null);
+      if(!data) break;
+      const m = data.manifest;
+      await playback(data);
+      S.balance = data.balance_after;
+      addFeedItem('You', m.total_win/S.bet, m.total_win);
+      if(!S.turbo) await sleep(300);
+    }
+    document.body.style.setProperty('--bg','#0B0E14');
+  }
 }
 
 // ─── FEED ─────────────────────────────────────────────────────────────────────
@@ -1110,6 +1502,7 @@ el('vol-slider').addEventListener('input',e=>{ S.volatility=parseInt(e.target.va
 el('btn-ante').addEventListener('click',()=>{ S.anteBet=!S.anteBet; el('btn-ante').classList.toggle('active',S.anteBet); });
 el('btn-buy1').addEventListener('click',()=>bonusBuy(1)); el('btn-buy2').addEventListener('click',()=>bonusBuy(2));
 el('btn-buy3').addEventListener('click',()=>bonusBuy(3)); el('btn-buy4').addEventListener('click',()=>bonusBuy(4));
+el('btn-chaos').addEventListener('click',()=>bonusBuy(5));
 el('btn-sound').addEventListener('click',()=>{ ensureAudio(); S.soundOn=!S.soundOn; el('btn-sound').textContent=S.soundOn?'🔊 SOUND':'🔇 SOUND'; });
 el('btn-verify').addEventListener('click',()=>el('verify-modal').classList.add('show'));
 el('btn-close-verify').addEventListener('click',()=>el('verify-modal').classList.remove('show'));
