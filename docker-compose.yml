@@ -1,0 +1,77 @@
+version: '3.9'
+
+# Neon Overload — Microservices Stack
+# Run: docker-compose up --build
+# In production: add Redis, PostgreSQL, NATS services here.
+
+services:
+
+  ledger:
+    build:
+      context: .
+      dockerfile: Dockerfile.services
+    command: node services/ledger-service.js
+    environment:
+      - LEDGER_PORT=3002
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3002/account/health"]
+      interval: 10s
+      retries: 3
+
+  math:
+    build:
+      context: .
+      dockerfile: Dockerfile.services
+    command: node services/math-service.js
+    environment:
+      - MATH_PORT=3001
+      - LEDGER_PORT=3002
+    ports:
+      - "3001:3001"
+    depends_on:
+      - ledger
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      retries: 3
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.services
+    command: node services/gateway.js
+    environment:
+      - PORT=3000
+      - MATH_PORT=3001
+      - LEDGER_PORT=3002
+    ports:
+      - "3000:3000"
+    depends_on:
+      - math
+      - ledger
+    restart: unless-stopped
+
+# Production additions (uncomment when ready):
+#
+#  redis:
+#    image: redis:7-alpine
+#    ports: ["6379:6379"]
+#    # Used for: spin locks (SETNX), session store, pub/sub live feed
+#
+#  postgres:
+#    image: postgres:16-alpine
+#    environment:
+#      POSTGRES_DB: neon_overload
+#      POSTGRES_USER: app
+#      POSTGRES_PASSWORD: changeme
+#    ports: ["5432:5432"]
+#    volumes: [pgdata:/var/lib/postgresql/data]
+#    # Schema: accounts (id, balance), ledger_events (append-only),
+#    #         rounds (id, account_id, wager, status, manifest_json)
+#
+#volumes:
+#  pgdata:

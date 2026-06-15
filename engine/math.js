@@ -424,6 +424,29 @@ function runMathSimulation(spinsCount = 1_000_000, opts = {}) {
   return report;
 }
 
+// ─── validateRTP ─────────────────────────────────────────────────────────────
+/**
+ * Runs a simulation and asserts RTP is within ±tolerance% of 96.5% target.
+ * Used by Math Service's /validate-rtp endpoint and CI pipelines.
+ */
+function validateRTP(spins = 100_000, opts = {}) {
+  const { volatility = 5, tolerance = 0.05, verbose = false } = opts;
+  const TARGET_RTP = 100 - (HOUSE_EDGE * 100); // e.g. 96.5
+  const report = runMathSimulation(spins, { volatility, verbose });
+  const delta  = Math.abs(report.rtp_percent - TARGET_RTP);
+  const passed = delta <= tolerance;
+  return {
+    ...report,
+    target_rtp:     TARGET_RTP,
+    tolerance_pct:  tolerance,
+    delta_pct:      parseFloat(delta.toFixed(4)),
+    passed,
+    verdict: passed
+      ? `PASS — RTP ${report.rtp_percent}% within ±${tolerance}% of ${TARGET_RTP}%`
+      : `FAIL — RTP ${report.rtp_percent}% deviates ${delta.toFixed(4)}% from ${TARGET_RTP}% target`,
+  };
+}
+
 // ─── CLI ──────────────────────────────────────────────────────────────────────
 if (require.main === module) {
   const args = process.argv.slice(2);
@@ -441,6 +464,6 @@ if (require.main === module) {
 module.exports = {
   SYM, SYM_NAME, PAY, HOUSE_EDGE, MIN_CLUSTER, MAX_WIN_MULT,
   buildWeights, generateGrid, findClusters, applyGravity,
-  generateManifest, runMathSimulation,
+  generateManifest, runMathSimulation, validateRTP,
   hmacSHA256, sha256,
 };

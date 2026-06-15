@@ -1,0 +1,5 @@
+FROM node:20-alpine
+WORKDIR /app
+COPY engine/package*.json ./engine/
+RUN cd engine && npm install --production
+COPY . .
