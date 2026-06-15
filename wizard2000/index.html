@@ -1,725 +1,604 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wizard 2000 — Bonus Buy Battle</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&display=swap');
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Wizard 2000 — Bonus Buy Battle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600&display=swap');
 
-    :root {
-      --gold: #f0c040;
-      --purple: #6a0dad;
-      --deep: #0d001a;
-      --win-green: #00ff88;
-      --teal: #00d4d4;
-      --red-glow: rgba(255,50,100,0.7);
-      --blue-glow: rgba(50,150,255,0.7);
-    }
+*{box-sizing:border-box;margin:0;padding:0;}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+:root{
+  --gold:#f0c040;--win:#00ff88;--purple:#7020c0;
+  --deep:#08001a;--card:#120028;--border:rgba(130,0,255,.3);
+}
 
-    body {
-      background: radial-gradient(ellipse at center, #1a003a 0%, #0d001a 100%);
-      min-height: 100vh;
-      font-family: 'Cinzel', serif;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 16px 8px 32px;
-      gap: 14px;
-    }
+body{
+  background:radial-gradient(ellipse at 50% 30%,#1e0040 0%,#08001a 70%);
+  min-height:100vh;font-family:'Cinzel',serif;color:#fff;
+  display:flex;flex-direction:column;align-items:center;
+  padding:12px 8px 32px;gap:12px;
+  overflow-x:hidden;
+}
 
-    /* Stars */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        radial-gradient(1px 1px at 8% 12%, rgba(255,255,255,.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 22% 55%, rgba(255,255,255,.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 48% 8%,  rgba(255,255,255,.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 65% 70%, rgba(255,255,255,.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 80% 30%, rgba(255,255,255,.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 92% 80%, rgba(255,255,255,.3) 0%, transparent 100%),
-        radial-gradient(2px 2px at 35% 85%, rgba(200,150,255,.3) 0%, transparent 100%),
-        radial-gradient(2px 2px at 72% 45%, rgba(150,200,255,.3) 0%, transparent 100%);
-      pointer-events: none;
-      z-index: 0;
-    }
+/* stars */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(1px 1px at 5% 10%,rgba(255,255,255,.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 20% 60%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 40% 5%,rgba(255,255,255,.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 60% 80%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 78% 25%,rgba(255,255,255,.4) 0%,transparent 100%),
+    radial-gradient(1px 1px at 90% 65%,rgba(255,255,255,.5) 0%,transparent 100%),
+    radial-gradient(2px 2px at 33% 90%,rgba(180,120,255,.35) 0%,transparent 100%),
+    radial-gradient(2px 2px at 70% 40%,rgba(120,180,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 15% 35%,rgba(255,255,255,.3) 0%,transparent 100%),
+    radial-gradient(1px 1px at 85% 10%,rgba(255,255,255,.5) 0%,transparent 100%);
+}
 
-    .page { position: relative; z-index: 1; width: 100%; max-width: 1100px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.page{position:relative;z-index:1;width:100%;max-width:1060px;display:flex;flex-direction:column;align-items:center;gap:12px;}
 
-    /* ── Title ── */
-    .title { font-family: 'Cinzel Decorative', cursive; font-size: 2rem; font-weight: 900; background: linear-gradient(135deg,#ffd700,#ff8c00,#ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 12px rgba(255,180,0,.8)); letter-spacing: 2px; }
-    .subtitle { font-size: .6rem; letter-spacing: 6px; color: #a080d0; text-transform: uppercase; margin-top: -4px; }
+/* ── Title ── */
+.game-title{
+  font-family:'Cinzel Decorative',cursive;font-size:2.1rem;font-weight:900;
+  background:linear-gradient(135deg,#ffd700 0%,#ff8c00 50%,#ffd700 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 14px rgba(255,180,0,.9));letter-spacing:3px;
+}
+.game-sub{font-size:.55rem;letter-spacing:7px;color:#9060c0;text-transform:uppercase;margin-top:-5px;}
 
-    /* ── Battle Arena ── */
-    .arena {
-      display: grid;
-      grid-template-columns: 1fr 60px 1fr;
-      gap: 10px;
-      width: 100%;
-      align-items: start;
-    }
+/* ── Battle header ── */
+.battle-header{
+  display:grid;grid-template-columns:1fr auto 1fr;
+  width:100%;gap:8px;align-items:center;
+}
+.player-tag{
+  display:flex;align-items:center;gap:8px;padding:6px 12px;
+  background:rgba(80,0,200,.2);border:1px solid rgba(100,50,255,.3);border-radius:10px;
+}
+.player-tag.billy{justify-content:flex-end;}
+.tag-name{font-size:.7rem;letter-spacing:2px;text-transform:uppercase;}
+.tag-total{font-family:'Cinzel Decorative',cursive;font-size:1.1rem;color:var(--gold);filter:drop-shadow(0 0 6px rgba(255,200,0,.6));}
+.tag-fs{font-size:.5rem;letter-spacing:1px;color:#8060a0;text-transform:uppercase;}
+.you-color{color:#60c0ff;}
+.billy-color{color:#ff6080;}
 
-    /* ── Side Panel ── */
-    .side-panel {
-      background: linear-gradient(180deg, #18003a, #0d0025);
-      border: 2px solid #5020a0;
-      border-radius: 14px;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 0 24px rgba(100,0,200,.35);
-    }
+.vs-center{text-align:center;}
+.vs-text{font-family:'Cinzel Decorative',cursive;font-size:1.5rem;color:#cc44ff;filter:drop-shadow(0 0 10px rgba(200,50,255,.9));}
+.spin-num{font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:#fff;display:block;margin-top:2px;}
+.spin-of{font-size:.45rem;letter-spacing:2px;color:#6050a0;text-transform:uppercase;}
 
-    .side-panel.left-side  { border-color: #6040ff; box-shadow: 0 0 24px rgba(60,80,255,.4); }
-    .side-panel.right-side { border-color: #ff4080; box-shadow: 0 0 24px rgba(255,50,130,.4); }
+/* ── Arena ── */
+.arena{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;width:100%;
+}
 
-    .side-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: .65rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding-bottom: 6px;
-      border-bottom: 1px solid rgba(128,0,255,.2);
-    }
+/* ── Slot panel ── */
+.slot-panel{
+  background:linear-gradient(180deg,#140030 0%,#080018 100%);
+  border:2px solid rgba(100,0,220,.4);
+  border-radius:14px;padding:10px;
+  box-shadow:0 0 20px rgba(80,0,200,.3);
+  display:flex;flex-direction:column;gap:8px;
+  position:relative;overflow:hidden;
+}
+.slot-panel.you-panel{border-color:rgba(60,120,255,.5);box-shadow:0 0 20px rgba(60,100,255,.35);}
+.slot-panel.billy-panel{border-color:rgba(255,50,100,.35);box-shadow:0 0 20px rgba(255,50,100,.25);}
 
-    .side-name { font-size: .8rem; font-weight: 700; }
-    .left-side  .side-name { color: #8888ff; }
-    .right-side .side-name { color: #ff88aa; }
+/* ── Reel grid ── */
+.reel-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:repeat(5,1fr);
+  gap:4px;
+}
 
-    .side-total { font-family: 'Cinzel Decorative', cursive; font-size: 1rem; color: var(--gold); filter: drop-shadow(0 0 4px rgba(255,200,0,.5)); }
+/* ── Cell ── */
+.cell{
+  aspect-ratio:1;min-height:44px;
+  background:linear-gradient(145deg,#1c0038,#100020);
+  border:1px solid rgba(100,0,200,.22);
+  border-radius:7px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  transition:background .15s,border-color .15s;
+  font-size:.38rem;letter-spacing:.5px;color:rgba(255,255,255,.4);text-transform:uppercase;
+}
+.cell .ci{font-size:1.25rem;line-height:1;display:block;}
 
-    /* ── Grid ── */
-    .slot-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-template-rows: repeat(4, 1fr);
-      gap: 5px;
-    }
+/* win pulse */
+.cell.win-flash{animation:winPulse .3s ease-in-out 5;}
+@keyframes winPulse{
+  0%,100%{background:linear-gradient(145deg,#1c0038,#100020);}
+  50%{background:linear-gradient(145deg,#380060,#200040);box-shadow:0 0 12px rgba(180,80,255,.7);}
+}
 
-    .cell {
-      aspect-ratio: 1;
-      background: linear-gradient(145deg, #1e0040, #12002a);
-      border: 1px solid rgba(120,0,255,.25);
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      transition: background .2s;
-      min-height: 56px;
-    }
+/* spin anim */
+.cell.spinning{animation:cellBlur .09s linear infinite;}
+@keyframes cellBlur{
+  0%{transform:translateY(-3px);opacity:.4;}
+  50%{transform:none;opacity:1;}
+  100%{transform:translateY(3px);opacity:.4;}
+}
 
-    .cell .sym-icon { font-size: 1.5rem; line-height: 1; display: block; }
-    .cell .sym-lbl  { font-size: .38rem; letter-spacing: 1px; color: rgba(255,255,255,.45); text-transform: uppercase; margin-top: 2px; }
+/* ── Wizard reel ── */
+/* When a whole reel is wizard, each cell in that col gets .wizard-cell */
+.cell.wizard-cell{
+  background:linear-gradient(145deg,#35006a,#1e0045)!important;
+  border-color:#cc44ff!important;
+}
+.cell.wizard-cell .ci{
+  animation:wizardGlow 1.2s ease-in-out infinite alternate;
+}
+@keyframes wizardGlow{
+  from{filter:drop-shadow(0 0 4px #cc44ff);}
+  to{filter:drop-shadow(0 0 14px #ff88ff);transform:scale(1.08);}
+}
 
-    /* Multiplier overlay */
-    .mult-badge {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Cinzel Decorative', cursive;
-      font-size: 1rem;
-      font-weight: 900;
-      border-radius: 8px;
-      pointer-events: none;
-    }
+/* multiplier badge on the middle cell of a wizard reel */
+.mult-overlay{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(10,0,25,.6);
+  border-radius:7px;
+  font-family:'Cinzel Decorative',cursive;
+  font-size:.95rem;font-weight:900;
+  pointer-events:none;
+  animation:multAppear .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes multAppear{
+  from{transform:scale(0) rotate(-15deg);opacity:0;}
+  to{transform:scale(1) rotate(0deg);opacity:1;}
+}
+.mult-3{color:#aaffcc;text-shadow:0 0 8px #00ff88;}
+.mult-small{color:#80ddff;text-shadow:0 0 8px #00d4ff;}  /* 2-9 */
+.mult-med{color:#ff80cc;text-shadow:0 0 10px #ff40aa;}   /* 10-99 */
+.mult-big{color:#ffa020;text-shadow:0 0 12px #ff6600,0 0 24px #ff3300;} /* 100-499 */
+.mult-mega{color:#ffd700;text-shadow:0 0 16px #ffaa00,0 0 32px #ff6600,0 0 48px #ff0000;font-size:1.05rem;} /* 500+ */
 
-    .cell.has-mult { border-color: #ffd700; }
-    .cell.has-mult .mult-badge { background: rgba(0,0,0,.55); }
-    .cell.mult-3   .mult-badge { color: #aaffaa; text-shadow: 0 0 8px #00ff88; }
-    .cell.mult-4   .mult-badge { color: #80ddff; text-shadow: 0 0 8px #00d4d4; }
-    .cell.mult-10  .mult-badge { color: #ff80aa; text-shadow: 0 0 8px #ff4080; }
-    .cell.mult-20  .mult-badge { color: #ff8800; text-shadow: 0 0 10px #ff6600; }
-    .cell.mult-100 .mult-badge { color: #ffd700; text-shadow: 0 0 14px #ffaa00, 0 0 28px #ff6600; font-size: 1.1rem; }
+/* sticky badge */
+.sticky-tag{
+  position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  background:rgba(180,50,255,.8);color:#fff;
+  font-size:.35rem;letter-spacing:.5px;padding:1px 4px;border-radius:4px;
+  text-transform:uppercase;white-space:nowrap;
+}
 
-    /* Win flash */
-    .cell.win-active {
-      animation: cellWin .35s ease-in-out 4;
-    }
-    @keyframes cellWin {
-      0%,100% { background: linear-gradient(145deg, #1e0040, #12002a); }
-      50%      { background: linear-gradient(145deg, #3a0060, #280050); box-shadow: 0 0 14px rgba(200,100,255,.7); }
-    }
+/* ── Multiplier reveal animation ── */
+.mult-reveal-overlay{
+  position:absolute;inset:0;z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:rgba(5,0,20,.75);border-radius:7px;pointer-events:none;
+}
+.mult-option{
+  font-family:'Cinzel Decorative',cursive;font-weight:900;font-size:1rem;
+  padding:3px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(60,0,120,.5);
+  transition:all .3s;
+}
+.mult-option.chosen{
+  background:linear-gradient(135deg,rgba(120,0,255,.8),rgba(80,0,200,.8));
+  border-color:#cc44ff;box-shadow:0 0 10px rgba(180,50,255,.7);
+  transform:scale(1.15);
+}
+.mult-option.rejected{opacity:0;transform:scale(.5);}
 
-    /* Spin animation */
-    .cell.spinning { animation: cellSpin .1s linear infinite; }
-    @keyframes cellSpin {
-      0%   { transform: translateY(-3px); opacity: .5; }
-      50%  { transform: none; opacity: 1; }
-      100% { transform: translateY(3px); opacity: .5; }
-    }
+/* ── Wizard drop animation ── */
+@keyframes wizardDrop{
+  0%{transform:translateY(-100%) scale(.5);opacity:0;}
+  60%{transform:translateY(5%) scale(1.05);opacity:1;}
+  100%{transform:translateY(0) scale(1);opacity:1;}
+}
+.wizard-dropping{animation:wizardDrop .5s cubic-bezier(.34,1.2,.64,1);}
 
-    /* Spin log */
-    .spin-log {
-      font-size: .6rem;
-      color: #8070a0;
-      min-height: 18px;
-      letter-spacing: 1px;
-    }
+/* ── Spin log ── */
+.spin-log{
+  font-size:.55rem;color:#7060a0;letter-spacing:.5px;
+  min-height:16px;line-height:1.4;
+}
+.log-win{color:var(--win);font-weight:700;}
+.log-wizard{color:#dd88ff;}
 
-    .spin-log .log-win { color: var(--win-green); font-weight: 700; }
+/* ── Phase chip ── */
+.phase-chip{
+  display:inline-block;font-size:.42rem;letter-spacing:1.5px;padding:2px 8px;
+  border-radius:5px;text-transform:uppercase;margin-left:6px;
+  vertical-align:middle;
+}
+.ph-idle{background:rgba(100,100,100,.15);border:1px solid rgba(150,150,150,.2);color:#666;}
+.ph-free{background:rgba(200,50,255,.2);border:1px solid rgba(200,100,255,.4);color:#dd88ff;}
+.ph-reveal{background:rgba(255,150,0,.2);border:1px solid rgba(255,180,0,.4);color:#ffcc44;}
 
-    /* ── VS column ── */
-    .vs-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 12px;
-      padding-top: 42px;
-    }
+/* ── Result banner ── */
+.result-banner{
+  width:100%;padding:14px 20px;text-align:center;
+  background:linear-gradient(90deg,#200050,#380080,#200050);
+  border:1px solid #6020b0;border-radius:12px;display:none;
+}
+.result-banner.show{display:block;animation:bannerPop .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes bannerPop{from{transform:scaleY(.2);opacity:0;}to{transform:scaleY(1);opacity:1;}}
+.res-title{font-family:'Cinzel Decorative',cursive;font-size:1.4rem;margin-bottom:5px;}
+.res-you{color:#60c0ff;filter:drop-shadow(0 0 10px rgba(80,160,255,.9));}
+.res-billy{color:#ff6080;filter:drop-shadow(0 0 10px rgba(255,80,100,.9));}
+.res-tie{color:var(--gold);filter:drop-shadow(0 0 10px rgba(255,200,0,.9));}
+.res-detail{font-size:.68rem;color:#bb99dd;letter-spacing:1px;}
+.res-payout{font-family:'Cinzel Decorative',cursive;font-size:1.6rem;color:var(--win);filter:drop-shadow(0 0 12px rgba(0,255,136,.8));margin-top:6px;}
 
-    .vs-badge {
-      font-family: 'Cinzel Decorative', cursive;
-      font-size: 1.4rem;
-      font-weight: 900;
-      color: #cc44ff;
-      filter: drop-shadow(0 0 10px rgba(200,50,255,.8));
-    }
+/* ── Controls ── */
+.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.c-box{background:rgba(60,0,160,.18);border:1px solid rgba(100,0,220,.25);border-radius:10px;padding:7px 12px;display:flex;flex-direction:column;gap:2px;}
+.c-lbl{font-size:.42rem;letter-spacing:2px;color:#6050a0;text-transform:uppercase;}
+.c-val{font-family:'Cinzel Decorative',cursive;font-size:.9rem;color:var(--gold);}
 
-    .spin-counter {
-      font-size: .55rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #8060a0;
-      text-align: center;
-    }
+.bet-row{display:flex;align-items:center;gap:5px;}
+.bbet{
+  background:rgba(80,0,200,.3);border:1px solid rgba(100,0,220,.35);
+  color:#bb88ff;font-size:.8rem;width:20px;height:20px;border-radius:5px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;
+}
+.bbet:hover:not(:disabled){background:rgba(120,0,255,.5);box-shadow:0 0 5px rgba(120,0,255,.5);}
+.bbet:disabled{opacity:.35;cursor:not-allowed;}
 
-    .spin-counter span {
-      font-family: 'Cinzel Decorative', cursive;
-      font-size: 1.2rem;
-      color: #fff;
-      display: block;
-    }
+.btn-start{
+  background:linear-gradient(145deg,#5800b0,#8800ee);
+  border:2px solid #bb44ff;border-radius:11px;padding:11px 28px;
+  cursor:pointer;font-family:'Cinzel Decorative',cursive;font-size:.78rem;
+  letter-spacing:2px;color:#fff;box-shadow:0 0 18px rgba(160,0,255,.5);
+  transition:all .13s;white-space:nowrap;
+}
+.btn-start:hover:not(:disabled){transform:scale(1.04);box-shadow:0 0 28px rgba(160,0,255,.85);}
+.btn-start:active:not(:disabled){transform:scale(.97);}
+.btn-start:disabled{opacity:.45;cursor:not-allowed;}
 
-    /* ── Controls ── */
-    .controls-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+.status{font-size:.6rem;letter-spacing:2px;color:#7060a0;min-height:16px;text-align:center;}
 
-    .ctrl-group {
-      background: rgba(80,0,180,.18);
-      border: 1px solid rgba(120,0,255,.25);
-      border-radius: 10px;
-      padding: 8px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
+/* big win overlay */
+.bigwin{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  z-index:200;gap:10px;
+}
+.bigwin.show{display:flex;}
+.bw-label{font-family:'Cinzel Decorative',cursive;font-size:2.8rem;font-weight:900;
+  background:linear-gradient(135deg,#ffd700,#ff6600);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 20px rgba(255,150,0,.9));
+  animation:bwPop .5s cubic-bezier(.34,1.56,.64,1);}
+.bw-amt{font-family:'Cinzel Decorative',cursive;font-size:1.8rem;color:var(--win);
+  filter:drop-shadow(0 0 14px rgba(0,255,136,.9));
+  animation:bwPop .5s .15s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes bwPop{from{transform:scale(.2) rotate(-10deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+.bw-close{
+  background:linear-gradient(135deg,#5800b0,#8800ee);border:2px solid #bb44ff;
+  border-radius:10px;padding:9px 28px;cursor:pointer;
+  font-family:'Cinzel Decorative',cursive;font-size:.75rem;letter-spacing:2px;color:#fff;
+  animation:bwPop .5s .3s cubic-bezier(.34,1.56,.64,1) both;
+  transition:all .13s;
+}
+.bw-close:hover{box-shadow:0 0 18px rgba(180,0,255,.8);transform:scale(1.05);}
 
-    .ctrl-lbl { font-size: .48rem; letter-spacing: 2px; color: #7050a0; text-transform: uppercase; }
-    .ctrl-val { font-family: 'Cinzel Decorative', cursive; font-size: .95rem; color: var(--gold); }
-
-    .bet-controls { display: flex; align-items: center; gap: 6px; }
-    .bet-btn {
-      background: rgba(100,0,220,.3);
-      border: 1px solid rgba(120,0,255,.35);
-      color: #cc88ff;
-      font-size: .85rem;
-      width: 22px; height: 22px;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .15s;
-    }
-    .bet-btn:hover:not(:disabled) { background: rgba(120,0,255,.5); box-shadow: 0 0 6px rgba(120,0,255,.5); }
-    .bet-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-    .battle-btn {
-      background: linear-gradient(145deg, #6a00c8, #9000ff);
-      border: 2px solid #cc44ff;
-      border-radius: 12px;
-      padding: 12px 32px;
-      cursor: pointer;
-      font-family: 'Cinzel Decorative', cursive;
-      font-size: .85rem;
-      letter-spacing: 2px;
-      color: #fff;
-      box-shadow: 0 0 20px rgba(180,0,255,.5);
-      transition: all .15s;
-      white-space: nowrap;
-    }
-    .battle-btn:hover:not(:disabled) { transform: scale(1.04); box-shadow: 0 0 30px rgba(180,0,255,.8); }
-    .battle-btn:active:not(:disabled) { transform: scale(.97); }
-    .battle-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-    .bonus-btn {
-      background: linear-gradient(145deg, #a05000, #d07000);
-      border: 2px solid #ffd700;
-      border-radius: 12px;
-      padding: 12px 24px;
-      cursor: pointer;
-      font-family: 'Cinzel Decorative', cursive;
-      font-size: .75rem;
-      letter-spacing: 1px;
-      color: #fff;
-      box-shadow: 0 0 16px rgba(255,180,0,.4);
-      transition: all .15s;
-      white-space: nowrap;
-    }
-    .bonus-btn:hover:not(:disabled) { transform: scale(1.04); box-shadow: 0 0 24px rgba(255,180,0,.7); }
-    .bonus-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-    /* ── Result Banner ── */
-    .result-banner {
-      width: 100%;
-      background: linear-gradient(90deg, #2a0060, #4a0090, #2a0060);
-      border: 1px solid #8040d0;
-      border-radius: 12px;
-      padding: 14px 20px;
-      display: none;
-      text-align: center;
-    }
-
-    .result-banner.visible { display: block; animation: bannerIn .5s cubic-bezier(.34,1.56,.64,1); }
-    @keyframes bannerIn { from { transform: scaleY(.3); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
-
-    .result-title { font-family: 'Cinzel Decorative', cursive; font-size: 1.3rem; margin-bottom: 6px; }
-    .result-title.left-win  { color: #8888ff; filter: drop-shadow(0 0 10px rgba(100,100,255,.8)); }
-    .result-title.right-win { color: #ff88aa; filter: drop-shadow(0 0 10px rgba(255,80,150,.8)); }
-    .result-title.tie       { color: var(--gold); filter: drop-shadow(0 0 10px rgba(255,200,0,.8)); }
-
-    .result-detail { font-size: .7rem; color: #cc99ee; letter-spacing: 1px; }
-    .result-payout { font-family: 'Cinzel Decorative', cursive; font-size: 1.5rem; color: var(--win-green); filter: drop-shadow(0 0 10px rgba(0,255,136,.7)); margin-top: 6px; }
-
-    /* ── Status bar ── */
-    .status-bar { font-size: .65rem; letter-spacing: 2px; color: #8060a0; min-height: 18px; text-align: center; }
-
-    /* ── Phase indicators ── */
-    .phase-badge {
-      font-size: .5rem;
-      letter-spacing: 2px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      text-transform: uppercase;
-    }
-    .phase-setup  { background: rgba(50,100,255,.2); border: 1px solid rgba(100,150,255,.4); color: #88aaff; }
-    .phase-battle { background: rgba(200,50,255,.2); border: 1px solid rgba(200,100,255,.4); color: #dd88ff; }
-    .phase-idle   { background: rgba(100,100,100,.15); border: 1px solid rgba(150,150,150,.2); color: #888; }
-
-    /* paytable link */
-    .info-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; font-size: .6rem; color: #6050a0; letter-spacing: 1px; }
-    .info-row span { cursor: default; }
-
-    /* Multiplier placement animation */
-    @keyframes multDrop {
-      0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
-      60%  { transform: scale(1.15) rotate(3deg); }
-      100% { transform: scale(1) rotate(0deg); opacity: 1; }
-    }
-    .cell.mult-just-placed .mult-badge { animation: multDrop .4s cubic-bezier(.34,1.56,.64,1); }
-  </style>
+.info-strip{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:.52rem;color:#5040a0;letter-spacing:1px;}
+</style>
 </head>
 <body>
+
+<div class="bigwin" id="bigwin">
+  <div class="bw-label" id="bwLabel">MEGA WIN!</div>
+  <div class="bw-amt" id="bwAmt"></div>
+  <button class="bw-close" onclick="document.getElementById('bigwin').classList.remove('show')">COLLECT</button>
+</div>
+
 <div class="page">
-  <div class="title">Wizard 2000</div>
-  <div class="subtitle">Bonus Buy Battle · Titan Gaming</div>
+  <div class="game-title">Wizard 2000</div>
+  <div class="game-sub">Bonus Buy Battle · Titan Gaming</div>
 
-  <!-- Arena -->
+  <!-- battle header -->
+  <div class="battle-header">
+    <div class="player-tag">
+      <div>
+        <div class="tag-name you-color">🧙 You</div>
+        <div class="tag-fs" id="youFS">&nbsp;</div>
+      </div>
+      <div class="tag-total" id="youTotal">$0.00</div>
+    </div>
+    <div class="vs-center">
+      <div class="vs-text">VS</div>
+      <div class="spin-of">spin</div>
+      <div class="spin-num" id="spinNum">—</div>
+      <div class="spin-of">of 10</div>
+    </div>
+    <div class="player-tag billy">
+      <div class="tag-total" id="billyTotal">$0.00</div>
+      <div style="text-align:right">
+        <div class="tag-name billy-color">Billy 😈</div>
+        <div class="tag-fs" id="billyFS">&nbsp;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- arena -->
   <div class="arena">
-    <!-- Left side -->
-    <div class="side-panel left-side" id="leftPanel">
-      <div class="side-header">
-        <div>
-          <div class="side-name">⚔ HOUSE</div>
-          <div class="phase-badge phase-idle" id="leftPhase">Idle</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:.48rem;letter-spacing:1px;color:#6060a0;text-transform:uppercase">Total Win</div>
-          <div class="side-total" id="leftTotal">$0.00</div>
-        </div>
+    <div class="slot-panel you-panel">
+      <div style="font-size:.5rem;letter-spacing:2px;color:#4080c0;text-transform:uppercase;display:flex;align-items:center;gap:6px;">
+        Your Bonus
+        <span class="phase-chip ph-idle" id="youPhase">Idle</span>
       </div>
-      <div class="slot-grid" id="leftGrid"></div>
-      <div class="spin-log" id="leftLog">&nbsp;</div>
+      <div class="reel-grid" id="youGrid"></div>
+      <div class="spin-log" id="youLog">&nbsp;</div>
     </div>
-
-    <!-- VS column -->
-    <div class="vs-col">
-      <div class="vs-badge">VS</div>
-      <div class="spin-counter">
-        Spin<span id="spinCounter">—</span>of 10
+    <div class="slot-panel billy-panel">
+      <div style="font-size:.5rem;letter-spacing:2px;color:#c04060;text-transform:uppercase;display:flex;align-items:center;gap:6px;">
+        Billy's Bonus
+        <span class="phase-chip ph-idle" id="billyPhase">Idle</span>
       </div>
-    </div>
-
-    <!-- Right side -->
-    <div class="side-panel right-side" id="rightPanel">
-      <div class="side-header">
-        <div>
-          <div class="side-name">🧙 YOU</div>
-          <div class="phase-badge phase-idle" id="rightPhase">Idle</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:.48rem;letter-spacing:1px;color:#6060a0;text-transform:uppercase">Total Win</div>
-          <div class="side-total" id="rightTotal">$0.00</div>
-        </div>
-      </div>
-      <div class="slot-grid" id="rightGrid"></div>
-      <div class="spin-log" id="rightLog">&nbsp;</div>
+      <div class="reel-grid" id="billyGrid"></div>
+      <div class="spin-log" id="billyLog">&nbsp;</div>
     </div>
   </div>
 
-  <!-- Result -->
+  <!-- result -->
   <div class="result-banner" id="resultBanner">
-    <div class="result-title" id="resultTitle"></div>
-    <div class="result-detail" id="resultDetail"></div>
-    <div class="result-payout" id="resultPayout"></div>
+    <div class="res-title" id="resTitle"></div>
+    <div class="res-detail" id="resDetail"></div>
+    <div class="res-payout" id="resPayout"></div>
   </div>
 
-  <!-- Controls -->
-  <div class="controls-row">
-    <div class="ctrl-group">
-      <div class="ctrl-lbl">Balance</div>
-      <div class="ctrl-val" id="balDisplay">$1,000.00</div>
+  <!-- controls -->
+  <div class="controls">
+    <div class="c-box">
+      <div class="c-lbl">Balance</div>
+      <div class="c-val" id="balDisplay">$1,000.00</div>
     </div>
-    <div class="ctrl-group">
-      <div class="ctrl-lbl">Bet / Battle</div>
-      <div class="bet-controls">
-        <button class="bet-btn" id="betDown" onclick="changeBet(-1)">−</button>
-        <div class="ctrl-val" id="betDisplay">$10.00</div>
-        <button class="bet-btn" id="betUp" onclick="changeBet(1)">+</button>
+    <div class="c-box">
+      <div class="c-lbl">Bet</div>
+      <div class="bet-row">
+        <button class="bbet" id="betDn" onclick="chgBet(-1)">−</button>
+        <div class="c-val" id="betDisplay">$10.00</div>
+        <button class="bbet" id="betUp" onclick="chgBet(1)">+</button>
       </div>
     </div>
-    <button class="battle-btn" id="spinBtn" onclick="startBattle(false)">⚔ START BATTLE</button>
-    <button class="bonus-btn" id="bonusBtn" onclick="startBattle(true)">🔮 BONUS BUY (×100)</button>
+    <button class="btn-start" id="startBtn" onclick="startBattle()">
+      🔮 BONUS BUY BATTLE
+    </button>
   </div>
 
-  <div class="status-bar" id="statusBar">Place your bet and start the battle!</div>
+  <div class="status" id="statusBar">Buy the Bonus Buy Battle to duel Billy the Bully!</div>
 
-  <div class="info-row">
-    <span>5 Reels · 4 Rows · 20 Paylines</span>
-    <span>·</span>
-    <span>RTP 96.01%</span>
-    <span>·</span>
-    <span>Multipliers: 3× 4× 10× 20× 100×</span>
-    <span>·</span>
-    <span>Max Win 400,000×</span>
+  <div class="info-strip">
+    <span>5×5 Grid · 25 Paylines</span><span>·</span>
+    <span>Wizard expands full reel → picks multiplier</span><span>·</span>
+    <span>Multipliers add across reels · Sticky in free spins</span><span>·</span>
+    <span>Winner takes combined pot · Tie = You win</span>
   </div>
 </div>
 
 <script>
 'use strict';
-// =============================================================
-//  WIZARD 2000 — Bonus Buy Battle Engine
-//  Two SlotInstance objects run simultaneously.
-//  The side with the highest cumulative win after 10 spins
-//  takes the combined pot. Sticky multipliers persist every spin.
-// =============================================================
+// ═══════════════════════════════════════════════════════════════
+//  WIZARD 2000 — Bonus Buy Battle (faithful recreation)
+//
+//  Core mechanic:
+//  • 5×5 grid. Symbols spin per spin.
+//  • Wizard symbol can land on any reel (1 per reel max).
+//    When it lands → whole reel animates to Wizard Wild.
+//    Two multipliers are revealed; one is chosen and becomes
+//    the reel's sticky multiplier for ALL remaining free spins.
+//  • Multipliers on the same winning line are ADDED together.
+//  • Battle: Player vs Billy — 10 free spins each (same spin count).
+//    Higher total wins the combined pot. Tie → Player wins.
+// ═══════════════════════════════════════════════════════════════
 
-const ROWS = 4;
-const COLS = 5;
-const BATTLE_SPINS = 10;
+const ROWS = 5, COLS = 5, FS_COUNT = 10;
 
-// ── Symbols ──────────────────────────────────────────────────
-const SYMBOLS = [
-  { id: 'wild',      icon: '🧙',  label: 'WILD',     tier: 'special', baseWeight: 2  },
-  { id: 'hour',      icon: '⏳',  label: 'HOURGLASS',tier: 'premium', baseWeight: 4  },
-  { id: 'star',      icon: '🌟',  label: 'STAR',     tier: 'premium', baseWeight: 5  },
-  { id: 'gem',       icon: '💎',  label: 'GEM',      tier: 'mid',     baseWeight: 8  },
-  { id: 'scroll',    icon: '📜',  label: 'SCROLL',   tier: 'mid',     baseWeight: 8  },
-  { id: 'potion',    icon: '🧪',  label: 'POTION',   tier: 'mid',     baseWeight: 9  },
-  { id: 'A',         icon: '🔵',  label: 'A',        tier: 'low',     baseWeight: 13 },
-  { id: 'K',         icon: '🟣',  label: 'K',        tier: 'low',     baseWeight: 13 },
-  { id: 'Q',         icon: '🟤',  label: 'Q',        tier: 'low',     baseWeight: 13 },
-  { id: 'J',         icon: '🟡',  label: 'J',        tier: 'low',     baseWeight: 13 },
-  { id: '10',        icon: '⚪',  label: '10',       tier: 'low',     baseWeight: 13 },
+// ── Symbols ────────────────────────────────────────────────────
+const SYMS = [
+  {id:'wild',   icon:'🧙', label:'WILD',  w:0},        // wizard — handled separately
+  {id:'hour',   icon:'⌛', label:'HR',    w:4 },
+  {id:'star',   icon:'🌟', label:'STAR',  w:5 },
+  {id:'gem',    icon:'💎', label:'GEM',   w:8 },
+  {id:'scroll', icon:'📜', label:'SCRLL', w:9 },
+  {id:'potion', icon:'🧪', label:'POTN',  w:10},
+  {id:'A',      icon:'🔵', label:'A',     w:14},
+  {id:'K',      icon:'🟣', label:'K',     w:14},
+  {id:'Q',      icon:'🟤', label:'Q',     w:14},
+  {id:'J',      icon:'🟡', label:'J',     w:14},
+  {id:'10',     icon:'⚪', label:'10',    w:14},
 ];
+const SYM = Object.fromEntries(SYMS.map(s=>[s.id,s]));
 
-const SYM_MAP = Object.fromEntries(SYMBOLS.map(s => [s.id, s]));
-
-// Pay table: 3-of-a-kind / 4oaK / 5oaK multipliers (× bet)
-const PAYS = {
-  wild:   [10,  50,  250],
-  hour:   [5,   25,  100],
-  star:   [3,   15,   50],
-  gem:    [2,   10,   30],
-  scroll: [1.5,  7,   20],
-  potion: [1,    4,   12],
-  A:      [0.5,  2,    5],
-  K:      [0.4, 1.5,   4],
-  Q:      [0.3,  1,    3],
-  J:      [0.25, .8,   2],
-  '10':   [0.2, .6,  1.5],
+// Pay: [3of, 4of, 5of] × bet
+const PAY = {
+  wild:  [15, 75, 300],
+  hour:  [5,  25, 100],
+  star:  [3,  15,  60],
+  gem:   [2,  10,  35],
+  scroll:[1.5, 7,  22],
+  potion:[1,   4,  14],
+  A:     [.5,  2,   6],
+  K:     [.4, 1.5,  4],
+  Q:     [.3,  1,   3],
+  J:     [.25, .8,  2],
+  '10':  [.2,  .6, 1.5],
 };
 
-// 20 paylines — [row, col] per reel (0-indexed, row 0 = top)
-const PAYLINES = [
-  [[1,0],[1,1],[1,2],[1,3],[1,4]], // row 1 straight
-  [[2,0],[2,1],[2,2],[2,3],[2,4]], // row 2 straight
-  [[0,0],[0,1],[0,2],[0,3],[0,4]], // row 0 straight
-  [[3,0],[3,1],[3,2],[3,3],[3,4]], // row 3 straight
-  [[1,0],[0,1],[1,2],[0,3],[1,4]], // zigzag up
-  [[1,0],[2,1],[1,2],[2,3],[1,4]], // zigzag down
-  [[0,0],[1,1],[2,2],[1,3],[0,4]], // V up
-  [[3,0],[2,1],[1,2],[2,3],[3,4]], // V down
-  [[0,0],[1,1],[2,2],[3,3],[3,4]], // diagonal TL-BR short
-  [[3,0],[2,1],[1,2],[0,3],[0,4]], // diagonal BL-TR short
-  [[0,0],[0,1],[1,2],[0,3],[0,4]], // top dip
-  [[3,0],[3,1],[2,2],[3,3],[3,4]], // bottom dip
-  [[1,0],[2,1],[3,2],[2,3],[1,4]], // W shape
-  [[2,0],[1,1],[0,2],[1,3],[2,4]], // M shape
-  [[0,0],[1,1],[0,2],[1,3],[0,4]], // top ripple
-  [[3,0],[2,1],[3,2],[2,3],[3,4]], // bottom ripple
-  [[2,0],[3,1],[2,2],[3,3],[2,4]], // row 2-3 saw
-  [[1,0],[0,1],[2,2],[0,3],[1,4]], // wild ride
-  [[0,0],[2,1],[2,2],[2,3],[0,4]], // canyon
-  [[3,0],[1,1],[1,2],[1,3],[3,4]], // reverse canyon
+// 25 paylines on a 5×5 grid
+const LINES = [
+  // 5 rows straight
+  [[0,0],[0,1],[0,2],[0,3],[0,4]],
+  [[1,0],[1,1],[1,2],[1,3],[1,4]],
+  [[2,0],[2,1],[2,2],[2,3],[2,4]],
+  [[3,0],[3,1],[3,2],[3,3],[3,4]],
+  [[4,0],[4,1],[4,2],[4,3],[4,4]],
+  // V shapes
+  [[0,0],[1,1],[2,2],[1,3],[0,4]],
+  [[4,0],[3,1],[2,2],[3,3],[4,4]],
+  [[2,0],[1,1],[0,2],[1,3],[2,4]],
+  [[2,0],[3,1],[4,2],[3,3],[2,4]],
+  // diagonals
+  [[0,0],[1,1],[2,2],[3,3],[4,4]],
+  [[4,0],[3,1],[2,2],[1,3],[0,4]],
+  [[0,0],[0,1],[1,2],[0,3],[0,4]],
+  [[4,0],[4,1],[3,2],[4,3],[4,4]],
+  [[1,0],[0,1],[1,2],[0,3],[1,4]],
+  [[3,0],[4,1],[3,2],[4,3],[3,4]],
+  [[1,0],[2,1],[3,2],[2,3],[1,4]],
+  [[3,0],[2,1],[1,2],[2,3],[3,4]],
+  [[0,0],[1,1],[0,2],[1,3],[0,4]],
+  [[4,0],[3,1],[4,2],[3,3],[4,4]],
+  [[2,0],[1,1],[2,2],[1,3],[2,4]],
+  [[2,0],[3,1],[2,2],[3,3],[2,4]],
+  [[0,0],[2,1],[4,2],[2,3],[0,4]],
+  [[4,0],[2,1],[0,2],[2,3],[4,4]],
+  [[1,0],[0,1],[2,2],[0,3],[1,4]],
+  [[3,0],[4,1],[2,2],[4,3],[3,4]],
 ];
 
-// Sticky multiplier tiers
-const MULT_TIERS = [3, 4, 10, 20, 100];
-
-// Weighted pick of multiplier (lower = more likely)
-function pickMult() {
-  const weights = [40, 30, 15, 10, 5];
-  const total = weights.reduce((a,b) => a+b, 0);
-  let r = Math.random() * total;
-  for (let i = 0; i < MULT_TIERS.length; i++) {
-    r -= weights[i];
-    if (r <= 0) return MULT_TIERS[i];
-  }
-  return MULT_TIERS[0];
+// Wizard multiplier distribution (Wizard 2000 = up to 2000x)
+// Returns a random multiplier value
+function wizMult() {
+  const tiers = [
+    {min:2,   max:5,    w:30},
+    {min:6,   max:15,   w:22},
+    {min:16,  max:30,   w:15},
+    {min:31,  max:75,   w:12},
+    {min:76,  max:150,  w:8 },
+    {min:151, max:300,  w:6 },
+    {min:301, max:600,  w:4 },
+    {min:601, max:1000, w:2 },
+    {min:1001,max:2000, w:1 },
+  ];
+  const tot = tiers.reduce((a,b)=>a+b.w,0);
+  let r = Math.random()*tot;
+  for(const t of tiers){r-=t.w;if(r<=0)return Math.floor(Math.random()*(t.max-t.min+1))+t.min;}
+  return 2;
 }
 
-// ── SlotInstance ──────────────────────────────────────────────
+// Chance a wizard lands on a given reel per spin (during free spins)
+const WIZARD_CHANCE = 0.22; // ~22% per reel per spin
+
+// ── SlotInstance ────────────────────────────────────────────────
 /**
- * Manages one side's 5×4 grid, spin logic, and sticky multiplier map.
- *
- * Sticky multipliers sit at specific (row, col) coordinates and
- * persist for all 10 battle spins. When a winning payline passes
- * through a multiplier cell, that mult is applied (multiple mults
- * on the same line multiply together, creating explosive variance).
+ * One side's 5×5 grid.
+ * wizardReels: Map<col, multiplier> — persists across spins (sticky).
+ * When a wizard lands on col C this spin and col is not yet sticky,
+ * we animate the reveal and lock in the chosen multiplier.
  */
 class SlotInstance {
   constructor(id) {
-    this.id = id;         // 'left' | 'right'
-    this.grid = [];       // grid[row][col] = symId string
-    this.mults = {};      // key: `${row},${col}` → multiplier value
+    this.id = id;
+    this.grid = [];          // grid[row][col] = symId
+    this.wizardReels = {};   // col → locked multiplier (sticky)
     this.totalWin = 0;
-    this.spinHistory = [];
+    this.history = [];
   }
 
-  /** Reset for new battle */
   reset() {
     this.grid = [];
-    this.mults = {};
+    this.wizardReels = {};
     this.totalWin = 0;
-    this.spinHistory = [];
+    this.history = [];
   }
 
-  /**
-   * SETUP PHASE — place 3–5 sticky multipliers on the grid.
-   * Higher bonus buy cost = more/higher multipliers placed.
-   * Returns the positions placed.
-   */
-  placeMultipliers(isBonusBuy) {
-    this.mults = {};
-    const count = isBonusBuy
-      ? Math.floor(Math.random() * 2) + 4   // 4–5 mults on bonus buy
-      : Math.floor(Math.random() * 2) + 3;  // 3–4 on base trigger
-
-    const positions = new Set();
-    while (positions.size < count) {
-      const r = Math.floor(Math.random() * ROWS);
-      const c = Math.floor(Math.random() * COLS);
-      positions.add(`${r},${c}`);
+  /** Spin symbols, injecting wizard on eligible reels */
+  spin() {
+    // Which non-sticky reels get a wizard this spin?
+    this.newWizardCols = [];
+    for (let c = 0; c < COLS; c++) {
+      if (this.wizardReels[c] !== undefined) continue; // already sticky
+      if (Math.random() < WIZARD_CHANCE) this.newWizardCols.push(c);
     }
 
-    for (const pos of positions) {
-      this.mults[pos] = pickMult();
-    }
+    const pool = SYMS.filter(s => s.id !== 'wild');
+    const wTotal = pool.reduce((a,s)=>a+s.w, 0);
 
-    return positions;
-  }
-
-  /** Spin the reels (random symbol per cell, excluding scatter during battle) */
-  spin(volatility) {
     this.grid = [];
-    const symKeys = SYMBOLS.filter(s => s.id !== 'wild').map(s => s.id);
-    const allKeys = SYMBOLS.map(s => s.id);
-    const weights = SYMBOLS.map(s => {
-      if (volatility === 'low')    return s.baseWeight * (s.tier === 'low' ? 1.3 : 0.8);
-      if (volatility === 'high')   return s.baseWeight * (s.tier === 'premium' || s.tier === 'special' ? 1.4 : 0.85);
-      return s.baseWeight;
-    });
-    const total = weights.reduce((a,b) => a+b, 0);
-
     for (let r = 0; r < ROWS; r++) {
       this.grid[r] = [];
       for (let c = 0; c < COLS; c++) {
-        let rand = Math.random() * total;
-        let chosen = allKeys[allKeys.length-1];
-        for (let i = 0; i < allKeys.length; i++) {
-          rand -= weights[i];
-          if (rand <= 0) { chosen = allKeys[i]; break; }
+        // Wizard reels (sticky or new) → whole reel = wild
+        if (this.wizardReels[c] !== undefined || this.newWizardCols.includes(c)) {
+          this.grid[r][c] = 'wild';
+        } else {
+          let rand = Math.random() * wTotal, chosen = pool[pool.length-1].id;
+          for (const s of pool) { rand -= s.w; if (rand <= 0) { chosen = s.id; break; } }
+          this.grid[r][c] = chosen;
         }
-        this.grid[r][c] = chosen;
       }
     }
   }
 
-  /**
-   * Evaluate all 20 paylines.
-   * Wild substitutes for any non-special symbol.
-   * For each winning line, multiply the base pay by any sticky
-   * multiplier cells the line passes through. Multiple mults
-   * on the same line are COMBINED (multiplied together) — this
-   * is what causes the explosive high-volatility payouts.
-   */
+  /** Evaluate all 25 paylines. Multipliers on the same line ADD together. */
   evaluate(bet) {
     let spinWin = 0;
-    let winCells = new Set();
-    let details = [];
+    const winCells = new Set();
+    const details = [];
 
-    for (const line of PAYLINES) {
-      const cells = line.map(([r,c]) => ({ r, c, sym: this.grid[r][c] }));
-      // Count matching from left; wild acts as sub
-      let matchSym = null;
-      let count = 0;
-
+    for (const line of LINES) {
+      let matchSym = null, count = 0;
       for (let i = 0; i < COLS; i++) {
-        const s = cells[i].sym;
-        if (s === 'wild') {
-          count++;
-        } else if (matchSym === null) {
-          matchSym = s;
-          count++;
-        } else if (s === matchSym) {
-          count++;
-        } else {
-          break;
-        }
+        const s = this.grid[line[i][0]][line[i][1]];
+        if (s === 'wild') { count++; }
+        else if (!matchSym) { matchSym = s; count++; }
+        else if (s === matchSym) { count++; }
+        else break;
       }
+      if (!matchSym || count < 3 || !PAY[matchSym]) continue;
 
-      if (!matchSym || count < 3 || !PAYS[matchSym]) continue;
+      const base = PAY[matchSym][count - 3];
 
-      const payIdx   = count - 3;         // 0=3oaK, 1=4oaK, 2=5oaK
-      const basePay  = PAYS[matchSym][payIdx];
-
-      // Collect sticky mult cells on this line segment
-      let lineMult = 1;
+      // Sum all sticky (+ newly locked) wizard multipliers on winning segment
+      let multSum = 0;
       for (let i = 0; i < count; i++) {
-        const key = `${cells[i].r},${cells[i].c}`;
-        if (this.mults[key]) lineMult *= this.mults[key];
+        const c = line[i][1];
+        const m = this.wizardReels[c];
+        if (m !== undefined) multSum += m;
       }
+      const lineMult = Math.max(1, multSum); // at least ×1
 
-      const win = bet * basePay * lineMult;
-      spinWin  += win;
-
-      for (let i = 0; i < count; i++) winCells.add(`${cells[i].r},${cells[i].c}`);
-      details.push({ sym: matchSym, count, basePay, lineMult, win });
+      const win = bet * base * lineMult;
+      spinWin += win;
+      for (let i = 0; i < count; i++) winCells.add(`${line[i][0]},${line[i][1]}`);
+      details.push({ sym: matchSym, count, base, multSum, lineMult, win });
     }
 
     this.totalWin += spinWin;
-    this.spinHistory.push(spinWin);
+    this.history.push(spinWin);
     return { spinWin, winCells, details };
   }
 }
 
-// ── BattleEngine ──────────────────────────────────────────────
-/**
- * Orchestrates a 10-spin duel between leftSlot and rightSlot.
- * Each spin is simultaneously resolved on both sides.
- * Winner = side with higher totalWin; they collect BOTH sides' wins.
- */
-class BattleEngine {
-  constructor() {
-    this.left  = new SlotInstance('left');
-    this.right = new SlotInstance('right');
-    this.spinsDone = 0;
-    this.running   = false;
-    this.volatility = 'medium';
-  }
+// ─────────────────────────────────────────────────────────────
+//  DOM Rendering
+// ─────────────────────────────────────────────────────────────
 
-  reset() {
-    this.left.reset();
-    this.right.reset();
-    this.spinsDone = 0;
-  }
-}
-
-// ── Global state ─────────────────────────────────────────────
-const engine = new BattleEngine();
-let balance  = 1000;
-const betLevels = [1, 2, 5, 10, 20, 50, 100, 200];
-let betIdx   = 3; // $10 default
-let bet      = betLevels[betIdx];
-let isRunning = false;
-
-// ── DOM helpers ───────────────────────────────────────────────
 function buildGrid(id) {
-  const container = document.getElementById(id);
-  container.innerHTML = '';
+  const el = document.getElementById(id);
+  el.innerHTML = '';
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.id = `${id}-${r}-${c}`;
-      cell.innerHTML = `<span class="sym-icon">🔮</span><span class="sym-lbl">---</span>`;
-      container.appendChild(cell);
+      cell.innerHTML = `<span class="ci">🔮</span>`;
+      el.appendChild(cell);
     }
   }
 }
 
-function renderCell(gridId, row, col, symId, mults, flashMult) {
-  const cell = document.getElementById(`${gridId}-${row}-${col}`);
-  const sym  = SYM_MAP[symId] || SYM_MAP['10'];
-
-  // Clear old
-  cell.className = 'cell';
-  const multKey = `${row},${col}`;
-  const multVal = mults && mults[multKey];
-
-  cell.innerHTML = `<span class="sym-icon">${sym.icon}</span><span class="sym-lbl">${sym.label}</span>`;
-
-  if (multVal) {
-    cell.classList.add('has-mult', `mult-${multVal}`);
-    if (flashMult) cell.classList.add('mult-just-placed');
-    const badge = document.createElement('div');
-    badge.className = 'mult-badge';
-    badge.textContent = `×${multVal}`;
-    cell.appendChild(badge);
-  }
+function setCell(gridId, r, c, symId) {
+  const cell = document.getElementById(`${gridId}-${r}-${c}`);
+  if (!cell) return;
+  const sym = SYM[symId] || SYM['10'];
+  // Keep wizard-cell class if reel is wizard
+  const wasWizard = cell.classList.contains('wizard-cell');
+  cell.innerHTML = `<span class="ci">${sym.icon}</span><span>${sym.label}</span>`;
+  if (wasWizard) cell.classList.add('wizard-cell');
 }
 
-function renderGrid(side) {
-  const slot = side === 'left' ? engine.left : engine.right;
-  const gridId = side === 'left' ? 'leftGrid' : 'rightGrid';
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      renderCell(gridId, r, c, slot.grid[r]?.[c] || '10', slot.mults, false);
-    }
-  }
-}
-
-function flashCells(gridId, winCells) {
-  for (const key of winCells) {
-    const [r,c] = key.split(',').map(Number);
-    const cell = document.getElementById(`${gridId}-${r}-${c}`);
-    if (!cell) continue;
-    cell.classList.remove('win-active');
-    void cell.offsetWidth;
-    cell.classList.add('win-active');
-    setTimeout(() => cell.classList.remove('win-active'), 1500);
-  }
-}
-
-function setSpinAnim(gridId, on) {
+function setSpinning(gridId, on) {
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) {
       const cell = document.getElementById(`${gridId}-${r}-${c}`);
@@ -727,191 +606,339 @@ function setSpinAnim(gridId, on) {
     }
 }
 
-function setPhase(side, phase) {
-  const el = document.getElementById(side + 'Phase');
-  el.className = `phase-badge phase-${phase}`;
-  el.textContent = phase === 'setup' ? 'Setup' : phase === 'battle' ? 'Battle' : 'Idle';
-}
-
-function fmt(n) {
-  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function setUI(enabled) {
-  document.getElementById('spinBtn').disabled  = !enabled;
-  document.getElementById('bonusBtn').disabled = !enabled;
-  document.getElementById('betDown').disabled  = !enabled;
-  document.getElementById('betUp').disabled    = !enabled;
-}
-
-function setStatus(msg) { document.getElementById('statusBar').textContent = msg; }
-
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function updateTotals() {
-  document.getElementById('leftTotal').textContent  = fmt(engine.left.totalWin);
-  document.getElementById('rightTotal').textContent = fmt(engine.right.totalWin);
-  document.getElementById('balDisplay').textContent = fmt(balance);
-}
-
-// ── Battle flow ───────────────────────────────────────────────
-async function startBattle(isBonusBuy) {
-  if (isRunning) return;
-
-  const cost = isBonusBuy ? bet * 100 : bet;
-  if (balance < cost) { setStatus('Insufficient balance!'); return; }
-
-  balance -= cost;
-  isRunning = true;
-  setUI(false);
-  document.getElementById('resultBanner').classList.remove('visible');
-  engine.reset();
-  updateTotals();
-  document.getElementById('spinCounter').textContent = '—';
-
-  // ── PHASE 1: Setup — place multipliers ─────────────────────
-  setStatus('Placing sticky multipliers…');
-  setPhase('left',  'setup');
-  setPhase('right', 'setup');
-
-  // Spin blank grid first
-  engine.left.spin('medium');
-  engine.right.spin('medium');
-  renderGrid('left');
-  renderGrid('right');
-
-  await delay(400);
-
-  // Place multipliers with animation stagger
-  engine.left.placeMultipliers(isBonusBuy);
-  engine.right.placeMultipliers(isBonusBuy);
-
+/** Render the grid normally (non-wizard cells) */
+function renderGridCells(slot, gridId) {
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      const lKey = `${r},${c}`;
-      const rKey = `${r},${c}`;
-      if (engine.left.mults[lKey] || engine.right.mults[rKey]) {
-        renderCell('leftGrid',  r, c, engine.left.grid[r]?.[c]  || '10', engine.left.mults,  true);
-        renderCell('rightGrid', r, c, engine.right.grid[r]?.[c] || '10', engine.right.mults, true);
-        await delay(80);
+      const cell = document.getElementById(`${gridId}-${r}-${c}`);
+      if (!cell) continue;
+      const symId = slot.grid[r]?.[c] || '10';
+      const sym = SYM[symId] || SYM['10'];
+      // Preserve wizard styling
+      const isWiz = slot.wizardReels[c] !== undefined;
+      cell.classList.toggle('wizard-cell', isWiz);
+      // Remove overlays added during animation
+      cell.querySelectorAll('.mult-overlay,.mult-reveal-overlay,.sticky-tag').forEach(e=>e.remove());
+      cell.innerHTML = `<span class="ci">${sym.icon}</span><span>${sym.label}</span>`;
+      // Re-add sticky multiplier badge on middle row
+      if (isWiz) {
+        if (r === 2) {
+          const ov = document.createElement('div');
+          ov.className = 'mult-overlay ' + multClass(slot.wizardReels[c]);
+          ov.textContent = `×${slot.wizardReels[c]}`;
+          cell.appendChild(ov);
+        }
+        const st = document.createElement('div');
+        st.className = 'sticky-tag';
+        st.textContent = 'sticky';
+        cell.appendChild(st);
       }
     }
   }
+}
 
-  setStatus(`${Object.keys(engine.left.mults).length} multipliers placed on House · ${Object.keys(engine.right.mults).length} on You`);
-  await delay(700);
+function multClass(v) {
+  if (v >= 500) return 'mult-mega';
+  if (v >= 100) return 'mult-big';
+  if (v >= 10)  return 'mult-med';
+  return 'mult-small';
+}
 
-  // ── PHASE 2: Battle spins ───────────────────────────────────
-  setPhase('left',  'battle');
-  setPhase('right', 'battle');
+/** Flash winning cells */
+function flashWins(gridId, winCells) {
+  for (const key of winCells) {
+    const [r,c] = key.split(',').map(Number);
+    const cell = document.getElementById(`${gridId}-${r}-${c}`);
+    if (!cell) continue;
+    cell.classList.remove('win-flash');
+    void cell.offsetWidth;
+    cell.classList.add('win-flash');
+    setTimeout(() => cell.classList.remove('win-flash'), 1600);
+  }
+}
 
-  for (let spin = 1; spin <= BATTLE_SPINS; spin++) {
-    document.getElementById('spinCounter').textContent = spin;
-    setStatus(`Spin ${spin} of ${BATTLE_SPINS}…`);
+/**
+ * Animate the wizard dropping onto a reel and revealing two multipliers.
+ * Returns the chosen multiplier value.
+ */
+async function animateWizardDrop(gridId, col, mult1, mult2, chosen) {
+  // Step 1: cells in this col get wizard appearance with drop animation
+  for (let r = 0; r < ROWS; r++) {
+    const cell = document.getElementById(`${gridId}-${r}-${col}`);
+    if (!cell) continue;
+    cell.classList.remove('spinning');
+    cell.classList.add('wizard-cell','wizard-dropping');
+    cell.innerHTML = `<span class="ci">🧙</span>`;
+    setTimeout(()=>cell.classList.remove('wizard-dropping'), 600);
+  }
+  await delay(550);
 
-    // Start spin animation
-    setSpinAnim('leftGrid',  true);
-    setSpinAnim('rightGrid', true);
-    await delay(400 + Math.random() * 150);
+  // Step 2: show two multiplier options on middle cell
+  const midCell = document.getElementById(`${gridId}-2-${col}`);
+  if (midCell) {
+    const rev = document.createElement('div');
+    rev.className = 'mult-reveal-overlay';
 
-    // Generate results
-    engine.left.spin(engine.volatility);
-    engine.right.spin(engine.volatility);
+    const op1 = document.createElement('div');
+    op1.className = 'mult-option';
+    op1.textContent = `×${mult1}`;
 
-    // Stop left, then right with slight stagger
-    setSpinAnim('leftGrid', false);
-    renderGrid('left');
-    await delay(80);
-    setSpinAnim('rightGrid', false);
-    renderGrid('right');
-    await delay(120);
+    const op2 = document.createElement('div');
+    op2.className = 'mult-option';
+    op2.textContent = `×${mult2}`;
 
-    // Evaluate
-    const lResult = engine.left.evaluate(bet);
-    const rResult = engine.right.evaluate(bet);
-
-    // Flash wins
-    if (lResult.winCells.size) flashCells('leftGrid',  lResult.winCells);
-    if (rResult.winCells.size) flashCells('rightGrid', rResult.winCells);
-
-    // Log
-    document.getElementById('leftLog').innerHTML  = buildLogHtml(lResult, spin);
-    document.getElementById('rightLog').innerHTML = buildLogHtml(rResult, spin);
-
-    updateTotals();
-    await delay(700);
+    rev.appendChild(op1);
+    rev.appendChild(op2);
+    midCell.appendChild(rev);
   }
 
-  // ── PHASE 3: Result ─────────────────────────────────────────
-  setPhase('left',  'idle');
-  setPhase('right', 'idle');
-  showResult(isBonusBuy, cost);
-  isRunning = false;
+  await delay(600);
+
+  // Step 3: highlight the chosen one, fade the rejected
+  if (midCell) {
+    const rev = midCell.querySelector('.mult-reveal-overlay');
+    if (rev) {
+      const opts = rev.querySelectorAll('.mult-option');
+      const chosenIdx = chosen === mult1 ? 0 : 1;
+      opts[chosenIdx].classList.add('chosen');
+      opts[1 - chosenIdx].classList.add('rejected');
+    }
+  }
+
+  await delay(700);
+
+  // Step 4: remove reveal overlay and add persistent badge
+  if (midCell) {
+    midCell.querySelector('.mult-reveal-overlay')?.remove();
+    midCell.querySelectorAll('.mult-overlay').forEach(e=>e.remove());
+    const ov = document.createElement('div');
+    ov.className = 'mult-overlay ' + multClass(chosen);
+    ov.textContent = `×${chosen}`;
+    midCell.appendChild(ov);
+  }
+
+  // Add sticky tags to all cells in the reel
+  for (let r = 0; r < ROWS; r++) {
+    const cell = document.getElementById(`${gridId}-${r}-${col}`);
+    if (cell) {
+      cell.querySelectorAll('.sticky-tag').forEach(e=>e.remove());
+      const st = document.createElement('div');
+      st.className = 'sticky-tag';
+      st.textContent = 'sticky';
+      cell.appendChild(st);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Battle Engine
+// ─────────────────────────────────────────────────────────────
+
+const you = new SlotInstance('you');
+const billy = new SlotInstance('billy');
+
+let balance = 1000;
+const BETS = [1,2,5,10,20,50,100,200];
+let betIdx = 3, bet = BETS[betIdx];
+let running = false;
+
+const BONUS_BUY_MULT = 100; // costs ×100 the bet
+
+function delay(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function fmt(n) { return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function setStatus(m) { document.getElementById('statusBar').textContent = m; }
+function setPhase(side, phase, label) {
+  const el = document.getElementById(side+'Phase');
+  el.className = 'phase-chip ' + (phase==='free'?'ph-free':phase==='reveal'?'ph-reveal':'ph-idle');
+  el.textContent = label;
+}
+function updateTotals() {
+  document.getElementById('youTotal').textContent = fmt(you.totalWin);
+  document.getElementById('billyTotal').textContent = fmt(billy.totalWin);
+  document.getElementById('balDisplay').textContent = fmt(balance);
+}
+function setUI(on) {
+  ['startBtn','betDn','betUp'].forEach(id=>document.getElementById(id).disabled=!on);
+}
+
+async function startBattle() {
+  if (running) return;
+  const cost = bet * BONUS_BUY_MULT;
+  if (balance < cost) { setStatus('Insufficient balance!'); return; }
+
+  balance -= cost;
+  running = true;
+  setUI(false);
+  document.getElementById('resultBanner').classList.remove('show');
+  you.reset(); billy.reset();
+  updateTotals();
+  document.getElementById('spinNum').textContent = '—';
+  document.getElementById('youFS').textContent = '';
+  document.getElementById('billyFS').textContent = '';
+  setStatus(`Bonus Buy Battle started — cost ${fmt(cost)}. ${FS_COUNT} free spins each!`);
+
+  // Init both grids
+  buildGrid('youGrid');
+  buildGrid('billyGrid');
+
+  setPhase('you','free','Free Spins');
+  setPhase('billy','free','Free Spins');
+
+  // ── 10 FREE SPINS ──────────────────────────────────────────
+  for (let spin = 1; spin <= FS_COUNT; spin++) {
+    document.getElementById('spinNum').textContent = spin;
+    document.getElementById('youFS').textContent = `Spin ${spin}/${FS_COUNT}`;
+    document.getElementById('billyFS').textContent = `Spin ${spin}/${FS_COUNT}`;
+    setStatus(`Spin ${spin} of ${FS_COUNT}…`);
+
+    // Start spinning animation
+    setSpinning('youGrid', true);
+    setSpinning('billyGrid', true);
+    await delay(380 + Math.random()*120);
+
+    // Generate results
+    you.spin();
+    billy.spin();
+
+    // Stop spinning — render non-wizard cells first
+    setSpinning('youGrid', false);
+    setSpinning('billyGrid', false);
+    renderGridCells(you, 'youGrid');
+    renderGridCells(billy, 'billyGrid');
+    await delay(100);
+
+    // ── Animate wizard drops (new this spin, not yet sticky) ──
+    const youNewWiz = you.newWizardCols || [];
+    const billyNewWiz = billy.newWizardCols || [];
+
+    // Process wizards on both sides simultaneously
+    const wizPromises = [];
+
+    for (const c of youNewWiz) {
+      const m1 = wizMult(), m2 = wizMult();
+      const chosen = Math.random() < 0.5 ? m1 : m2;
+      you.wizardReels[c] = chosen;
+      wizPromises.push(animateWizardDrop('youGrid', c, m1, m2, chosen)
+        .then(() => {
+          setPhase('you','reveal',`Reel ${c+1}: ×${chosen}`);
+        })
+      );
+    }
+    for (const c of billyNewWiz) {
+      const m1 = wizMult(), m2 = wizMult();
+      const chosen = Math.random() < 0.5 ? m1 : m2;
+      billy.wizardReels[c] = chosen;
+      wizPromises.push(animateWizardDrop('billyGrid', c, m1, m2, chosen)
+        .then(() => {
+          setPhase('billy','reveal',`Reel ${c+1}: ×${chosen}`);
+        })
+      );
+    }
+
+    if (wizPromises.length) {
+      await Promise.all(wizPromises);
+      await delay(200);
+    }
+
+    setPhase('you','free','Free Spins');
+    setPhase('billy','free','Free Spins');
+
+    // ── Evaluate wins ──────────────────────────────────────
+    const yr = you.evaluate(bet);
+    const br = billy.evaluate(bet);
+
+    if (yr.winCells.size) flashWins('youGrid', yr.winCells);
+    if (br.winCells.size) flashWins('billyGrid', br.winCells);
+
+    document.getElementById('youLog').innerHTML = buildLog(yr, spin);
+    document.getElementById('billyLog').innerHTML = buildLog(br, spin);
+
+    updateTotals();
+
+    // Wizard log messages
+    const wMsg = [];
+    if (youNewWiz.length) wMsg.push(`🧙 Your wizard: reel${youNewWiz.map(c=>`${c+1}(×${you.wizardReels[c]})`).join(',')}`);
+    if (billyNewWiz.length) wMsg.push(`😈 Billy's wizard: reel${billyNewWiz.map(c=>`${c+1}(×${billy.wizardReels[c]})`).join(',')}`);
+    if (wMsg.length) setStatus(wMsg.join(' | '));
+
+    await delay(750);
+  }
+
+  // ── Result ─────────────────────────────────────────────────
+  setPhase('you','idle','Done');
+  setPhase('billy','idle','Done');
+  showResult(cost);
+  running = false;
   setUI(true);
 }
 
-function buildLogHtml(result, spin) {
-  if (!result.details.length) return `Spin ${spin}: <span style="color:#666">No win</span>`;
+function buildLog(result, spin) {
+  if (!result.details.length)
+    return `Spin ${spin}: <span style="color:#555">No win</span>`;
   const parts = result.details.map(d => {
-    const sym = SYM_MAP[d.sym];
-    const multNote = d.lineMult > 1 ? ` <span style="color:#ffd700">×${d.lineMult}</span>` : '';
-    return `${sym.icon}×${d.count}${multNote}`;
-  }).join(' | ');
+    const sym = SYM[d.sym];
+    const mNote = d.multSum > 0
+      ? ` <span class="log-wizard">+${d.multSum}× wizard</span>`
+      : '';
+    return `${sym.icon}×${d.count}${mNote}`;
+  }).join(' · ');
   return `Spin ${spin}: <span class="log-win">${fmt(result.spinWin)}</span> — ${parts}`;
 }
 
-function showResult(isBonusBuy, cost) {
-  const lWin = engine.left.totalWin;
-  const rWin = engine.right.totalWin;
-  const pot  = lWin + rWin;
+function showResult(cost) {
+  const yw = you.totalWin, bw = billy.totalWin, pot = yw + bw;
   const banner = document.getElementById('resultBanner');
-  const title  = document.getElementById('resultTitle');
-  const detail = document.getElementById('resultDetail');
-  const payout = document.getElementById('resultPayout');
+  const title  = document.getElementById('resTitle');
+  const detail = document.getElementById('resDetail');
+  const payout = document.getElementById('resPayout');
+  banner.classList.add('show');
 
-  banner.classList.add('visible');
-
-  if (Math.abs(lWin - rWin) < 0.001) {
-    title.className = 'result-title tie';
-    title.textContent = '⚖ TIE — All Returns Void';
-    detail.textContent = `House: ${fmt(lWin)} · You: ${fmt(rWin)} · Bet recovered`;
-    payout.textContent = fmt(cost);
-    balance += cost;
-  } else if (lWin > rWin) {
-    title.className = 'result-title left-win';
-    title.textContent = '⚔ HOUSE WINS';
-    detail.textContent = `House: ${fmt(lWin)} · You: ${fmt(rWin)} · Pot: ${fmt(pot)}`;
-    payout.textContent = 'You lose — Try again!';
-  } else {
-    title.className = 'result-title right-win';
-    title.textContent = '🧙 YOU WIN THE BATTLE!';
-    detail.textContent = `You: ${fmt(rWin)} · House: ${fmt(lWin)} · Combined pot: ${fmt(pot)}`;
+  if (yw >= bw) { // tie also goes to player
+    if (Math.abs(yw-bw)<.001) {
+      title.className='res-title res-tie';
+      title.textContent='⚖ TIE — You Win! (tie goes to player)';
+    } else {
+      title.className='res-title res-you';
+      title.textContent='🧙 YOU WIN THE BATTLE!';
+    }
+    detail.textContent = `You: ${fmt(yw)} · Billy: ${fmt(bw)} · Combined pot: ${fmt(pot)}`;
     payout.textContent = fmt(pot);
     balance += pot;
-    setStatus(`You collect ${fmt(pot)}! (${(pot/cost).toFixed(1)}× your bet)`);
+    setStatus(`Victory! You collect ${fmt(pot)} (${(pot/cost).toFixed(1)}× your buy-in)`);
+    if (pot/cost >= 50) showBigWin(pot, pot/cost);
+  } else {
+    title.className='res-title res-billy';
+    title.textContent='😈 BILLY WINS';
+    detail.textContent=`Billy: ${fmt(bw)} · You: ${fmt(yw)} · Better luck next time`;
+    payout.textContent='You lose — Try again!';
+    setStatus(`Billy wins this one. You lost ${fmt(cost)}. Try again!`);
   }
-
   updateTotals();
   document.getElementById('balDisplay').textContent = fmt(balance);
-
-  if (lWin <= rWin) {
-    setStatus(rWin > lWin ? `Victory! Collected ${fmt(pot)} (${(pot/cost).toFixed(1)}× return)` : 'Tie — bet returned.');
-  } else {
-    setStatus('The House wins this battle. Spin again!');
-  }
 }
 
-// ── Bet controls ──────────────────────────────────────────────
-function changeBet(dir) {
-  betIdx = Math.max(0, Math.min(betLevels.length - 1, betIdx + dir));
-  bet    = betLevels[betIdx];
+function showBigWin(amt, mult) {
+  const ov = document.getElementById('bigwin');
+  const lbl = document.getElementById('bwLabel');
+  lbl.textContent = mult >= 200 ? 'MEGA WIN!! 🧙✨' : mult >= 100 ? 'SUPER WIN! 🌟' : 'BIG WIN! 🔮';
+  document.getElementById('bwAmt').textContent = fmt(amt);
+  ov.classList.add('show');
+}
+
+function chgBet(d) {
+  betIdx = Math.max(0, Math.min(BETS.length-1, betIdx+d));
+  bet = BETS[betIdx];
   document.getElementById('betDisplay').textContent = fmt(bet);
+  document.getElementById('startBtn').textContent =
+    `🔮 BONUS BUY BATTLE (${fmt(bet*BONUS_BUY_MULT)})`;
 }
 
-// ── Init ──────────────────────────────────────────────────────
-buildGrid('leftGrid');
-buildGrid('rightGrid');
+// Init
+buildGrid('youGrid');
+buildGrid('billyGrid');
 updateTotals();
+document.getElementById('startBtn').textContent =
+  `🔮 BONUS BUY BATTLE (${fmt(bet*BONUS_BUY_MULT)})`;
 </script>
 </body>
 </html>
