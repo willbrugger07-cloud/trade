@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEON OVERLOAD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0B0E14;--bg2:#111520;--bg3:#161B28;
+  --border:#1F2937;
+  --purple:#c026d3;--cyan:#22d3ee;--pink:#f43f5e;--green:#10b981;--gold:#f59e0b;--red:#ef4444;
+  --dark:#050508;
+}
+body{background:var(--bg);color:#e2e8f0;font-family:'Courier New',monospace;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+/* HEADER */
+#header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+#header .logo{font-size:20px;font-weight:bold;letter-spacing:3px;color:var(--cyan);text-shadow:0 0 20px var(--cyan)}
+.hud-val{font-size:22px;font-weight:bold}
+.hud-lbl{font-size:10px;color:#4b5563;text-transform:uppercase;letter-spacing:1px}
+.hud-box{text-align:center}
+#balance-val{color:var(--green)}
+#win-val{color:var(--gold)}
+#multiplier-val{color:var(--purple);transition:all 0.2s}
+#multiplier-val.pulse{animation:voltpulse 0.4s ease}
+@keyframes voltpulse{0%{transform:scale(1)}50%{transform:scale(1.5);text-shadow:0 0 30px var(--purple)}100%{transform:scale(1)}}
+/* MAIN AREA */
+#main{display:flex;flex:1;overflow:hidden}
+/* SIDEBARS */
+#sidebar-left,#sidebar-right{width:180px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+#sidebar-right{border-right:none;border-left:1px solid var(--border)}
+.sidebar-title{font-size:10px;color:#4b5563;letter-spacing:2px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border)}
+/* WIN FEED */
+#win-feed{flex:1;overflow-y:auto;padding:4px}
+#win-feed::-webkit-scrollbar{width:3px}
+#win-feed::-webkit-scrollbar-track{background:var(--bg)}
+#win-feed::-webkit-scrollbar-thumb{background:var(--border)}
+.feed-item{padding:4px 6px;border-radius:3px;margin-bottom:2px;font-size:10px;border-left:2px solid var(--cyan);background:var(--bg3);animation:feedIn 0.3s ease;transition:border-color 0.2s}
+@keyframes feedIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.feed-user{color:var(--cyan)}
+.feed-mult{font-weight:bold}
+.feed-mult.big{color:var(--gold)}
+.feed-mult.mega{color:var(--pink);text-shadow:0 0 8px var(--pink)}
+/* VOLTAGE METER */
+#voltage-section{padding:12px}
+#voltage-label{font-size:10px;color:#4b5563;letter-spacing:2px;margin-bottom:6px;text-transform:uppercase}
+#voltage-display{font-size:36px;font-weight:bold;color:var(--purple);text-shadow:0 0 20px var(--purple);text-align:center;font-variant-numeric:tabular-nums}
+#cascade-count{font-size:11px;color:#374151;text-align:center;margin-top:2px}
+#voltage-bar{height:4px;background:var(--bg3);border-radius:2px;margin-top:8px;overflow:hidden}
+#voltage-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));width:0%;transition:width 0.3s;border-radius:2px}
+/* XP SECTION */
+#xp-section{padding:8px 12px;border-top:1px solid var(--border)}
+#xp-label{font-size:9px;color:#4b5563;letter-spacing:1px;display:flex;justify-content:space-between;margin-bottom:4px}
+#xp-level{color:var(--gold);font-weight:bold}
+#xp-bar-outer{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+#xp-bar-inner{height:100%;background:linear-gradient(90deg,var(--gold),var(--pink));width:0%;transition:width 0.4s}
+/* PRISM TRACKER */
+#prism-info{padding:12px;border-top:1px solid var(--border);display:none}
+#prism-spins{font-size:24px;font-weight:bold;color:var(--cyan);text-align:center}
+#prism-label{font-size:10px;color:#4b5563;text-align:center;text-transform:uppercase;letter-spacing:1px}
+/* SEEDS DISPLAY */
+#seeds-panel{padding:8px;border-top:1px solid var(--border);font-size:8px;color:#374151}
+/* CENTER */
+#center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+#center::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:0}
+/* GRID */
+#grid-wrapper{position:relative;z-index:1}
+#grid{display:grid;grid-template-columns:repeat(6,72px);grid-template-rows:repeat(6,72px);gap:3px;position:relative}
+#grid.size-8{grid-template-columns:repeat(8,60px);grid-template-rows:repeat(8,60px)}
+#grid.size-4{grid-template-columns:repeat(4,80px);grid-template-rows:repeat(4,80px)}
+.cell{width:72px;height:72px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:var(--bg3);border:1px solid var(--border);position:relative;transition:border-color 0.2s;cursor:default}
+#grid.size-8 .cell{width:60px;height:60px}
+#grid.size-4 .cell{width:80px;height:80px}
+.cell.winning{animation:explode 0.35s forwards}
+.cell.pulse-in{animation:pulseIn 0.35s ease-out}
+.cell.prism-wild{border:2px solid var(--red)!important;box-shadow:0 0 12px var(--red)}
+.cell.highlighted{border-color:var(--gold);box-shadow:0 0 10px var(--gold)44}
+.cell.white-border{border-color:#fff!important;box-shadow:0 0 8px #fff88;transition:none}
+@keyframes explode{0%{transform:scale(1);opacity:1}50%{transform:scale(1.3);filter:brightness(2)}100%{transform:scale(0);opacity:0}}
+@keyframes pulseIn{0%{transform:scale(0.2);opacity:0;filter:brightness(3)}100%{transform:scale(1);opacity:1;filter:brightness(1)}}
+/* SYMBOL shapes */
+.sym{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:28px;position:relative}
+#grid.size-8 .sym{width:36px;height:36px;font-size:22px}
+#grid.size-4 .sym{width:52px;height:52px;font-size:34px}
+/* LASER SVG */
+#laser-svg{position:absolute;inset:0;pointer-events:none;z-index:20;overflow:visible}
+/* PARTICLES */
+#particle-layer{position:absolute;inset:0;pointer-events:none;z-index:25;overflow:hidden}
+/* FLOATING WIN TEXT */
+.float-win{position:absolute;pointer-events:none;font-weight:bold;font-size:24px;animation:floatUp 1.2s ease forwards;white-space:nowrap;text-shadow:0 0 20px currentColor;z-index:100}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(0.5)}40%{transform:translateY(-30px) scale(1.2)}100%{opacity:0;transform:translateY(-80px) scale(0.9)}}
+/* BIG WIN OVERLAY */
+#bigwin-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;pointer-events:none;opacity:0}
+#bigwin-overlay.show{animation:bigwinAnim 1.5s ease forwards}
+@keyframes bigwinAnim{0%{opacity:0}20%{opacity:1}70%{opacity:1}100%{opacity:0}}
+#bigwin-text{font-size:56px;font-weight:bold;letter-spacing:4px;text-align:center}
+/* SCREEN SHAKE */
+@keyframes shake{0%,100%{transform:translate(0,0)}10%{transform:translate(-4px,-2px)}20%{transform:translate(4px,2px)}30%{transform:translate(-3px,1px)}40%{transform:translate(3px,-1px)}50%{transform:translate(-2px,2px)}60%{transform:translate(2px,-2px)}70%{transform:translate(-3px,1px)}80%{transform:translate(2px,2px)}90%{transform:translate(-1px,-1px)}}
+.shake{animation:shake 0.4s ease}
+/* PRISM PHASE HEADER */
+#prism-banner{display:none;position:absolute;top:-40px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1a0033,#003333);border:1px solid var(--cyan);padding:6px 24px;border-radius:4px;font-size:14px;letter-spacing:3px;color:var(--cyan);text-shadow:0 0 10px var(--cyan);white-space:nowrap}
+/* FOOTER */
+#footer{background:var(--bg2);border-top:1px solid var(--border);padding:10px 16px;flex-shrink:0}
+#controls{display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{padding:8px 18px;border:1px solid;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:bold;letter-spacing:1px;transition:all 0.15s;text-transform:uppercase}
+.btn:hover{filter:brightness(1.3)}
+.btn:disabled{opacity:0.4;cursor:not-allowed;filter:none}
+.btn-spin{background:var(--cyan);color:#000;border-color:var(--cyan);font-size:16px;padding:10px 32px;box-shadow:0 0 20px var(--cyan)44}
+.btn-spin:hover:not(:disabled){box-shadow:0 0 30px var(--cyan)}
+.btn-outline{background:transparent;color:#6b7280;border-color:var(--border)}
+.btn-outline.active{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 8px var(--cyan)44}
+.btn-pink{background:transparent;color:var(--pink);border-color:var(--pink)}
+.btn-purple{background:transparent;color:var(--purple);border-color:var(--purple)}
+select{background:var(--bg3);color:#e2e8f0;border:1px solid var(--border);padding:8px 12px;border-radius:4px;font-family:inherit;font-size:13px;cursor:pointer}
+#bet-display{font-size:18px;font-weight:bold;color:var(--gold);min-width:70px;text-align:center}
+.bet-arrow{background:transparent;color:#6b7280;border:1px solid var(--border);padding:6px 12px;border-radius:4px;cursor:pointer;font-size:14px}
+.bet-arrow:hover{color:#e2e8f0;border-color:#6b7280}
+/* BONUS BUY BAR */
+#bonus-bar{background:#0a0d13;border-top:1px solid var(--border);padding:6px 16px;display:flex;gap:8px;justify-content:center;flex-shrink:0;flex-wrap:wrap}
+.buy-btn{padding:5px 14px;border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;font-weight:bold;letter-spacing:1px;border:1px solid;transition:all 0.15s;text-transform:uppercase}
+.buy-btn:hover{filter:brightness(1.4)}
+.buy-ante{color:var(--green);border-color:var(--green);background:transparent}
+.buy-ante.active{background:var(--green)22}
+.buy-t1{color:var(--cyan);border-color:var(--cyan);background:transparent}
+.buy-t2{color:var(--purple);border-color:var(--purple);background:transparent}
+.buy-t3{color:var(--gold);border-color:var(--gold);background:transparent}
+.buy-t4{color:var(--pink);border-color:var(--pink);background:transparent}
+/* VOLATILITY */
+#vol-control{display:flex;align-items:center;gap:8px;font-size:11px;color:#6b7280}
+#vol-slider{width:80px;accent-color:var(--purple)}
+#vol-label{color:var(--purple);font-weight:bold;min-width:20px}
+/* AUTOPLAY PANEL */
+#autoplay-panel{display:none;position:absolute;bottom:120px;right:200px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:16px;width:260px;z-index:200}
+#autoplay-panel h3{font-size:12px;color:var(--cyan);letter-spacing:2px;margin-bottom:12px}
+.ap-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:11px;color:#6b7280}
+.ap-row input{background:var(--bg3);color:#e2e8f0;border:1px solid var(--border);padding:4px 8px;border-radius:3px;font-family:inherit;width:80px}
+.ap-row select{padding:4px 6px;font-size:11px;width:100px}
+/* RISK LADDER OVERLAY */
+#risk-overlay{display:none;position:absolute;inset:0;background:#000000cc;z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#risk-overlay.show{display:flex}
+#risk-overlay h2{font-size:22px;color:var(--gold);letter-spacing:3px;text-shadow:0 0 20px var(--gold)}
+#risk-overlay p{color:#9ca3af;font-size:12px}
+#risk-track{width:340px;height:48px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;position:relative;overflow:hidden}
+#risk-needle{position:absolute;top:0;bottom:0;width:3px;background:var(--cyan);box-shadow:0 0 8px var(--cyan);transition:left 0.016s linear;left:0}
+.risk-zone{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;letter-spacing:1px;opacity:0.85}
+#risk-stop{background:var(--cyan);color:#000;border:none;padding:10px 32px;border-radius:4px;font-family:inherit;font-size:14px;font-weight:bold;letter-spacing:2px;cursor:pointer;box-shadow:0 0 16px var(--cyan)66}
+#risk-decline{background:transparent;color:#4b5563;border:1px solid var(--border);padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;margin-top:4px}
+/* VERIFY MODAL */
+#verify-modal{display:none;position:absolute;inset:0;background:#000000cc;z-index:400;align-items:center;justify-content:center}
+#verify-modal.show{display:flex}
+#verify-box{background:var(--bg2);border:1px solid var(--purple);border-radius:8px;padding:24px;width:480px;max-width:95vw}
+#verify-box h3{color:var(--purple);letter-spacing:2px;margin-bottom:12px}
+.vfy-row{margin-bottom:10px;font-size:11px}
+.vfy-row label{color:#4b5563;display:block;margin-bottom:2px;letter-spacing:1px}
+.vfy-row code{display:block;color:var(--cyan);word-break:break-all;background:var(--dark);padding:6px;border-radius:3px;font-size:10px}
+.vfy-row input{width:100%;background:var(--dark);color:#e2e8f0;border:1px solid var(--border);padding:6px;border-radius:3px;font-family:monospace;font-size:10px}
+/* LEADERBOARD TICKER */
+#leaderboard{background:var(--bg);border-top:1px solid var(--border);padding:4px 12px;display:flex;align-items:center;gap:8px;font-size:10px;overflow:hidden;height:26px;flex-shrink:0}
+#ticker-label{color:#374151;white-space:nowrap;letter-spacing:1px}
+#ticker-content{display:flex;gap:24px;animation:ticker 30s linear infinite;white-space:nowrap}
+@keyframes ticker{from{transform:translateX(100vw)}to{transform:translateX(-200%)}}
+.tick-item{color:#6b7280}
+.tick-item span{color:var(--gold);font-weight:bold}
+/* MISC */
+#state-indicator{font-size:9px;color:#374151;position:absolute;top:4px;right:8px;letter-spacing:1px;z-index:5}
+/* DARK SYNTH IMPACT ANIMATIONS */
+@keyframes chromaAberr{
+  0%{filter:none}
+  18%{filter:drop-shadow(-10px 0 0 #f43f5eaa) drop-shadow(10px 0 0 #22d3eeaa)}
+  35%{filter:none}
+  50%{filter:drop-shadow(-5px 0 0 #f43f5e66) drop-shadow(5px 0 0 #22d3ee55)}
+  65%{filter:none}
+  80%{filter:drop-shadow(-2px 0 0 #f43f5e33) drop-shadow(2px 0 0 #22d3ee33)}
+  100%{filter:none}
+}
+.glitch-overdrive{animation:chromaAberr 0.55s ease forwards!important}
+@keyframes gridBreathe{
+  from{box-shadow:0 0 2px var(--purple)44}
+  to{box-shadow:0 0 16px var(--purple)99,inset 0 0 8px var(--purple)22}
+}
+#grid-wrapper.grid-breathing .cell{border-color:var(--purple)!important;animation:gridBreathe 0.38s ease infinite alternate;transition:border-color 0.2s}
+/* INTERFACE BLEED */
+body.interface-bleed #sidebar-left{background:linear-gradient(180deg,#1a1000,var(--bg2));transition:background 0.6s}
+body.interface-bleed .feed-item{border-color:var(--gold);animation:feedIn 0.3s ease,feedBleed 0.4s ease infinite alternate}
+@keyframes feedBleed{from{text-shadow:none}to{text-shadow:0 0 10px var(--gold)}}
+body.interface-bleed #center::before{background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(245,158,11,0.06) 0%,transparent 70%);animation:plasmaRipple 3.5s ease infinite}
+@keyframes plasmaRipple{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+/* CASCADE DIM */
+#grid-wrapper.cascade-active .cell:not(.highlighted):not(.white-border){opacity:0.32;transition:opacity 0.18s}
+#grid-wrapper.cascade-active .cell.highlighted,#grid-wrapper.cascade-active .cell.white-border{opacity:1}
+/* HYPER DRIVE */
+#grid-wrapper.hyper-drive::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,rgba(34,211,238,0.03) 3px,rgba(34,211,238,0.03) 4px);pointer-events:none;z-index:30}
+/* MEGA WIN DESATURATE */
+body.mega-win #grid-wrapper{filter:saturate(0.2);transition:filter 0.4s}
+body.mega-win.show-win #grid-wrapper{filter:saturate(1);transition:filter 1s}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="logo">⚡ NEON OVERLOAD</div>
+  <div class="hud-box"><div class="hud-lbl">Balance</div><div class="hud-val" id="balance-val">$1000.00</div></div>
+  <div class="hud-box"><div class="hud-lbl">Win</div><div class="hud-val" id="win-val">$0.00</div></div>
+  <div class="hud-box"><div class="hud-lbl">Voltage ×</div><div class="hud-val" id="multiplier-val">1</div></div>
+  <div style="display:flex;gap:6px">
+    <button class="btn btn-outline" id="btn-verify" style="font-size:10px;padding:6px 10px">🔍 VERIFY</button>
+    <button class="btn btn-outline" id="btn-sound" style="font-size:10px;padding:6px 10px">🔇 SOUND</button>
+  </div>
+</div>
+
+<!-- LEADERBOARD TICKER -->
+<div id="leaderboard">
+  <div id="ticker-label">🏆 HOT STREAKS</div>
+  <div id="ticker-content"></div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- LEFT SIDEBAR: WIN FEED -->
+  <div id="sidebar-left">
+    <div class="sidebar-title">Live Wins</div>
+    <div id="win-feed"></div>
+  </div>
+
+  <!-- CENTER GRID -->
+  <div id="center">
+    <div id="state-indicator"></div>
+    <div id="grid-wrapper">
+      <div id="prism-banner">✦ PRISM PHASE ✦</div>
+      <div id="grid"></div>
+      <svg id="laser-svg" width="450" height="450"></svg>
+      <div id="particle-layer"></div>
+      <div id="bigwin-overlay"><div id="bigwin-text"></div></div>
+    </div>
+
+    <!-- RISK LADDER -->
+    <div id="risk-overlay">
+      <h2>⚡ RISK LADDER</h2>
+      <p>Win: <span id="risk-amount" style="color:var(--gold);font-weight:bold"></span> — Stop the needle!</p>
+      <div id="risk-track">
+        <div class="risk-zone" style="left:0;width:18%;background:#ef444433;color:var(--red)">BUST</div>
+        <div class="risk-zone" style="left:18%;width:20%;background:#22d3ee22;color:var(--cyan)">1.5×</div>
+        <div class="risk-zone" style="left:38%;width:20%;background:#10b98122;color:var(--green)">2×</div>
+        <div class="risk-zone" style="left:58%;width:16%;background:#f59e0b22;color:var(--gold)">5×</div>
+        <div class="risk-zone" style="left:74%;width:26%;background:#c026d322;color:var(--purple)">10×</div>
+        <div id="risk-needle"></div>
+      </div>
+      <button id="risk-stop">STOP</button>
+      <button id="risk-decline">Decline — Keep Win</button>
+    </div>
+
+    <!-- VERIFY MODAL -->
+    <div id="verify-modal">
+      <div id="verify-box">
+        <h3>🔍 PROVABLY FAIR</h3>
+        <p style="font-size:10px;color:#4b5563;margin-bottom:12px">HMAC-SHA256(serverSeed, clientSeed:nonce) — fully client-verifiable</p>
+        <div class="vfy-row"><label>LAST SERVER SEED</label><code id="vfy-server">spin first</code></div>
+        <div class="vfy-row"><label>NEXT SEED HASH</label><code id="vfy-hash">—</code></div>
+        <div class="vfy-row"><label>CLIENT SEED</label><input id="vfy-client" type="text"/></div>
+        <div class="vfy-row"><label>NONCE</label><input id="vfy-nonce" type="number"/></div>
+        <div style="margin-top:10px">
+          <button class="btn btn-purple" id="btn-verify-check" style="font-size:10px;width:100%;margin-bottom:6px">Verify Last Spin (Client-Side HMAC)</button>
+          <code id="vfy-result" style="font-size:9px;color:var(--cyan);word-break:break-all;display:block;min-height:14px"></code>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-purple" id="btn-client-seed" style="font-size:10px">Change Seed</button>
+          <button class="btn btn-outline" id="btn-close-verify" style="font-size:10px">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div id="sidebar-right">
+    <div class="sidebar-title">Voltage</div>
+    <div id="voltage-section">
+      <div id="voltage-label">Multiplier</div>
+      <div id="voltage-display">×1</div>
+      <div id="cascade-count">Cascade: 0</div>
+      <div id="voltage-bar"><div id="voltage-fill"></div></div>
+    </div>
+    <div id="prism-info">
+      <div id="prism-spins">—</div>
+      <div id="prism-label">Free Spins Left</div>
+    </div>
+    <div id="xp-section">
+      <div id="xp-label"><span>XP LEVEL</span><span id="xp-level">1</span></div>
+      <div id="xp-bar-outer"><div id="xp-bar-inner"></div></div>
+    </div>
+    <div id="seeds-panel">
+      <div>NONCE: <span id="nonce-display">0</span></div>
+      <div style="margin-top:2px;word-break:break-all">HASH: <span id="hash-display" style="color:#374151">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER CONTROLS -->
+<div id="footer">
+  <div id="controls">
+    <div id="vol-control">
+      <span>VOL</span>
+      <input type="range" id="vol-slider" min="1" max="10" value="5">
+      <span id="vol-label">5</span>
+    </div>
+    <button class="bet-arrow" id="bet-down">◀</button>
+    <div id="bet-display">$1.00</div>
+    <button class="bet-arrow" id="bet-up">▶</button>
+    <button class="btn btn-spin" id="btn-spin">SPIN</button>
+    <button class="btn btn-outline" id="btn-turbo">⚡ TURBO</button>
+    <button class="btn btn-outline" id="btn-autoplay">AUTO</button>
+    <div id="autoplay-panel">
+      <h3>AUTO-PLAY SETTINGS</h3>
+      <div class="ap-row"><span>Spins</span><select id="ap-spins"><option>10</option><option>25</option><option>50</option><option>100</option><option value="999999">∞</option></select></div>
+      <div class="ap-row"><span>Stop Profit $</span><input id="ap-profit" type="number" placeholder="0" value="0"></div>
+      <div class="ap-row"><span>Stop Loss $</span><input id="ap-loss" type="number" placeholder="0" value="0"></div>
+      <div class="ap-row"><span>On Loss</span><select id="ap-onloss"><option value="keep">Keep Bet</option><option value="martingale">+50% (Martingale)</option><option value="double">Double</option></select></div>
+      <div class="ap-row"><span>On Win</span><select id="ap-onwin"><option value="keep">Keep Bet</option><option value="reset">Reset to Base</option></select></div>
+      <div class="ap-row"><span>Rotate Seed Every</span><input id="ap-seed-rotate" type="number" value="50" min="1"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-spin" id="btn-start-auto" style="font-size:11px;padding:6px 14px">START</button>
+        <button class="btn btn-outline" id="btn-cancel-auto" style="font-size:11px;padding:6px 14px">CANCEL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BONUS BUY BAR -->
+<div id="bonus-bar">
+  <button class="buy-btn buy-ante" id="btn-ante">⚡ LIVE WIRE +25% (2× Capacitors)</button>
+  <button class="buy-btn buy-t1" id="btn-buy1">OVERLOAD T1 — 100× BET (Prism Phase)</button>
+  <button class="buy-btn buy-t2" id="btn-buy2">OVERLOAD T2 — 250× BET (10× Start Mult)</button>
+  <button class="buy-btn buy-t3" id="btn-buy3">SINGULARITY — 500× BET (×100 Mult, 5 Spins)</button>
+  <button class="buy-btn buy-t4" id="btn-buy4">MULTI-CHASER — 150× BET (Guaranteed Cap)</button>
+  <button class="buy-btn" id="btn-record" style="color:var(--cyan);border-color:var(--cyan);background:transparent" title="Screen record clip">⏺ Record</button>
+</div>
+
+<script>
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const BET_OPTIONS = [0.20, 0.50, 1.00, 2.00, 5.00, 10.00];
+const MAX_WIN_MULT = 10000;
+const WIN_THRESHOLDS = { BIG: 20, MEGA: 100, SENSATIONAL: 500 };
+const SYMS_KEYS = ['triangle','square','circle','diamond','hexagon','capacitor','wild','blackhole','scatter'];
+
+const SYMBOLS = {
+  triangle:  { label:'▲', color:'#f43f5e', pay:0.2, tier:'low' },
+  square:    { label:'■', color:'#c026d3', pay:0.3, tier:'low' },
+  circle:    { label:'●', color:'#22d3ee', pay:0.5, tier:'mid' },
+  diamond:   { label:'◆', color:'#10b981', pay:0.8, tier:'mid' },
+  hexagon:   { label:'⬡', color:'#f59e0b', pay:2.0, tier:'high' },
+  capacitor: { label:'⚡', color:'#e2e8f0', pay:0,   tier:'special' },
+  wild:      { label:'★', color:'#ef4444', pay:0,   tier:'special' },
+  blackhole: { label:'◉', color:'#7c3aed', pay:0,   tier:'special' },
+  scatter:   { label:'◈', color:'#22d3ee', pay:0,   tier:'special' },
+};
+
+const BASE_WEIGHTS = {
+  triangle:28, square:27, circle:15, diamond:13,
+  hexagon:8, capacitor:4, wild:3, blackhole:1, scatter:1
+};
+
+const CAPACITOR_MULTS = [2, 5, 10];
+
+const STATES = {
+  IDLE:'idle', SPINNING:'spinning', EVALUATING:'evaluating',
+  CASCADING:'cascading', WIN_ANIMATION:'win_animation',
+  RISK_LADDER:'risk_ladder', BONUS_TRANSITION:'bonus_transition',
+  PRISM_PHASE:'prism_phase', AUTOPLAY:'autoplay'
+};
+
+const FAKE_USERS = ['CryptoStar','NeonRider','VoltKing','PrismHunter','CascadeGod',
+  'WildFire','HexLord','QuantumBet','NullWave','BitGhost'];
+
+// C-major scale for adaptive cascade arpeggios
+const MAJOR_SCALE = [261.6, 293.7, 329.6, 349.2, 392, 440, 493.9, 523.3];
+
+// ─── PROVABLY FAIR RNG ────────────────────────────────────────────────────────
+class ProvablyFairRNG {
+  constructor() {
+    this.serverSeed = this.genSeed();
+    this.clientSeed = this.genClientSeed();
+    this.nonce = 0;
+    this.serverSeedHash = '';
+    this.lastServerSeed = '';
+    this.initHash();
+  }
+  genSeed() {
+    const arr = new Uint8Array(32);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  genClientSeed() {
+    const arr = new Uint8Array(8);
+    crypto.getRandomValues(arr);
+    return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  async initHash() {
+    this.serverSeedHash = await this.sha256(this.serverSeed);
+    this.updateUI();
+  }
+  async sha256(str) {
+    const enc = new TextEncoder();
+    const buf = await crypto.subtle.digest('SHA-256', enc.encode(str));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  async hmacSHA256(key, data) {
+    const enc = new TextEncoder();
+    const k = await crypto.subtle.importKey('raw', enc.encode(key),
+      {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', k, enc.encode(data));
+    return Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  async roll(count) {
+    const msg = this.clientSeed + ':' + this.nonce;
+    const hex = await this.hmacSHA256(this.serverSeed, msg);
+    const results = [];
+    for (let i = 0; i < count; i++) {
+      const offset = (i * 8) % (hex.length - 7);
+      const chunk = hex.substr(offset, 8);
+      results.push(parseInt(chunk, 16) / 0xffffffff);
+    }
+    this.lastServerSeed = this.serverSeed;
+    this.nonce++;
+    this.serverSeed = this.genSeed();
+    await this.initHash();
+    return results;
+  }
+  async rotateSeed() {
+    this.clientSeed = this.genClientSeed();
+    this.serverSeed = this.genSeed();
+    this.nonce = 0;
+    await this.initHash();
+  }
+  updateUI() {
+    el('nonce-display').textContent = this.nonce;
+    el('hash-display').textContent = (this.serverSeedHash||'').substr(0,16)+'...';
+    el('vfy-hash').textContent = this.serverSeedHash || '—';
+    el('vfy-client').value = this.clientSeed;
+    el('vfy-nonce').value = this.nonce;
+  }
+}
+
+// ─── AUDIO ENGINE ─────────────────────────────────────────────────────────────
+class AudioEngine {
+  constructor() { this.ctx = null; this.enabled = false; }
+  init() { if (!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+  play(type, param=1) {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const osc = ctx.createOscillator(), gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    if (type === 'spin') {
+      osc.frequency.setValueAtTime(80,t);
+      osc.frequency.exponentialRampToValueAtTime(40,t+0.15);
+      gain.gain.setValueAtTime(0.3,t);
+      gain.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+      osc.start(t); osc.stop(t+0.2);
+    } else if (type === 'win') {
+      const freq = Math.min(440*(1+param*0.1),2000);
+      osc.frequency.setValueAtTime(freq,t);
+      osc.frequency.exponentialRampToValueAtTime(freq*1.5,t+0.3);
+      gain.gain.setValueAtTime(Math.min(0.1+param*0.01,0.4),t);
+      gain.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+      osc.start(t); osc.stop(t+0.5);
+    } else if (type === 'prism') {
+      [440,554,659,880].forEach((f,i)=>{
+        const o2=ctx.createOscillator(),g2=ctx.createGain();
+        o2.connect(g2); g2.connect(ctx.destination);
+        o2.frequency.value=f;
+        g2.gain.setValueAtTime(0,t+i*0.08);
+        g2.gain.linearRampToValueAtTime(0.15,t+i*0.08+0.05);
+        g2.gain.exponentialRampToValueAtTime(0.001,t+i*0.08+0.4);
+        o2.start(t+i*0.08); o2.stop(t+i*0.08+0.4);
+      });
+    }
+  }
+  // Adaptive cascade arpeggio: tightens per cascade, sub-bass from idx 2+
+  cascade(idx) {
+    if (!this.enabled || !this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const oct = Math.floor(idx / 8);
+    const base = MAJOR_SCALE[idx % 8] * (1 + oct);
+    const spacing = Math.max(0.045, 0.09 * Math.pow(0.85, idx));
+    [1, 5/4, 3/2].forEach((ratio, i) => {
+      const st = t + i * spacing;
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = base * ratio;
+      g.gain.setValueAtTime(0.07 + idx * 0.006, st);
+      g.gain.exponentialRampToValueAtTime(0.001, st + 0.40);
+      o.start(st); o.stop(st + 0.45);
+    });
+    if (idx >= 2) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = 55 + idx * 8;
+      o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.12, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      o.start(t); o.stop(t + 0.4);
+    }
+  }
+}
+
+// ─── UTILITY ──────────────────────────────────────────────────────────────────
+function el(id){return document.getElementById(id)}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function fmt(n){return '$'+Math.abs(n).toFixed(2)}
+function r2(n){return Math.round(n*100)/100}
+function weightedRandom(weights, rng) {
+  const total = Object.values(weights).reduce((a,b)=>a+b,0);
+  let r = rng * total;
+  for (const [k,v] of Object.entries(weights)) { r -= v; if (r <= 0) return k; }
+  return Object.keys(weights)[0];
+}
+
+// ─── XP SYSTEM ────────────────────────────────────────────────────────────────
+let _xp = 0, _xpLevel = 1;
+const XP_PER_LEVEL = 200;
+function addXP(amount) {
+  _xp += amount;
+  while (_xp >= XP_PER_LEVEL) { _xp -= XP_PER_LEVEL; _xpLevel++; spawnXPLevelUp(); }
+  el('xp-level').textContent = _xpLevel;
+  el('xp-bar-inner').style.width = (_xp / XP_PER_LEVEL * 100) + '%';
+}
+function spawnXPLevelUp() {
+  const div = document.createElement('div');
+  div.textContent = '⬆ LEVEL ' + _xpLevel;
+  div.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--gold);font-size:18px;font-weight:bold;z-index:200;pointer-events:none;animation:floatUp 1.5s ease forwards;text-shadow:0 0 20px var(--gold)';
+  el('grid-wrapper').appendChild(div);
+  setTimeout(() => div.remove(), 1500);
+}
+
+// ─── PARTICLE POOL ────────────────────────────────────────────────────────────
+const POOL_SIZE = 80;
+const _pPool = [], _pActive = [];
+function _initPool() {
+  const layer = el('particle-layer');
+  for (let i = 0; i < POOL_SIZE; i++) {
+    const d = document.createElement('div');
+    d.style.cssText = 'position:absolute;border-radius:50%;pointer-events:none;display:none';
+    layer.appendChild(d);
+    _pPool.push(d);
+  }
+}
+function _recycleParticles(now) {
+  for (let i = _pActive.length - 1; i >= 0; i--) {
+    if (_pActive[i]._exp <= now) {
+      _pActive[i].style.display = 'none';
+      _pPool.push(_pActive.splice(i, 1)[0]);
+    }
+  }
+}
+function spawnParticles(x, y, count, color) {
+  const now = performance.now();
+  _recycleParticles(now);
+  const layer = el('particle-layer');
+  const rect = layer.getBoundingClientRect();
+  for (let i = 0; i < count && _pPool.length; i++) {
+    const p = _pPool.pop();
+    const sz = 3 + Math.random() * 5;
+    const vx = (Math.random() - 0.5) * 80;
+    const vy = -(20 + Math.random() * 60);
+    const life = 500 + Math.random() * 400;
+    p.style.display = 'block';
+    p.style.width = sz + 'px';
+    p.style.height = sz + 'px';
+    p.style.background = color;
+    p.style.boxShadow = `0 0 ${sz}px ${color}`;
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    p.style.opacity = '1';
+    p.style.transition = `left ${life}ms ease-out, top ${life}ms ease-out, opacity ${life}ms ease-in`;
+    p._exp = now + life;
+    _pActive.push(p);
+    requestAnimationFrame(() => {
+      p.style.left = (x + vx) + 'px';
+      p.style.top = (y + vy) + 'px';
+      p.style.opacity = '0';
+    });
+  }
+}
+
+// ─── LASER NEXUS ─────────────────────────────────────────────────────────────
+let _activeLasers = [];
+function drawLasers(capacitorCells, cellSize, cols, gap=3) {
+  clearLasers();
+  if (capacitorCells.length < 2) return;
+  const svg = el('laser-svg');
+  const pts = capacitorCells.map(([r,c]) => ({
+    x: c * (cellSize + gap) + cellSize / 2,
+    y: r * (cellSize + gap) + cellSize / 2
+  }));
+  for (let i = 0; i < pts.length - 1; i++) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', pts[i].x);
+    line.setAttribute('y1', pts[i].y);
+    line.setAttribute('x2', pts[i+1].x);
+    line.setAttribute('y2', pts[i+1].y);
+    line.setAttribute('stroke', '#e2e8f0');
+    line.setAttribute('stroke-width', '1.5');
+    line.setAttribute('opacity', '0.7');
+    line.setAttribute('class', 'laser-beam');
+    line.style.filter = 'drop-shadow(0 0 4px #e2e8f0)';
+    svg.appendChild(line);
+    _activeLasers.push({ ax:pts[i].x, ay:pts[i].y, bx:pts[i+1].x, by:pts[i+1].y });
+  }
+}
+function clearLasers() {
+  el('laser-svg').innerHTML = '';
+  _activeLasers = [];
+}
+
+// ─── IONIC LIGHTNING ─────────────────────────────────────────────────────────
+function spawnIonicLightning(cells, cellSize, gap=3) {
+  const svg = el('laser-svg');
+  cells.forEach(([r,c]) => {
+    const cx = c * (cellSize + gap) + cellSize / 2;
+    const cy = r * (cellSize + gap) + cellSize / 2;
+    const pts = [];
+    const steps = 8;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const jx = i===0||i===steps ? 0 : (Math.random()-0.5)*cellSize*0.7;
+      const jy = i===0||i===steps ? 0 : (Math.random()-0.5)*cellSize*0.7;
+      pts.push(`${cx - cellSize/2 + t*cellSize + jx},${cy + jy}`);
+    }
+    const pl = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    pl.setAttribute('points', pts.join(' '));
+    pl.setAttribute('stroke', '#e2e8f0');
+    pl.setAttribute('stroke-width', '1.5');
+    pl.setAttribute('fill', 'none');
+    pl.setAttribute('opacity', '0.9');
+    pl.style.filter = 'drop-shadow(0 0 4px #e2e8f0)';
+    svg.appendChild(pl);
+    setTimeout(() => pl.remove(), 350);
+  });
+}
+
+// ─── GLITCH OVERDRIVE ────────────────────────────────────────────────────────
+let _glitchTimer = null;
+function triggerGlitchOverdrive() {
+  const gw = el('grid-wrapper');
+  gw.classList.remove('glitch-overdrive');
+  void gw.offsetWidth;
+  gw.classList.add('glitch-overdrive');
+  clearTimeout(_glitchTimer);
+  _glitchTimer = setTimeout(() => gw.classList.remove('glitch-overdrive'), 600);
+}
+
+// ─── INTERFACE BLEED ─────────────────────────────────────────────────────────
+let _bleedTimer = null;
+function triggerInterfaceBleed(mult) {
+  if (mult < 50) return;
+  document.body.classList.add('interface-bleed');
+  clearTimeout(_bleedTimer);
+  _bleedTimer = setTimeout(() => document.body.classList.remove('interface-bleed'), 4000);
+}
+
+// ─── SCROLL NUMBER ────────────────────────────────────────────────────────────
+function scrollNumber(elemId, from, to, durationMs, prefix='$', bet=1) {
+  const stage = el('grid-wrapper');
+  let breathTimer = null;
+  if (Math.abs(to - from) > bet * 20) {
+    stage.classList.add('grid-breathing');
+    breathTimer = setTimeout(() => stage.classList.remove('grid-breathing'), durationMs + 400);
+  }
+  const start = performance.now();
+  const tick = (now) => {
+    const t = Math.min((now-start)/durationMs, 1);
+    const eased = t < 0.5 ? 2*t*t : 1-(-2*t+2)**2/2;
+    el(elemId).textContent = prefix + Math.abs(from + (to-from)*eased).toFixed(2);
+    if (t < 1) requestAnimationFrame(tick);
+    else { el(elemId).textContent = prefix+Math.abs(to).toFixed(2); clearTimeout(breathTimer); stage.classList.remove('grid-breathing'); }
+  };
+  requestAnimationFrame(tick);
+}
+
+// ─── CLIP RECORDER ───────────────────────────────────────────────────────────
+let _recorder = null, _recChunks = [];
+async function startRecording() {
+  if (_recorder) return;
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video:true, audio:true });
+    _recorder = new MediaRecorder(stream, { mimeType:'video/webm;codecs=vp9' });
+    _recChunks = [];
+    _recorder.ondataavailable = e => { if (e.data.size>0) _recChunks.push(e.data); };
+    _recorder.onstop = () => {
+      const blob = new Blob(_recChunks, {type:'video/webm'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = `neon-overload-${Date.now()}.webm`; a.click();
+      stream.getTracks().forEach(t=>t.stop());
+      _recorder = null; _recChunks = [];
+      el('btn-record').textContent = '⏺ Record';
+      el('btn-record').style.color = 'var(--cyan)';
+    };
+    _recorder.start();
+    el('btn-record').textContent = '⏹ Stop'; el('btn-record').style.color = 'var(--pink)';
+  } catch(e) { console.warn('Record:', e.message); }
+}
+function stopRecording() { if (_recorder && _recorder.state!=='inactive') _recorder.stop(); }
+
+// ─── GAME ENGINE ──────────────────────────────────────────────────────────────
+class NeonOverload {
+  constructor() {
+    this.rng = new ProvablyFairRNG();
+    this.audio = new AudioEngine();
+    this.state = STATES.IDLE;
+    this.balance = 1000.00;
+    this.betIdx = 2;
+    this.bet = BET_OPTIONS[this.betIdx];
+    this.turbo = false;
+    this.anteBet = false;
+    this.multiChaser = false;
+    this.volatility = 5;
+    this.soundOn = false;
+    this.cols = 6; this.rows = 6;
+    this.grid = [];
+    this.voltageMultiplier = 1;
+    this.cascadeCount = 0;
+    this.spinWin = 0;
+    this.inPrism = false;
+    this.prismSpins = 0;
+    this.prismStartMult = 1;
+    this.prismWilds = [];
+    this.prismTotalWin = 0;
+    this.autoRunning = false;
+    this.autoSpinsLeft = 0;
+    this.autoConfig = {};
+    this.autoBaseBet = this.bet;
+    this.autoStartBalance = this.balance;
+    this.autoSpinCount = 0;
+    this.recentHighs = [];
+    _initPool();
+    this.initGrid();
+    this.render();
+    this.bindEvents();
+    this.startFakeWins();
+    this.updateWeights();
+    this._updateLaserSVGSize();
+  }
+
+  _updateLaserSVGSize() {
+    const g = el('grid');
+    const sz = this.rows === 8 ? 60 : this.rows === 4 ? 80 : 72;
+    const gap = 3;
+    const total = sz * this.cols + gap * (this.cols - 1);
+    el('laser-svg').setAttribute('width', total);
+    el('laser-svg').setAttribute('height', total);
+  }
+
+  updateWeights() {
+    const v = this.volatility;
+    const w = {...BASE_WEIGHTS};
+    if (v <= 3) { w.triangle=35;w.square=35;w.circle=14;w.diamond=10;w.hexagon=3;w.capacitor=2;w.wild=1; }
+    else if (v >= 8) { w.triangle=8;w.square=8;w.circle=16;w.diamond=18;w.hexagon=28;w.capacitor=10;w.wild=8;w.blackhole=2;w.scatter=2; }
+    if (this.anteBet) w.capacitor *= 2;
+    if (this.multiChaser) w.capacitor = Math.max(w.capacitor, 30);
+    this.weights = w;
+  }
+
+  getGridSize() {
+    if (this.inPrism) return {cols:8,rows:8};
+    if (this.volatility >= 8) return {cols:4,rows:4};
+    return {cols:6,rows:6};
+  }
+
+  get cellSize() {
+    return this.rows === 8 ? 60 : this.rows === 4 ? 80 : 72;
+  }
+
+  initGrid() {
+    const {cols,rows} = this.getGridSize();
+    this.cols = cols; this.rows = rows;
+    this.grid = Array.from({length:rows}, ()=>Array(cols).fill(null));
+  }
+
+  async fillGrid(rolls) {
+    let ri = 0;
+    for (let r=0;r<this.rows;r++)
+      for (let c=0;c<this.cols;c++)
+        if (this.grid[r][c]===null)
+          this.grid[r][c] = weightedRandom(this.weights, rolls[ri++] ?? Math.random());
+  }
+
+  findClusters() {
+    const visited = Array.from({length:this.rows},()=>Array(this.cols).fill(false));
+    const clusters = [];
+    for (let r=0;r<this.rows;r++) {
+      for (let c=0;c<this.cols;c++) {
+        const sym = this.grid[r][c];
+        if (!sym||visited[r][c]||sym==='capacitor'||sym==='blackhole'||sym==='scatter') continue;
+        const cluster = [];
+        const queue = [[r,c]];
+        visited[r][c] = true;
+        let targetSym = sym === 'wild' ? null : sym;
+        while (queue.length) {
+          const [cr,cc] = queue.shift();
+          cluster.push([cr,cc]);
+          const s = this.grid[cr][cc];
+          if (s!=='wild'&&s!==null) targetSym = s;
+          for (const [nr,nc] of [[cr-1,cc],[cr+1,cc],[cr,cc-1],[cr,cc+1]]) {
+            if (nr<0||nr>=this.rows||nc<0||nc>=this.cols||visited[nr][nc]) continue;
+            const ns = this.grid[nr][nc];
+            if (!ns||ns==='capacitor'||ns==='blackhole'||ns==='scatter') continue;
+            if (ns==='wild'||ns===targetSym||(targetSym===null&&ns!=='wild')) {
+              if (targetSym===null&&ns!=='wild') targetSym=ns;
+              visited[nr][nc]=true; queue.push([nr,nc]);
+            }
+          }
+        }
+        if (cluster.length >= 5 && targetSym)
+          clusters.push({cells:cluster, symbol:targetSym, size:cluster.length});
+      }
+    }
+    return clusters;
+  }
+
+  findSpecials(type) {
+    const found = [];
+    for (let r=0;r<this.rows;r++)
+      for (let c=0;c<this.cols;c++)
+        if (this.grid[r][c]===type) found.push([r,c]);
+    return found;
+  }
+
+  async doCascade() {
+    let anyWin = false;
+    let cascIdx = 0;
+    while (true) {
+      const clusters = this.findClusters();
+      const scatters = this.findSpecials('scatter');
+      const capacitors = this.findSpecials('capacitor');
+
+      if (!this.inPrism && scatters.length >= 3) {
+        await this.triggerPrism(scatters.length);
+        return anyWin;
+      }
+      if (clusters.length === 0) break;
+      anyWin = true;
+
+      // Draw laser nexus from capacitors
+      if (!this.turbo) drawLasers(capacitors, this.cellSize, this.cols);
+
+      const winCells = new Set(clusters.flatMap(cl=>cl.cells.map(([r,c])=>`${r},${c}`)));
+      const capCells = capacitors.filter(([r,c])=>winCells.has(`${r},${c}`));
+      for (const [r,c] of capCells) {
+        const cv = CAPACITOR_MULTS[Math.floor(Math.random()*CAPACITOR_MULTS.length)];
+        this.voltageMultiplier *= cv;
+        this.showFloatText(`×${cv}⚡`, r, c, '#e2e8f0');
+      }
+      this.cascadeCount++;
+      this.voltageMultiplier += 1;
+      this.updateVoltageUI();
+
+      // Dim + highlight
+      if (!this.turbo) {
+        el('grid-wrapper').classList.add('cascade-active');
+        this.highlightClusters(clusters);
+      }
+
+      let roundWin = 0;
+      for (const cl of clusters) {
+        const pay = SYMBOLS[cl.symbol].pay * cl.size * this.bet;
+        const scaled = this.multiChaser ? pay * 0.5 : pay;
+        roundWin += scaled * this.voltageMultiplier;
+        if (!this.turbo) {
+          // White border winning cells
+          for (const [r,c] of cl.cells) { const cell=this.getCellEl(r,c); if(cell) cell.classList.add('white-border'); }
+          this.showFloatText(`+${fmt(scaled*this.voltageMultiplier)}`, cl.cells[0][0], cl.cells[0][1], SYMBOLS[cl.symbol].color);
+          // Particles
+          const rect = el('particle-layer').getBoundingClientRect();
+          const gRect = el('grid').getBoundingClientRect();
+          for (const [r,c] of cl.cells.slice(0,3)) {
+            const sz = this.cellSize;
+            const px = c*(sz+3)+sz/2 - (gRect.left - el('particle-layer').getBoundingClientRect().left);
+            const py = r*(sz+3)+sz/2 - (gRect.top - el('particle-layer').getBoundingClientRect().top);
+            spawnParticles(px, py, 4, SYMBOLS[cl.symbol].color);
+          }
+          // Hexagon cluster: ionic lightning
+          if (cl.symbol === 'hexagon') spawnIonicLightning(cl.cells.slice(0,2), this.cellSize);
+        }
+        // Impact keys
+        const localMult = (scaled * this.voltageMultiplier) / Math.max(this.bet, 0.01);
+        if (localMult >= 50 && !this.turbo) triggerGlitchOverdrive();
+        if (this.voltageMultiplier >= 3 && !this.turbo) {
+          el('grid-wrapper').classList.add('grid-breathing');
+          setTimeout(() => el('grid-wrapper').classList.remove('grid-breathing'), 1200);
+        }
+      }
+      this.spinWin += roundWin;
+      if (this.spinWin / this.bet >= MAX_WIN_MULT) { this.spinWin = this.bet * MAX_WIN_MULT; }
+      scrollNumber('win-val', this.spinWin - roundWin, this.spinWin, this.turbo?0:300, '$', this.bet);
+
+      this.audio.cascade(cascIdx++);
+
+      // Interface bleed at 50x total mult
+      const totalMult = this.spinWin / Math.max(this.bet, 0.01);
+      if (totalMult >= 50 && !this.turbo) triggerInterfaceBleed(totalMult);
+
+      if (!this.turbo) await sleep(500);
+      el('grid-wrapper').classList.remove('cascade-active');
+      clearLasers();
+
+      // Mark exploding
+      const removeCells = new Set([...winCells, ...capCells.map(([r,c])=>`${r},${c}`)]);
+      this.markExploding(removeCells);
+      if (!this.turbo) await sleep(350);
+
+      for (const key of removeCells) {
+        const [r,c] = key.split(',').map(Number);
+        this.grid[r][c] = null;
+      }
+
+      // Gravity Well: Black Hole absorbs low-pays
+      const holes = this.findSpecials('blackhole');
+      if (holes.length && clusters.length > 0) await this.triggerBlackHole(holes);
+
+      const rolls = await this.rng.roll(this.rows*this.cols);
+      this.applyPulseGravity();
+      await this.fillGrid(rolls);
+      this.render();
+      if (!this.turbo) { this.animatePulseIn(); await sleep(300); }
+    }
+    return anyWin;
+  }
+
+  async triggerBlackHole(holes) {
+    if (!this.turbo) {
+      // Gravity Well visual: flash low-pay cells
+      for (let r=0;r<this.rows;r++)
+        for (let c=0;c<this.cols;c++)
+          if (this.grid[r][c]==='triangle'||this.grid[r][c]==='square') {
+            const cell=this.getCellEl(r,c); if(cell) cell.style.opacity='0.3';
+          }
+      await sleep(200);
+    }
+    const lowSyms = new Set(['triangle','square']);
+    for (let r=0;r<this.rows;r++)
+      for (let c=0;c<this.cols;c++)
+        if (lowSyms.has(this.grid[r][c])) this.grid[r][c]=null;
+    if (!this.turbo) { this.render(); await sleep(300); }
+    const highWeights = {circle:20,diamond:25,hexagon:40,wild:10,capacitor:5};
+    for (let r=0;r<this.rows;r++)
+      for (let c=0;c<this.cols;c++)
+        if (!this.grid[r][c]) this.grid[r][c]=weightedRandom(highWeights,Math.random());
+    if (!this.turbo) { this.render(); await sleep(300); }
+  }
+
+  applyPulseGravity() {
+    for (let c=0;c<this.cols;c++) {
+      const col=[];
+      for (let r=0;r<this.rows;r++) if(this.grid[r][c]!==null) col.push(this.grid[r][c]);
+      for (let r=0;r<this.rows;r++) this.grid[r][c]=null;
+      const startRow=this.rows-col.length;
+      col.forEach((s,i)=>{this.grid[startRow+i][c]=s;});
+    }
+  }
+
+  async triggerPrism(scatterCount) {
+    this.audio.play('prism');
+    this.inPrism=true;
+    this.prismSpins=10+(scatterCount-3)*5;
+    this.prismWilds=[];
+    this.prismTotalWin=0;
+    this.voltageMultiplier=this.prismStartMult;
+    el('prism-banner').style.display='block';
+    el('prism-info').style.display='block';
+    el('prism-spins').textContent=this.prismSpins;
+    this.initGrid(); this._updateLaserSVGSize(); this.render();
+    if (!this.turbo) await sleep(600);
+    const allRolls=await this.rng.roll(this.rows*this.cols);
+    await this.fillGrid(allRolls);
+    this.render();
+    await this.runPrismSpins();
+    await this.endPrism();
+  }
+
+  async runPrismSpins() {
+    while (this.prismSpins > 0) {
+      this.prismSpins--;
+      el('prism-spins').textContent=this.prismSpins;
+      this.cascadeCount=0;
+      const prevMult=this.voltageMultiplier;
+      this.spinWin=0;
+      const rolls=await this.rng.roll(this.rows*this.cols);
+      await this.fillGrid(rolls);
+      this.movePrismWilds();
+      this.render();
+      if (!this.turbo) await sleep(300);
+      const sc=this.findSpecials('scatter');
+      if (sc.length>=3) this.prismSpins+=5;
+      for (let r=0;r<this.rows;r++)
+        for (let c=0;c<this.cols;c++)
+          if (this.grid[r][c]==='wild'&&!this.prismWilds.find(w=>w.r===r&&w.c===c)) {
+            const cx=Math.floor(this.cols/2),cy=Math.floor(this.rows/2);
+            const dist=Math.abs(r-cy)+Math.abs(c-cx);
+            this.prismWilds.push({r,c,dist});
+          }
+      await this.doCascade();
+      const hadWin=this.spinWin>0;
+      this.prismTotalWin+=this.spinWin;
+      if (!hadWin) {} else { this.voltageMultiplier=prevMult; }
+      this.updateVoltageUI();
+      el('win-val').textContent=fmt(this.prismTotalWin);
+    }
+  }
+
+  movePrismWilds() {
+    const cx=Math.floor(this.cols/2),cy=Math.floor(this.rows/2);
+    const toRemove=[];
+    for (const pw of this.prismWilds) {
+      const dr=Math.sign(cy-pw.r),dc=Math.sign(cx-pw.c);
+      const nr=pw.r+dr,nc=pw.c+dc;
+      if (this.grid[pw.r][pw.c]==='wild') this.grid[pw.r][pw.c]=null;
+      pw.dist--;
+      if (pw.dist<=0||(nr===pw.r&&nc===pw.c)) {
+        for (let er=pw.r-1;er<=pw.r+1;er++)
+          for (let ec=pw.c-1;ec<=pw.c+1;ec++)
+            if (er>=0&&er<this.rows&&ec>=0&&ec<this.cols) this.grid[er][ec]='wild';
+        toRemove.push(pw);
+      } else {
+        pw.r=nr;pw.c=nc;
+        if (this.grid[nr][nc]===null) this.grid[nr][nc]='wild';
+      }
+    }
+    this.prismWilds=this.prismWilds.filter(pw=>!toRemove.includes(pw));
+  }
+
+  async endPrism() {
+    this.inPrism=false; this.prismStartMult=1;
+    el('prism-banner').style.display='none'; el('prism-info').style.display='none';
+    this.balance=r2(this.balance+this.prismTotalWin);
+    this.showBigWin(this.prismTotalWin);
+    this.addFeedItem('You',this.prismTotalWin/this.bet,this.prismTotalWin);
+    scrollNumber('balance-val',this.balance-this.prismTotalWin,this.balance,800,'$',this.bet);
+    addXP(Math.ceil(this.prismTotalWin/this.bet*2+10));
+    this.initGrid(); this._updateLaserSVGSize(); this.render();
+    this.setState(STATES.IDLE);
+  }
+
+  async spin() {
+    if (this.state!==STATES.IDLE&&this.state!==STATES.AUTOPLAY) return;
+    const effectiveBet=this.anteBet?this.bet*1.25:this.bet;
+    if (this.balance<effectiveBet) { alert('Insufficient balance!'); this.stopAuto(); return; }
+
+    this.setState(STATES.SPINNING);
+    this.balance=r2(this.balance-effectiveBet);
+    scrollNumber('balance-val',this.balance+effectiveBet,this.balance,200,'$',this.bet);
+    this.spinWin=0;
+    this.voltageMultiplier=1;
+    this.cascadeCount=0;
+    el('win-val').textContent='$0.00';
+    this.updateVoltageUI();
+    this.audio.play('spin');
+    clearLasers();
+
+    // Hyper-drive mode: instant grid for turbo+auto
+    if (this.turbo && this.autoRunning) {
+      el('grid-wrapper').classList.add('hyper-drive');
+      setTimeout(()=>el('grid-wrapper').classList.remove('hyper-drive'),300);
+    }
+
+    const rolls=await this.rng.roll(this.rows*this.cols+10);
+    this.initGrid();
+    await this.fillGrid(rolls);
+    this.render();
+    if (!this.turbo) { this.animatePulseIn(); await sleep(400); }
+    this.rng.updateUI();
+    el('vfy-server').textContent=this.rng.lastServerSeed||'—';
+
+    this.setState(STATES.EVALUATING);
+    await this.doCascade();
+
+    const totalMult=this.spinWin/effectiveBet;
+    if (this.spinWin>0) {
+      this.balance=r2(this.balance+this.spinWin);
+      scrollNumber('balance-val',this.balance-this.spinWin,this.balance,600,'$',this.bet);
+      this.addFeedItem('You',totalMult,this.spinWin);
+      this.showBigWin(this.spinWin);
+      addXP(Math.ceil(this.cascadeCount*5+totalMult));
+      // Risk Ladder for wins ≥ 5× bet outside auto
+      if (!this.inPrism&&!this.autoRunning&&totalMult>=5) {
+        const rMult=await this.riskLadder(this.spinWin,effectiveBet);
+        if (rMult===0) {
+          this.balance=r2(this.balance-this.spinWin);
+          scrollNumber('balance-val',this.balance+this.spinWin,this.balance,400,'$',this.bet);
+        } else if (rMult>1) {
+          const bonus=this.spinWin*(rMult-1);
+          this.balance=r2(this.balance+bonus);
+          scrollNumber('balance-val',this.balance-bonus,this.balance,400,'$',this.bet);
+        }
+      }
+    } else {
+      addXP(2);
+    }
+
+    el('win-val').textContent=fmt(this.spinWin);
+    this.setState(this.autoRunning?STATES.AUTOPLAY:STATES.IDLE);
+    if (this.autoRunning) this.tickAutoplay(effectiveBet);
+  }
+
+  // ── RISK LADDER ──────────────────────────────────────────────────────────────
+  riskLadder(winAmount, bet) {
+    return new Promise(resolve => {
+      this.setState(STATES.RISK_LADDER);
+      el('risk-amount').textContent = fmt(winAmount) + ' (' + (winAmount/bet).toFixed(1) + '×)';
+      el('risk-overlay').classList.add('show');
+
+      const ZONES = [
+        {lo:0,hi:0.18,mult:0},
+        {lo:0.18,hi:0.38,mult:1.5},
+        {lo:0.38,hi:0.58,mult:2},
+        {lo:0.58,hi:0.74,mult:5},
+        {lo:0.74,hi:1.0,mult:10},
+      ];
+      const needle = el('risk-needle');
+      let pos = 0, dir = 1, speed = 0.004, raf;
+      const animate = () => {
+        pos += dir * speed;
+        if (pos >= 1) { pos = 1; dir = -1; }
+        if (pos <= 0) { pos = 0; dir = 1; }
+        needle.style.left = (pos * 100) + '%';
+        raf = requestAnimationFrame(animate);
+      };
+      raf = requestAnimationFrame(animate);
+
+      const cleanup = (mult) => {
+        cancelAnimationFrame(raf);
+        el('risk-overlay').classList.remove('show');
+        resolve(mult);
+      };
+
+      el('risk-stop').onclick = () => {
+        const zone = ZONES.find(z => pos >= z.lo && pos < z.hi) || ZONES[ZONES.length-1];
+        cleanup(zone.mult);
+      };
+      el('risk-decline').onclick = () => cleanup(1);
+    });
+  }
+
+  startAutoplay() {
+    const cfg={
+      spins:parseInt(el('ap-spins').value)||10,
+      stopProfit:parseFloat(el('ap-profit').value)||0,
+      stopLoss:parseFloat(el('ap-loss').value)||0,
+      onLoss:el('ap-onloss').value,
+      onWin:el('ap-onwin').value,
+      seedRotate:parseInt(el('ap-seed-rotate').value)||50
+    };
+    this.autoConfig=cfg; this.autoSpinsLeft=cfg.spins; this.autoBaseBet=this.bet;
+    this.autoStartBalance=this.balance; this.autoSpinCount=0; this.autoRunning=true;
+    el('autoplay-panel').style.display='none';
+    this.setState(STATES.AUTOPLAY);
+    this.spin();
+  }
+
+  tickAutoplay(lastBet) {
+    this.autoSpinsLeft--; this.autoSpinCount++;
+    const cfg=this.autoConfig;
+    const profit=this.balance-this.autoStartBalance;
+    if (cfg.seedRotate&&this.autoSpinCount%cfg.seedRotate===0) this.rng.rotateSeed();
+    if (this.autoSpinsLeft<=0) { this.stopAuto(); return; }
+    if (cfg.stopProfit>0&&profit>=cfg.stopProfit) { this.stopAuto(); return; }
+    if (cfg.stopLoss>0&&profit<=-cfg.stopLoss) { this.stopAuto(); return; }
+    if (this.spinWin>0) { if(cfg.onWin==='reset') this.bet=this.autoBaseBet; }
+    else {
+      if (cfg.onLoss==='martingale') this.bet=Math.min(this.bet*1.5,BET_OPTIONS[BET_OPTIONS.length-1]*10);
+      else if (cfg.onLoss==='double') this.bet=Math.min(this.bet*2,BET_OPTIONS[BET_OPTIONS.length-1]*10);
+    }
+    this.updateBetUI();
+    setTimeout(()=>this.spin(), this.turbo?50:200);
+  }
+
+  stopAuto() {
+    this.autoRunning=false; this.bet=this.autoBaseBet;
+    this.updateBetUI(); this.setState(STATES.IDLE);
+  }
+
+  async bonusBuy(tier) {
+    if (this.state!==STATES.IDLE) return;
+    const costs={1:100,2:250,3:500,4:150};
+    const cost=this.bet*costs[tier];
+    if (this.balance<cost) { alert(`Need ${fmt(cost)} for this buy!`); return; }
+    if (!confirm(`Spend ${fmt(cost)} for ${['','Overload T1','Overload T2','Singularity','Multi-Chaser'][tier]}?`)) return;
+    this.balance=r2(this.balance-cost); this.updateBalanceUI();
+    if (tier===1) {
+      this.setState(STATES.BONUS_TRANSITION);
+      await this.triggerPrism(3);
+    } else if (tier===2) {
+      this.prismStartMult=10; this.setState(STATES.BONUS_TRANSITION);
+      await this.triggerPrism(3);
+    } else if (tier===3) {
+      this.prismStartMult=100; this.setState(STATES.BONUS_TRANSITION);
+      await this.triggerPrism(3);
+      this.prismSpins=5;
+    } else if (tier===4) {
+      this.multiChaser=true; this.updateWeights();
+      el('btn-buy4').classList.add('active');
+    }
+  }
+
+  render() {
+    const grid=el('grid');
+    const {cols,rows}=this.getGridSize();
+    grid.className=rows===8?'size-8':(rows===4?'size-4':'');
+    const sz=rows===8?60:rows===4?80:72;
+    grid.style.gridTemplateColumns=`repeat(${cols},${sz}px)`;
+    grid.style.gridTemplateRows=`repeat(${rows},${sz}px)`;
+    grid.innerHTML='';
+    for (let r=0;r<rows;r++) {
+      for (let c=0;c<cols;c++) {
+        const sym=this.grid[r][c];
+        const cell=document.createElement('div');
+        cell.className='cell'; cell.dataset.r=r; cell.dataset.c=c;
+        if (sym) {
+          const s=SYMBOLS[sym];
+          const inner=document.createElement('div');
+          inner.className='sym';
+          inner.textContent=s.label;
+          inner.style.color=s.color;
+          inner.style.textShadow=`0 0 12px ${s.color}88`;
+          if (sym==='capacitor') inner.style.fontSize='22px';
+          cell.appendChild(inner);
+          if (sym==='wild'&&this.prismWilds.find(pw=>pw.r===r&&pw.c===c))
+            cell.classList.add('prism-wild');
+        }
+        grid.appendChild(cell);
+      }
+    }
+    this._updateLaserSVGSize();
+  }
+
+  highlightClusters(clusters) {
+    if (this.turbo) return;
+    for (const cl of clusters)
+      for (const [r,c] of cl.cells) { const cell=this.getCellEl(r,c); if(cell) cell.classList.add('highlighted'); }
+  }
+
+  markExploding(cellKeys) {
+    if (this.turbo) return;
+    for (const key of cellKeys) {
+      const [r,c]=key.split(',').map(Number);
+      const cell=this.getCellEl(r,c);
+      if (cell) { cell.classList.remove('highlighted','white-border'); cell.classList.add('winning'); }
+    }
+  }
+
+  animatePulseIn() {
+    el('grid').querySelectorAll('.cell').forEach(c=>{c.classList.remove('pulse-in');void c.offsetWidth;c.classList.add('pulse-in');});
+  }
+
+  getCellEl(r,c) {
+    const {cols}=this.getGridSize();
+    return el('grid').children[r*cols+c];
+  }
+
+  showFloatText(text, r, c, color) {
+    if (this.turbo) return;
+    const sz=this.cellSize;
+    const gw=el('grid-wrapper');
+    const div=document.createElement('div');
+    div.className='float-win';
+    div.textContent=text; div.style.color=color;
+    div.style.left=(c*sz+c*3+sz/2-30)+'px';
+    div.style.top=(r*sz+r*3+sz/2)+'px';
+    gw.appendChild(div);
+    setTimeout(()=>div.remove(),1200);
+  }
+
+  showBigWin(amount) {
+    const mult=amount/this.bet;
+    let txt='',color='';
+    if (mult>=WIN_THRESHOLDS.SENSATIONAL) {
+      txt='SENSATIONAL!\n'+mult.toFixed(0)+'×';
+      color='#f43f5e';
+      if (!this.turbo) {
+        document.body.classList.add('mega-win');
+        setTimeout(()=>{ document.body.classList.add('show-win'); },400);
+        setTimeout(()=>{ document.body.classList.remove('mega-win','show-win'); },3500);
+      }
+    }
+    else if (mult>=WIN_THRESHOLDS.MEGA) { txt='MEGA WIN!\n'+mult.toFixed(1)+'×'; color='#f59e0b'; }
+    else if (mult>=WIN_THRESHOLDS.BIG) { txt='BIG WIN!\n'+mult.toFixed(1)+'×'; color='#22d3ee'; }
+    else return;
+    el('bigwin-text').textContent=txt; el('bigwin-text').style.color=color;
+    el('bigwin-text').style.textShadow=`0 0 40px ${color}`;
+    el('bigwin-overlay').classList.remove('show');
+    void el('bigwin-overlay').offsetWidth;
+    el('bigwin-overlay').classList.add('show');
+    if (!this.turbo) { el('grid-wrapper').classList.add('shake'); setTimeout(()=>el('grid-wrapper').classList.remove('shake'),400); }
+    this.audio.play('win', mult);
+  }
+
+  updateBalanceUI() { el('balance-val').textContent=fmt(this.balance); }
+  updateBetUI() { el('bet-display').textContent='$'+this.bet.toFixed(2); }
+  setState(s) {
+    this.state=s;
+    el('state-indicator').textContent=s.toUpperCase();
+    const locked=s!==STATES.IDLE&&s!==STATES.AUTOPLAY;
+    el('btn-spin').disabled=locked&&s!==STATES.AUTOPLAY;
+    el('btn-spin').textContent=s===STATES.AUTOPLAY?'STOP':'SPIN';
+  }
+  updateVoltageUI() {
+    const vm=this.voltageMultiplier;
+    el('voltage-display').textContent='×'+vm;
+    el('multiplier-val').textContent=vm;
+    el('cascade-count').textContent='Cascade: '+this.cascadeCount;
+    el('voltage-fill').style.width=Math.min(vm/20*100,100)+'%';
+    el('multiplier-val').classList.remove('pulse');
+    void el('multiplier-val').offsetWidth;
+    el('multiplier-val').classList.add('pulse');
+  }
+
+  addFeedItem(user, mult, amount) {
+    const feed=el('win-feed');
+    const item=document.createElement('div');
+    item.className='feed-item';
+    const mClass=mult>=100?'mega':mult>=20?'big':'';
+    item.innerHTML=`<span class="feed-user">${user}</span> <span class="feed-mult ${mClass}">${mult.toFixed(1)}×</span><br><span style="color:#374151">${fmt(amount)}</span>`;
+    feed.insertBefore(item,feed.firstChild);
+    if (feed.children.length>25) feed.removeChild(feed.lastChild);
+    this.recentHighs.push({user,mult});
+    if (this.recentHighs.length>10) this.recentHighs.shift();
+    this.updateTicker();
+  }
+
+  updateTicker() {
+    const tc=el('ticker-content');
+    const top=[...this.recentHighs].sort((a,b)=>b.mult-a.mult).slice(0,5);
+    tc.innerHTML=top.map(h=>`<span class="tick-item">${h.user}: <span>${h.mult.toFixed(1)}×</span></span>`).join('');
+  }
+
+  startFakeWins() {
+    const addFake=()=>{
+      const user=FAKE_USERS[Math.floor(Math.random()*FAKE_USERS.length)];
+      const mult=Math.random()<0.7?(Math.random()*15+1):(Math.random()*200+20);
+      const amt=mult*(Math.random()*5+0.5);
+      this.addFeedItem(user,mult,amt);
+      setTimeout(addFake,5000+Math.random()*15000);
+    };
+    setTimeout(addFake,3000);
+  }
+
+  bindEvents() {
+    el('btn-spin').addEventListener('click',()=>{ if(this.autoRunning){this.stopAuto();return;} this.spin(); });
+    document.addEventListener('keydown',e=>{
+      if(e.code==='Space'&&e.target===document.body){e.preventDefault();el('btn-spin').click();}
+    });
+    el('btn-turbo').addEventListener('click',()=>{ this.turbo=!this.turbo; el('btn-turbo').classList.toggle('active',this.turbo); });
+    el('btn-autoplay').addEventListener('click',()=>{
+      if(this.autoRunning){this.stopAuto();return;}
+      const panel=el('autoplay-panel');
+      panel.style.display=panel.style.display==='block'?'none':'block';
+    });
+    el('btn-start-auto').addEventListener('click',()=>this.startAutoplay());
+    el('btn-cancel-auto').addEventListener('click',()=>{el('autoplay-panel').style.display='none';});
+    el('bet-down').addEventListener('click',()=>{ if(this.betIdx>0){this.betIdx--;this.bet=BET_OPTIONS[this.betIdx];this.updateBetUI();} });
+    el('bet-up').addEventListener('click',()=>{ if(this.betIdx<BET_OPTIONS.length-1){this.betIdx++;this.bet=BET_OPTIONS[this.betIdx];this.updateBetUI();} });
+    el('vol-slider').addEventListener('input',e=>{ this.volatility=parseInt(e.target.value); el('vol-label').textContent=this.volatility; this.updateWeights(); });
+    el('btn-ante').addEventListener('click',()=>{ this.anteBet=!this.anteBet; el('btn-ante').classList.toggle('active',this.anteBet); this.updateWeights(); });
+    el('btn-buy1').addEventListener('click',()=>this.bonusBuy(1));
+    el('btn-buy2').addEventListener('click',()=>this.bonusBuy(2));
+    el('btn-buy3').addEventListener('click',()=>this.bonusBuy(3));
+    el('btn-buy4').addEventListener('click',()=>{
+      if(this.multiChaser){this.multiChaser=false;el('btn-buy4').classList.remove('active');this.updateWeights();}
+      else this.bonusBuy(4);
+    });
+    el('btn-sound').addEventListener('click',()=>{
+      this.audio.init(); this.soundOn=!this.soundOn; this.audio.enabled=this.soundOn;
+      el('btn-sound').textContent=this.soundOn?'🔊 SOUND':'🔇 SOUND';
+    });
+    el('btn-verify').addEventListener('click',()=>el('verify-modal').classList.add('show'));
+    el('btn-close-verify').addEventListener('click',()=>el('verify-modal').classList.remove('show'));
+    el('btn-client-seed').addEventListener('click',()=>{
+      const seed=prompt('Enter custom client seed:',this.rng.clientSeed);
+      if(seed){this.rng.clientSeed=seed;this.rng.nonce=0;this.rng.updateUI();}
+    });
+    el('btn-verify-check').addEventListener('click',async()=>{
+      const server=el('vfy-server').textContent;
+      const client=el('vfy-client').value;
+      const nonce=parseInt(el('vfy-nonce').value,10)-1;
+      if(server==='spin first'||!client||isNaN(nonce)){el('vfy-result').textContent='Spin at least once first.';return;}
+      el('vfy-result').textContent='Verifying…';
+      try {
+        const enc=new TextEncoder();
+        const k=await crypto.subtle.importKey('raw',enc.encode(server),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+        const sig=await crypto.subtle.sign('HMAC',k,enc.encode(client+':'+nonce));
+        const hex=Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('');
+        el('vfy-result').textContent='HMAC: '+hex;
+      } catch(e){el('vfy-result').textContent='Error: '+e.message;}
+    });
+    el('btn-record').addEventListener('click',()=>{ _recorder?stopRecording():startRecording(); });
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+const game = new NeonOverload();
+</script>
+</body>
+</html>
