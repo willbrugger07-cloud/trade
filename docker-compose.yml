@@ -39,6 +39,25 @@ services:
       interval: 10s
       retries: 3
 
+  wallet-sync:
+    build:
+      context: .
+      dockerfile: Dockerfile.services
+    command: node services/wallet-sync-service.js
+    environment:
+      - SYNC_PORT=3003
+      - LEDGER_PORT=3002
+      - SETTLEMENT_INTERVAL_MS=60000
+      # Set these to real wallet addresses in production:
+      - HOT_WALLET_ADDRESS=0xHOT_WALLET_ADDRESS
+      - WARM_WALLET_ADDRESS=0xWARM_WALLET_ADDRESS
+      - COLD_WALLET_ADDRESS=0xCOLD_WALLET_ADDRESS
+    ports:
+      - "3003:3003"
+    depends_on:
+      - ledger
+    restart: unless-stopped
+
   gateway:
     build:
       context: .
@@ -48,11 +67,13 @@ services:
       - PORT=3000
       - MATH_PORT=3001
       - LEDGER_PORT=3002
+      - SYNC_PORT=3003
     ports:
       - "3000:3000"
     depends_on:
       - math
       - ledger
+      - wallet-sync
     restart: unless-stopped
 
 # Production additions (uncomment when ready):
