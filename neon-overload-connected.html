@@ -62,9 +62,22 @@ body{background:var(--bg);color:#fff;font-family:'Courier New',monospace;overflo
 @keyframes preCharge{0%{transform:translateY(0)}60%{transform:translateY(-14px)}100%{transform:translateY(0)}}
 .pre-charging{animation:preCharge 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards}
 /* LASER NEXUS SVG */
+/* ── 4-LAYER RENDER STACK ────────────────────────────────────────────────────
+   Layer 1 (z:0):   Viewport background — body/--bg canvas
+   Layer 2 (z:1-5): Symbol grid — reel tracks, ribbons, cells, vignette overlay
+   Layer 3 (z:10-25): FX layer — laser SVG, particles, mutation overlays
+   Layer 4 (z:50+): HUD — bigwin overlay, gambler/risk/QGS panels, error toast
+   ─────────────────────────────────────────────────────────────────────────── */
 #laser-svg{position:absolute;inset:0;pointer-events:none;z-index:10;overflow:visible}
 .laser-beam{stroke-linecap:round;filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px var(--purple));animation:laserPulse 0.6s ease infinite alternate}
 @keyframes laserPulse{from{stroke-opacity:0.75}to{stroke-opacity:1}}
+/* GRAVITY WELL */
+@keyframes gravityPulse{0%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.5);filter:brightness(4) drop-shadow(0 0 24px #7c3aed)}100%{transform:scale(1);filter:brightness(1)}}
+@keyframes megaAppear{0%{transform:scale(0.2);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.gravity-active{animation:gravityPulse 0.5s ease-in-out!important}
+/* SPLICE-PRISM */
+@keyframes spliceFracture{0%{transform:scale(1);opacity:1}40%{transform:scale(1.3);filter:brightness(3)}100%{transform:scale(0.8);opacity:0.6}}
+@keyframes spliceMini{0%{transform:scale(0) rotate(-45deg);opacity:0}60%{transform:scale(1.15) rotate(5deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
 /* WIN OVERLAY */
 #bigwin-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;pointer-events:none;opacity:0}
 #bigwin-overlay.show{animation:bigwinAnim 1.8s ease forwards}
@@ -347,6 +360,21 @@ function playPrism(){
   });
 }
 
+function playGravityWell() {
+  // Deep implosion rumble: bass sine sweeping down then snap
+  if (!S.soundOn || !audioCtx) return;
+  const t = audioCtx.currentTime;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = 'sine'; o.connect(g); g.connect(audioCtx.destination);
+  o.frequency.setValueAtTime(120, t);
+  o.frequency.exponentialRampToValueAtTime(28, t + 0.4);
+  g.gain.setValueAtTime(0.4, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+  o.start(t); o.stop(t + 0.7);
+  // High harmonic snap
+  setTimeout(() => playTone(1400, 0.15, 0.2, 'square'), 420);
+}
+
 // ─── REEL HUM (dynamic pitch tied to velocity) ────────────────────────────────
 let _humOsc = null, _humGain = null;
 function startReelHum() {
@@ -483,6 +511,108 @@ const el   = id => document.getElementById(id);
 const r2   = n  => Math.round(n*100)/100;
 const fmt  = n  => '$'+Math.abs(n).toFixed(2);
 const sleep= ms => new Promise(r=>setTimeout(r,ms));
+
+// ─── GRAVITY WELL MUTATION ────────────────────────────────────────────────────
+// Visual mechanic: when Black Hole (sym 8) is in the final grid after a no-win
+// cascade sequence, animate an implosion and show a 2×2 mega-symbol overlay.
+// The math is server-computed; this is a visual narrative layer only.
+async function triggerGravityWell(grid, rows, cols, cellSize) {
+  const gap = 3;
+  const bhNodes = [];
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      if (grid[r * cols + c] === 8) bhNodes.push({ r, c });
+  if (!bhNodes.length) return;
+
+  for (const { r, c } of bhNodes) {
+    // Collect low-pay (sym 1-3) neighbours in 3×3 radius
+    const targets = [];
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        if (!dr && !dc) continue;
+        const nr = r + dr, nc = c + dc;
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+        if (grid[nr * cols + nc] >= 1 && grid[nr * cols + nc] <= 3)
+          targets.push({ nr, nc });
+      }
+    }
+    if (targets.length < 2) continue; // not enough mass to activate
+
+    playGravityWell();
+    vibrate([60, 30, 120]);
+
+    // Pulse the black hole cell
+    const bhCell = GRID.reels[c]?.getCellEl(r);
+    if (bhCell) bhCell.classList.add('gravity-active');
+    setTimeout(() => bhCell?.classList.remove('gravity-active'), 550);
+
+    // Animate neighbours flying into the black hole
+    for (const { nr, nc } of targets) {
+      const cell = GRID.reels[nc]?.getCellEl(nr);
+      if (!cell) continue;
+      const dx = (c - nc) * (cellSize + gap);
+      const dy = (r - nr) * cellSize;
+      cell.animate([
+        { transform: 'translate(0,0) scale(1)', opacity: 1 },
+        { transform: `translate(${dx}px,${dy}px) scale(0.05)`, opacity: 0 },
+      ], { duration: 420, easing: 'cubic-bezier(0.6,0,1,1)', fill: 'forwards' });
+    }
+
+    await sleep(460);
+
+    // 2×2 mega-symbol visual overlay at the black hole position
+    const stage = el('reel-stage');
+    const sz    = cellSize * 2 + gap;
+    const px    = c * (cellSize + gap) - (cellSize + gap) / 2;
+    const py    = r * cellSize - cellSize / 2;
+    const mega  = document.createElement('div');
+    mega.style.cssText = `position:absolute;left:${px}px;top:${py}px;width:${sz}px;height:${sz}px;`
+      + `display:flex;align-items:center;justify-content:center;font-size:${cellSize * 0.8}px;`
+      + `color:#7c3aed;text-shadow:0 0 30px #7c3aed,0 0 60px #c026d3;`
+      + `background:rgba(124,58,237,0.18);border:2px solid #7c3aed;border-radius:6px;`
+      + `z-index:22;animation:megaAppear 0.45s cubic-bezier(0.22,1,0.36,1) forwards;`;
+    mega.textContent = '◉'; // visual only — represents collapsed high-pay mega-symbol
+    stage.appendChild(mega);
+    spawnParticles(c * (cellSize + gap) + cellSize / 2, r * cellSize + cellSize / 2, 18, '#7c3aed');
+    el('reel-stage').classList.add('shake');
+    setTimeout(() => { el('reel-stage').classList.remove('shake'); mega.remove(); }, 1800);
+    await sleep(300);
+  }
+}
+
+// ─── SPLICE-PRISM FRACTURE ────────────────────────────────────────────────────
+// Visual mechanic: when a laser beam intersects a Hexagon (sym 5), it fractures
+// into 4 miniature copies of itself in a 2×2 sub-grid for 900ms.
+function showSplicePrismFracture(row, col, cellSize) {
+  const cell = GRID.reels[col]?.getCellEl(row);
+  if (!cell) return;
+  const gap = 3;
+
+  // Fracture animation on original cell
+  cell.style.animation = 'spliceFracture 0.3s ease forwards';
+  setTimeout(() => { cell.style.animation = ''; }, 350);
+
+  // 4 mini-symbol fragments in 2×2 sub-grid
+  const stage = el('reel-stage');
+  const baseX = col * (cellSize + gap);
+  const baseY = row * cellSize;
+  const sz    = Math.floor(cellSize / 2) - 1;
+
+  [[0,0],[1,0],[0,1],[1,1]].forEach(([dc, dr], i) => {
+    const mini = document.createElement('div');
+    mini.style.cssText = `position:absolute;left:${baseX + dc*sz + 1}px;top:${baseY + dr*sz + 1}px;`
+      + `width:${sz}px;height:${sz}px;display:flex;align-items:center;justify-content:center;`
+      + `font-size:${Math.floor(sz * 0.65)}px;color:${COLORS[5]};`
+      + `text-shadow:0 0 8px ${COLORS[5]};z-index:22;`
+      + `animation:spliceMini 0.35s cubic-bezier(0.22,1,0.36,1) forwards;`
+      + `animation-delay:${i * 60}ms;opacity:0;`;
+    mini.textContent = SYMS[5];
+    stage.appendChild(mini);
+    setTimeout(() => mini.remove(), 950 + i * 60);
+  });
+
+  spawnParticles(baseX + cellSize / 2, baseY + cellSize / 2, 8, COLORS[5]);
+}
 
 // ─── PRE-CHARGE SPRING ───────────────────────────────────────────────────────
 // Grid pulls up 14px over 80ms before spin fires (spring-load feel)
@@ -1092,19 +1222,23 @@ async function playback(data) {
     el('reel-stage').classList.add('cascade-active');
     GRID.highlightWinning(step.winning_clusters);
 
-    // Laser intersection check: clusters crossing a laser beam get extra delay + sparks
+    // Laser intersection check: clusters crossing a laser beam get extra delay + sparks.
+    // Hexagon (sym 5) on intersection → Splice-Prism fracture visual.
     let laserHit = false;
     for (const cl of step.winning_clusters) {
       if (clusterIntersectsLaser(cl, GRID.cellSize)) {
         laserHit = true;
-        // Flash the laser beams white on hit
         el('laser-svg').querySelectorAll('.laser-beam').forEach(l => {
           l.setAttribute('stroke', '#f43f5e');
-          setTimeout(() => l.setAttribute('stroke', '#fff'), 180);
+          setTimeout(() => l.setAttribute('stroke', '#fff'), 200);
         });
-        // Extra intense particle burst along intersection
         spawnWinParticles([cl]);
         vibrate([20, 10, 60]);
+
+        // Splice-Prism: if any intersected cell is a Hexagon, fracture it visually
+        if (cl.symbol_id === 5) {
+          for (const [row, col] of cl.coords) showSplicePrismFracture(row, col, GRID.cellSize);
+        }
       }
     }
 
@@ -1133,6 +1267,12 @@ async function playback(data) {
   }
 
   clearLasers();
+
+  // Gravity Well: Black Hole activation after a no-win cascade sequence
+  // Triggers purely as visual narrative — payouts are server-computed
+  if (total_win === 0 && !S.turbo) {
+    await triggerGravityWell(final_grid, rows, cols, GRID.cellSize);
+  }
 
   // 4. Final
   el('win-val').textContent = fmt(total_win);
