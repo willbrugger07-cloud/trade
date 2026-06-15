@@ -16,6 +16,48 @@ const {
   HOUSE_EDGE, SYM,
 } = require('../engine/math');
 
+const { readBookEntry, pickBookEntry, getBookIndex } = require('./book-generator');
+
+// ─── BOOK LOOKUP ──────────────────────────────────────────────────────────────
+// If pre-calculated books exist for this volatility, serve from book (sub-ms).
+// Falls back to live calculateManifest() if no book available.
+async function getManifest(params) {
+  const { volatility, nonce, serverSeed, clientSeed, bet, weights, rows, cols, startVoltMult, multiChaser, ticketId } = params;
+
+  const bookNonce = pickBookEntry(volatility, nonce);
+  if (bookNonce !== null) {
+    const bookEntry = await readBookEntry(volatility, bookNonce);
+    if (bookEntry) {
+      // Scale normalized (1x bet) manifest to actual bet
+      const scale = bet;
+      const scaled = scaleManifest(bookEntry, scale, ticketId);
+      scaled._source = 'BOOK';
+      return scaled;
+    }
+  }
+
+  // Live calculation fallback
+  const manifest = generateManifest({ serverSeed, clientSeed, nonce, bet, weights, rows, cols, startVoltMult, multiChaser, ticketId });
+  manifest._source = 'LIVE';
+  return manifest;
+}
+
+function scaleManifest(manifest, betScale, ticketId) {
+  const m = JSON.parse(JSON.stringify(manifest)); // deep clone
+  m.ticket_id  = ticketId || m.ticket_id;
+  m.wager      = betScale;
+  m.total_win  = r2(m.total_win  * betScale);
+  m.net_profit = r2(m.net_profit * betScale);
+  for (const cascade of m.cascades) {
+    cascade.payout           = r2(cascade.payout           * betScale);
+    cascade.total_win_so_far = r2(cascade.total_win_so_far * betScale);
+    for (const cl of cascade.winning_clusters) cl.payout = r2(cl.payout * betScale);
+  }
+  return m;
+}
+
+function r2(n) { return Math.round(n * 100) / 100; }
+
 const PORT         = process.env.MATH_PORT   || 3001;
 const LEDGER_PORT  = process.env.LEDGER_PORT || 3002;
 
@@ -102,12 +144,12 @@ async function handleSpin(params) {
     // Snapshot seeds before mutation
     const { serverSeed, clientSeed, nonce } = s;
 
-    manifest = generateManifest({
-      serverSeed, clientSeed, nonce,
+    manifest = await getManifest({
+      volatility, nonce, serverSeed, clientSeed,
       bet: effectiveBet, weights, rows, cols,
       startVoltMult: prismStartMult,
       multiChaser,
-      ticketId: roundId,   // round ID doubles as ticket ID for auditability
+      ticketId: roundId,
     });
 
     // Rotate server seed after reveal (provably fair commitment cycle)
