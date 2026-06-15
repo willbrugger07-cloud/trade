@@ -62,6 +62,30 @@ body{background:var(--bg);color:#fff;font-family:'Courier New',monospace;overflo
 @keyframes preCharge{0%{transform:translateY(0)}60%{transform:translateY(-14px)}100%{transform:translateY(0)}}
 .pre-charging{animation:preCharge 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards}
 /* LASER NEXUS SVG */
+/* CHROMATIC ABERRATION (CSS drop-shadow trick — red/cyan channel split) */
+@keyframes chromaAberr{
+  0%   {filter:none}
+  18%  {filter:drop-shadow(-10px 0 0 #f43f5eaa) drop-shadow(10px 0 0 #22d3eeaa)}
+  35%  {filter:none}
+  50%  {filter:drop-shadow(-5px 0 0 #f43f5e66) drop-shadow(5px 0 0 #22d3ee55)}
+  65%  {filter:none}
+  80%  {filter:drop-shadow(-2px 0 0 #f43f5e33) drop-shadow(2px 0 0 #22d3ee33)}
+  100% {filter:none}
+}
+.glitch-overdrive{animation:chromaAberr 0.55s ease forwards!important}
+/* GRID BREATHING (borders pulse in sync with win counter on big hits) */
+#reel-stage.grid-breathing .reel-track{border-color:var(--purple)!important;animation:gridBreathe 0.38s ease infinite alternate;transition:border-color 0.2s}
+@keyframes gridBreathe{from{box-shadow:0 0 2px var(--purple)44}to{box-shadow:0 0 12px var(--purple)99,inset 0 0 6px var(--purple)22}}
+/* INTERFACE BLEED (sidebar + bg reacts on 50x+) */
+body.interface-bleed #sidebar-left{background:linear-gradient(180deg,#1a1000,var(--bg2));transition:background 0.6s}
+body.interface-bleed .feed-item{border-color:var(--gold);animation:feedBleed 0.4s ease infinite alternate}
+body.interface-bleed .feed-user{color:var(--gold)!important}
+@keyframes feedBleed{from{text-shadow:none}to{text-shadow:0 0 10px var(--gold)}}
+body.interface-bleed #center::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(245,158,11,0.06) 0%,transparent 70%);animation:plasmaRipple 3.5s ease infinite;pointer-events:none;z-index:0}
+@keyframes plasmaRipple{0%,100%{opacity:0.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+/* HYPER-DRIVE (Turbo+Auto digital matrix state) */
+#reel-stage.hyper-drive::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,rgba(34,211,238,0.03) 3px,rgba(34,211,238,0.03) 4px);pointer-events:none;z-index:30}
+.hyper-cell-fade{transition:opacity 0.07s!important}
 /* ── 4-LAYER RENDER STACK ────────────────────────────────────────────────────
    Layer 1 (z:0):   Viewport background — body/--bg canvas
    Layer 2 (z:1-5): Symbol grid — reel tracks, ribbons, cells, vignette overlay
@@ -240,7 +264,11 @@ body.mega-win.show-win #reel-stage{filter:saturate(1);transition:filter 1.2s}
         <div class="vfy-row"><label>NEXT SEED HASH</label><code id="vfy-hash">—</code></div>
         <div class="vfy-row"><label>CLIENT SEED</label><code id="vfy-client">—</code></div>
         <div class="vfy-row"><label>NONCE</label><code id="vfy-nonce">0</code></div>
-        <div style="display:flex;gap:8px;margin-top:12px">
+        <div style="margin-top:12px">
+          <button class="btn btn-purple" id="btn-verify-check" style="font-size:10px;width:100%;margin-bottom:6px">Verify Last Spin</button>
+          <code id="vfy-result" style="font-size:9px;color:var(--cyan);word-break:break-all;display:block;min-height:14px"></code>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
           <button class="btn btn-purple" id="btn-rotate-seed" style="font-size:10px">Rotate Seed</button>
           <button class="btn btn-outline" id="btn-close-verify" style="font-size:10px">Close</button>
         </div>
@@ -307,6 +335,7 @@ body.mega-win.show-win #reel-stage{filter:saturate(1);transition:filter 1.2s}
   <button class="buy-btn buy-t3" id="btn-buy3">SINGULARITY — 500×</button>
   <button class="buy-btn buy-t4" id="btn-buy4">MULTI-CHASER — 150×</button>
   <button class="buy-btn" id="btn-chaos" style="color:#f43f5e;border-color:#f43f5e;background:transparent">💀 CHAOS — 600×</button>
+  <button class="buy-btn" id="btn-record" style="color:var(--cyan);border-color:var(--cyan);background:transparent" title="Record clip (screen capture)">⏺ Record</button>
 </div>
 
 <script>
@@ -511,6 +540,192 @@ const el   = id => document.getElementById(id);
 const r2   = n  => Math.round(n*100)/100;
 const fmt  = n  => '$'+Math.abs(n).toFixed(2);
 const sleep= ms => new Promise(r=>setTimeout(r,ms));
+
+// ─── IMPACT KEY VISUAL EVENT SYSTEM ──────────────────────────────────────────
+// Derives semantic event tags from a winning cluster + bet, then fires effects.
+const IMPACT_KEYS = { MEGA_HIT:'MEGA_HIT', VOLTAGE_SPIKE:'VOLTAGE_SPIKE',
+  LASER_CROSS:'LASER_CROSS', IONIC_SHATTER:'IONIC_SHATTER', BLEED_ONSET:'BLEED_ONSET' };
+
+function deriveImpactKeys(cluster, voltMult, bet) {
+  const keys = [];
+  const payout = (cluster.payout || 0);
+  const localMult = payout / Math.max(bet, 0.01);
+  if (localMult >= 50)  keys.push(IMPACT_KEYS.MEGA_HIT);
+  if (voltMult >= 3)    keys.push(IMPACT_KEYS.VOLTAGE_SPIKE);
+  if (clusterIntersectsLaser(cluster, GRID.cellSize)) keys.push(IMPACT_KEYS.LASER_CROSS);
+  if (cluster.symbol_id === 5) keys.push(IMPACT_KEYS.IONIC_SHATTER);
+  return keys;
+}
+
+function dispatchImpactKeys(keys, cluster, voltMult) {
+  for (const k of keys) {
+    switch (k) {
+      case IMPACT_KEYS.IONIC_SHATTER:
+        for (const [row, col] of cluster.coords) spawnIonicLightning([[row,col]], GRID.cellSize);
+        break;
+      case IMPACT_KEYS.MEGA_HIT:
+        triggerGlitchOverdrive();
+        break;
+      case IMPACT_KEYS.VOLTAGE_SPIKE:
+        el('reel-stage').classList.add('grid-breathing');
+        setTimeout(() => el('reel-stage').classList.remove('grid-breathing'), 1200);
+        break;
+      case IMPACT_KEYS.BLEED_ONSET:
+        triggerInterfaceBleed(voltMult);
+        break;
+    }
+  }
+}
+
+// Jagged SVG polyline lightning across a set of cell coords
+function spawnIonicLightning(coords, cellSize) {
+  const svg = el('laser-svg');
+  if (!svg) return;
+  const gap = 3;
+  coords.forEach(([row, col]) => {
+    const cx = col * (cellSize + gap) + cellSize / 2;
+    const cy = row * cellSize + cellSize / 2;
+    const pts = [];
+    const steps = 8;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps;
+      const jx = i === 0 || i === steps ? 0 : (Math.random() - 0.5) * cellSize * 0.7;
+      const jy = i === 0 || i === steps ? 0 : (Math.random() - 0.5) * cellSize * 0.7;
+      pts.push(`${cx - cellSize/2 + t * cellSize + jx},${cy + jy}`);
+    }
+    const pl = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    pl.setAttribute('points', pts.join(' '));
+    pl.setAttribute('stroke', '#e2e8f0');
+    pl.setAttribute('stroke-width', '1.5');
+    pl.setAttribute('fill', 'none');
+    pl.setAttribute('opacity', '0.9');
+    pl.style.filter = 'drop-shadow(0 0 4px #e2e8f0)';
+    svg.appendChild(pl);
+    setTimeout(() => pl.remove(), 350);
+  });
+}
+
+let _glitchTimer = null;
+function triggerGlitchOverdrive() {
+  const stage = el('reel-stage');
+  stage.classList.remove('glitch-overdrive');
+  void stage.offsetWidth; // reflow to restart animation
+  stage.classList.add('glitch-overdrive');
+  clearTimeout(_glitchTimer);
+  _glitchTimer = setTimeout(() => stage.classList.remove('glitch-overdrive'), 600);
+}
+
+let _bleedTimer = null;
+function triggerInterfaceBleed(mult) {
+  if (mult < 50) return;
+  document.body.classList.add('interface-bleed');
+  clearTimeout(_bleedTimer);
+  _bleedTimer = setTimeout(() => document.body.classList.remove('interface-bleed'), 4000);
+}
+
+// ─── HYPER-DRIVE ──────────────────────────────────────────────────────────────
+// Ultra-fast turbo playback for Turbo+Auto: skips spin animation, instant cascade.
+async function hyperDrivePlayback(data) {
+  const manifest = data.manifest;
+  const { rows, cols, cascades, total_win, final_grid } = manifest;
+  const bet = S.anteBet ? S.bet*1.25 : S.bet;
+  const mult = total_win / Math.max(bet, 0.01);
+
+  if (GRID.rows !== rows || GRID.cols !== cols) GRID.build(rows, cols);
+  el('reel-stage').classList.add('hyper-drive');
+
+  // Instant grid update — no spin, no land animation
+  await GRID.hyperDriveUpdate(final_grid);
+
+  if (cascades.length) {
+    for (const step of cascades) {
+      GRID.highlightWinning(step.winning_clusters);
+      el('win-val').textContent = fmt(step.total_win_so_far);
+      await sleep(80);
+      GRID.clearHighlights();
+      if (step.next_grid) await GRID.hyperDriveUpdate(step.next_grid);
+    }
+  }
+
+  el('win-val').textContent = fmt(total_win);
+  if (total_win > 0) scrollNumber('balance-val', S.balance - bet, data.balance_after, 120);
+  addXP(Math.ceil(cascades.length * 5 + (total_win > 0 ? 10 : 2)));
+
+  // Remove hyper-drive scanline after batch settles
+  setTimeout(() => el('reel-stage').classList.remove('hyper-drive'), 300);
+}
+
+// ─── ADAPTIVE CASCADE AUDIO ───────────────────────────────────────────────────
+// Scales arpeggio tempo tighter each cascade; adds sub-bass pulse from cascade 3+
+function playAdaptiveCascadeArpeggio(idx) {
+  if (!S.soundOn || !audioCtx) return;
+  const oct  = Math.floor(idx / 8);
+  const base = MAJOR[idx % 8] * (1 + oct);
+  // Tighten note spacing each cascade (starts 90ms, halves toward 45ms)
+  const noteSpacing = Math.max(0.045, 0.09 * Math.pow(0.85, idx));
+  [1, 5/4, 3/2].forEach((ratio, i) => {
+    const t = audioCtx.currentTime + i * noteSpacing;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    o.frequency.value = base * ratio;
+    g.gain.setValueAtTime(0.07 + idx * 0.006, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.40);
+    o.start(t); o.stop(t + 0.45);
+  });
+  // Sub-bass rumble from cascade 3+
+  if (idx >= 2) {
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = 55 + idx * 8;
+    o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.12, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    o.start(t); o.stop(t + 0.4);
+  }
+}
+
+// ─── MANUAL CLIP RECORDER ────────────────────────────────────────────────────
+let _mediaRecorder = null, _recordChunks = [];
+
+async function startClipRecording() {
+  if (_mediaRecorder) return;
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    _mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+    _recordChunks = [];
+    _mediaRecorder.ondataavailable = e => { if (e.data.size > 0) _recordChunks.push(e.data); };
+    _mediaRecorder.onstop = () => {
+      const blob = new Blob(_recordChunks, { type: 'video/webm' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = `neon-overload-${Date.now()}.webm`; a.click();
+      URL.revokeObjectURL(url);
+      stream.getTracks().forEach(t => t.stop());
+      _mediaRecorder = null; _recordChunks = [];
+      el('btn-record').textContent = '⏺ Record';
+      el('btn-record').style.color = '';
+    };
+    _mediaRecorder.start();
+    el('btn-record').textContent = '⏹ Stop';
+    el('btn-record').style.color = 'var(--pink)';
+  } catch (err) {
+    console.warn('Clip recorder:', err.message);
+  }
+}
+
+function stopClipRecording() {
+  if (_mediaRecorder && _mediaRecorder.state !== 'inactive') _mediaRecorder.stop();
+}
+
+// ─── PROVABLY FAIR VERIFIER ──────────────────────────────────────────────────
+async function verifyOutcome(serverSeed, clientSeed, nonce) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(serverSeed),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(`${clientSeed}:${nonce}:0`));
+  const hex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2,'0')).join('');
+  return hex;
+}
 
 // ─── GRAVITY WELL MUTATION ────────────────────────────────────────────────────
 // Visual mechanic: when Black Hole (sym 8) is in the final grid after a no-win
@@ -1010,6 +1225,13 @@ class ReelColumn {
     this._applyDepth();
   }
 
+  // Instant symbol set for hyper-drive (no animation)
+  _setCellSymbol(row, sym) {
+    const cell = this.getCellEl(row);
+    if (!cell) return;
+    this._applySymStyle(cell, sym);
+  }
+
   markScatterImpact(row) {
     const cell = this.getCellEl(row);
     if (cell) {
@@ -1098,6 +1320,15 @@ class Grid {
     });
   }
 
+  // Instant symbol update for Hyper-Drive — no animation
+  async hyperDriveUpdate(grid) {
+    this.reels.forEach((reel, c) => {
+      const syms = this.colSymbols(grid, c);
+      reel.symbols = [...syms];
+      syms.forEach((s, row) => reel._setCellSymbol(row, s));
+    });
+  }
+
   highlightWinning(winningClusters) {
     this.reels.forEach(r => r.clearWinning());
     for (const cl of winningClusters) {
@@ -1119,14 +1350,21 @@ function scrollNumber(elemId, from, to, durationMs, prefix='$') {
   if (S.turbo || Math.abs(to-from) < 0.01) {
     el(elemId).textContent = prefix+Math.abs(to).toFixed(2); return;
   }
+  // Grid breathing during big balance scrolls (win > 20× bet)
+  const stage = el('reel-stage');
+  let breathTimer = null;
+  if (Math.abs(to - from) > S.bet * 20) {
+    stage.classList.add('grid-breathing');
+    breathTimer = setTimeout(() => stage.classList.remove('grid-breathing'), durationMs + 400);
+  }
   const start = performance.now();
   const tick  = (now) => {
     const t     = Math.min((now-start)/durationMs, 1);
-    const eased = t < 0.5 ? 2*t*t : 1-(-2*t+2)**2/2; // ease in-out quad
+    const eased = t < 0.5 ? 2*t*t : 1-(-2*t+2)**2/2;
     const val   = from + (to-from)*eased;
     el(elemId).textContent = prefix+Math.abs(val).toFixed(2);
     if (t < 1) requestAnimationFrame(tick);
-    else el(elemId).textContent = prefix+Math.abs(to).toFixed(2);
+    else { el(elemId).textContent = prefix+Math.abs(to).toFixed(2); clearTimeout(breathTimer); stage.classList.remove('grid-breathing'); }
   };
   requestAnimationFrame(tick);
 }
@@ -1245,8 +1483,16 @@ async function playback(data) {
     spawnWinParticles(step.winning_clusters);
     updateVoltage(step.voltage_multiplier, step.sequence);
     el('win-val').textContent = fmt(step.total_win_so_far);
-    playCascadeArpeggio(cIdx++);
+    playAdaptiveCascadeArpeggio(cIdx++);
     vibrate([15]);
+
+    // Impact key dispatch for each winning cluster
+    for (const cl of step.winning_clusters) {
+      const keys = deriveImpactKeys(cl, step.voltage_multiplier, bet);
+      if (keys.length) dispatchImpactKeys(keys, cl, step.voltage_multiplier);
+    }
+    // Interface bleed onset at total mult >= 50
+    if (mult >= 50) triggerInterfaceBleed(mult);
 
     if (step.winning_clusters.length) {
       const cl = step.winning_clusters[0];
@@ -1353,7 +1599,11 @@ async function spin(opts={}) {
     S.balance = r2(S.balance - effectiveBet);
     scrollNumber('balance-val', prevBal, S.balance, 200);
 
-    await playback(data);
+    if (S.turbo && S.autoRunning) {
+      await hyperDrivePlayback(data);
+    } else {
+      await playback(data);
+    }
 
     // Final balance from server
     S.balance = data.balance_after;
@@ -1643,10 +1893,22 @@ el('btn-ante').addEventListener('click',()=>{ S.anteBet=!S.anteBet; el('btn-ante
 el('btn-buy1').addEventListener('click',()=>bonusBuy(1)); el('btn-buy2').addEventListener('click',()=>bonusBuy(2));
 el('btn-buy3').addEventListener('click',()=>bonusBuy(3)); el('btn-buy4').addEventListener('click',()=>bonusBuy(4));
 el('btn-chaos').addEventListener('click',()=>bonusBuy(5));
+el('btn-record').addEventListener('click',()=>{ _mediaRecorder ? stopClipRecording() : startClipRecording(); });
 el('btn-sound').addEventListener('click',()=>{ ensureAudio(); S.soundOn=!S.soundOn; el('btn-sound').textContent=S.soundOn?'🔊 SOUND':'🔇 SOUND'; });
 el('btn-verify').addEventListener('click',()=>el('verify-modal').classList.add('show'));
 el('btn-close-verify').addEventListener('click',()=>el('verify-modal').classList.remove('show'));
 el('btn-rotate-seed').addEventListener('click',async()=>{ await fetch(API+'/client-seed',{method:'PATCH',headers:{'Content-Type':'application/json','x-auth-token':S.userId},body:'{}'}); await loadSession(); });
+el('btn-verify-check').addEventListener('click',async()=>{
+  const server = el('vfy-server').textContent;
+  const client = el('vfy-client').textContent;
+  const nonce  = parseInt(el('vfy-nonce').textContent, 10) - 1;
+  if (server === 'spin first' || !client || isNaN(nonce)) { el('vfy-result').textContent = 'Spin at least once first.'; return; }
+  el('vfy-result').textContent = 'Verifying…';
+  try {
+    const hash = await verifyOutcome(server, client, nonce);
+    el('vfy-result').textContent = 'HMAC: ' + hash;
+  } catch(e) { el('vfy-result').textContent = 'Error: ' + e.message; }
+});
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 (async()=>{
