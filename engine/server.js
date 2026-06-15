@@ -18,9 +18,15 @@ const crypto    = require('crypto');
 const path      = require('path');
 
 const {
-  generateFloats, buildWeights, gridSize, populateGrid,
-  simulateCascade, sha256, generateFloats: gf,
+  buildWeights, generateManifest, sha256, HOUSE_EDGE,
 } = require('./math');
+
+// Grid size by volatility
+function gridSize(volatility, inPrism) {
+  if (inPrism)         return { rows: 8, cols: 8 };
+  if (volatility >= 8) return { rows: 4, cols: 4 };
+  return { rows: 6, cols: 6 };
+}
 
 const app    = express();
 const server = http.createServer(app);
@@ -167,20 +173,15 @@ app.post('/spin', (req, res) => {
   const clientSeed = user.clientSeed;
   const nonce      = user.nonce;
 
-  // ── GENERATE INITIAL GRID ────────────────────────────────
+  // ── GENERATE MANIFEST (all math runs here — client gets a movie) ─
   const { rows, cols } = gridSize(volatility, inPrism);
-  const weights  = buildWeights(volatility, { anteBet, multiChaser, bonusHighPay: inPrism });
-  const cellCount = rows * cols;
-  const floats   = generateFloats(serverSeed, clientSeed, nonce, cellCount + 20);
-  const initialGrid = populateGrid(floats, weights, rows, cols);
-
-  // ── RUN FULL CASCADE (synchronous — all math server-side) ─
-  const result = simulateCascade({
-    initialGrid,
+  const weights = buildWeights(volatility, { anteBet, multiChaser, bonusHighPay: inPrism });
+  const result  = generateManifest({
     serverSeed, clientSeed, nonce,
     bet: effectiveBet, weights, rows, cols,
-    voltageMultiplier: prismStartMult,
+    startVoltMult: prismStartMult,
     multiChaser,
+    ticketId: crypto.randomUUID(),
   });
 
   // ── ADVANCE NONCE + ROTATE SERVER SEED ───────────────────
@@ -191,53 +192,30 @@ app.post('/spin', (req, res) => {
   user.serverSeedHash     = sha256(newServerSeed);
 
   // ── CREDIT WIN ────────────────────────────────────────────
-  user.balance = Math.round((user.balance + result.totalWin) * 100) / 100;
+  user.balance = Math.round((user.balance + result.total_win) * 100) / 100;
 
   // ── RELEASE LOCK ─────────────────────────────────────────
   user.status = 'IDLE';
   releaseLock(userId);
 
   // ── BROADCAST TO LIVE FEED ───────────────────────────────
-  if (result.totalWin > 0) {
+  if (result.total_win > 0) {
     broadcast({
       type:   'WIN',
-      userId: userId.slice(0, 8),   // truncated for privacy
-      mult:   Math.round((result.totalWin / effectiveBet) * 10) / 10,
-      amount: result.totalWin,
+      userId: userId.slice(0, 8),
+      mult:   Math.round((result.total_win / effectiveBet) * 10) / 10,
+      amount: result.total_win,
       ts:     Date.now(),
     });
   }
 
-  // ── RESPONSE (includes full cascade history for client playback) ─
+  // ── RESPONSE: Playback Manifest (client is a dumb movie player) ──
   res.json({
-    // Provably fair reveal
-    serverSeed:         prevServerSeed,    // now safe to reveal
-    nextServerSeedHash: user.serverSeedHash,
-    clientSeed,
-    nonce,
-
-    // Balance state
-    balanceAfter: user.balance,
-
-    // Grid dimensions
-    rows, cols,
-
-    // Initial grid (before any cascade)
-    initialGrid,
-
-    // Full ordered cascade steps — client plays these back as animation frames
-    steps:    result.steps,
-    totalWin: result.totalWin,
-
-    // Bonus triggers
-    scatterCount: result.scatterCount,
-    nearMiss:     result.nearMiss,        // true only when natural outcome produces exactly 2 scatters
-    cappedAt:     result.cappedAt,
-
-    // Final grid state
-    finalGrid:          result.finalGrid,
-    finalVoltMult:      result.voltageMultiplier,
-    cascadeCount:       result.cascadeCount,
+    ...result,                            // full manifest: ticket_id, initial_grid, cascades[], etc.
+    server_seed_reveal: prevServerSeed,   // safe to reveal now
+    next_server_seed_hash: user.serverSeedHash,
+    balance_after: user.balance,
+    house_edge: HOUSE_EDGE,
   });
 });
 
@@ -247,6 +225,7 @@ app.get('/verify/:serverSeed', (req, res) => {
   const { clientSeed, nonce } = req.query;
   if (!clientSeed || nonce === undefined) return res.status(400).json({ error: 'clientSeed and nonce required' });
   const { hmacSHA256 } = require('./math');
+
   const hex = hmacSHA256(serverSeed, `${clientSeed}:${nonce}`);
   res.json({ serverSeed, clientSeed, nonce: Number(nonce), hmacHex: hex, sha256Hash: sha256(serverSeed) });
 });
