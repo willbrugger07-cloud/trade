@@ -96,20 +96,10 @@ def market_is_open() -> bool:
 
 
 def run():
-    username = os.getenv("ROBINHOOD_USERNAME")
-    password = os.getenv("ROBINHOOD_PASSWORD")
-    mfa_code = os.getenv("ROBINHOOD_MFA_CODE") or None
-
-    if not username or not password:
-        raise ValueError("Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD in .env")
-
-    login_data = rh.login(username, password, mfa_code=mfa_code, store_session=False)
-    token = None
-    if isinstance(login_data, dict):
-        token = login_data.get("access_token")
-    if token:
-        rh_helper.update_session("Authorization", "Bearer " + token)
-        rh_helper.set_login_state(True)
+    token = os.getenv("RH_TOKEN") or "eyJhbGciOiJFUzI1NiIsImtpZCI6IjIiLCJ0eXAiOiJKV1QifQ.eyJkY3QiOjE3ODEwMDI3MTksImRldmljZV9oYXNoIjoiOGM1Y2UxYmY2NDRjYmE1OGE3NGUyYjg2ZDMyMGI1NDYiLCJleHAiOjE3ODIzMzk1ODcsImlzcyI6Imh0dHBzOi8vYXBpLnJvYmluaG9vZC5jb20iLCJsZXZlbDJfYWNjZXNzIjp0cnVlLCJtZXRhIjp7Im9pZCI6ImM4MlNIMFdaT3NhYk9YR1Ayc3hxY2ozNEZ4a3ZmbldSWkJLbEJqRlMiLCJvbiI6IlJvYmluaG9vZCJ9LCJucyI6IlJIIiwib3B0aW9ucyI6dHJ1ZSwicG9zIjoicCIsInNjb3BlIjoiaW50ZXJuYWwiLCJzZXJ2aWNlX3JlY29yZHMiOlt7ImhhbHRlZCI6ZmFsc2UsInNlcnZpY2UiOiJudW1tdXNfdXMiLCJzaGFyZF9pZCI6Miwic3RhdGUiOiJhdmFpbGFibGUifSx7ImhhbHRlZCI6ZmFsc2UsInNlcnZpY2UiOiJjZXJlc191cyIsInNoYXJkX2lkIjoyLCJzdGF0ZSI6ImF2YWlsYWJsZSJ9LHsiaGFsdGVkIjpmYWxzZSwic2VydmljZSI6ImJyb2tlYmFja191cyIsInNoYXJkX2lkIjoxNywic3RhdGUiOiJhdmFpbGFibGUifV0sInNsZyI6MSwic2xzIjoiSmY2QkpEZ2Nyd2JMNjdLeHlyNThhMDJiV0FYSGVJYmU5ZXJ4VHVmM2RYK0dnaEpmVm9NQnF6OWo0a21EdGZzSXZacVJUeFFVRmNwcTFUUjkxTmNPRHc9PSIsInNybSI6eyJiIjp7ImhsIjpmYWxzZSwiciI6InVzIiwic2lkIjoxN30sImMiOnsiaGwiOmZhbHNlLCJyIjoidXMiLCJzaWQiOjJ9LCJuIjp7ImhsIjpmYWxzZSwiciI6InVzIiwic2lkIjoyfX0sInRva2VuIjoid0RPZ2dQR1V6ZFI5WVJBeU5JSVRDUVBGSlhLTUJzIiwidXNlcl9pZCI6IjNiNjg3YzE2LWE0YmYtNGFhMi05ZDY1LTUzZDQ3YzM4N2NlZiIsInVzZXJfb3JpZ2luIjoiVVMifQ.HKOP_Gx0Ayf-a-_WN0snPc84oXlI3da_TLR5xmIDZih3ZVia38NyGNeP3XjYqWzRDsRfwB8JgJKpaTHp0G47HQ"
+    rh_helper.update_session("Authorization", "Bearer " + token)
+    rh_helper.set_login_state(True)
+    log.info("Auth token loaded. Starting bot...")
         log.info("Auth token set on session.")
     else:
         log.warning(f"Login response: {login_data}")
@@ -214,8 +204,7 @@ def run():
 
     finally:
         log.info(f"Session summary — Trades: {trade_count}  P&L: ${total_pnl:+.2f}")
-        rh.logout()
-        log.info("Logged out.")
+        log.info("Done.")
 
 
 def _exit(symbol, qty, price, entry, reason):
