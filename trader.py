@@ -149,9 +149,10 @@ def run():
                     qty = shares_for_amount(price, per_trade)
                     log.info(f"ENTRY: {sym} +{pct:.2f}% — buying {qty} shares @ ~${price:.2f}")
                     try:
-                        order = rh.order_buy_fractional_by_price(sym, per_trade)
+                        qty = shares_for_amount(price, per_trade)
+                        order = rh.order_buy_market(sym, qty, timeInForce="gfd")
                         if order and order.get("id"):
-                            positions[sym] = {"entry": price, "qty": shares_for_amount(price, per_trade)}
+                            positions[sym] = {"entry": price, "qty": qty}
                             log.info(f"  BUY order placed: {order['id']}")
                         else:
                             log.warning(f"  Buy order failed: {order}")
@@ -184,7 +185,7 @@ def _exit(symbol, qty, price, entry, reason):
     pnl = (price - entry) * qty
     log.info(f"{reason}: selling {qty} {symbol} @ ~${price:.2f}  est. P&L: ${pnl:+.2f}")
     try:
-        order = rh.order_sell_fractional_by_quantity(symbol, round(qty, 6))
+        order = rh.order_sell_market(symbol, round(qty, 6), timeInForce="gfd")
         if order and order.get("id"):
             log.info(f"  SELL order placed: {order['id']}")
         else:
