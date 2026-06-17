@@ -19,6 +19,7 @@ import robin_stocks.robinhood as rh
 import robin_stocks.robinhood.helper as rh_helper
 from dotenv import load_dotenv
 
+
 ET = ZoneInfo("America/New_York")
 
 load_dotenv()
@@ -65,33 +66,16 @@ def shares_for_amount(price: float, amount_usd: float) -> float:
 
 
 def place_order(symbol: str, dollar_amount: float, side: str) -> dict:
-    """Place a fractional dollar-based market order via the authenticated session."""
-    sess = rh_helper.SESSION
-    sess.headers.update({
-        "Origin": "https://robinhood.com",
-        "Referer": "https://robinhood.com/",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-    })
-    acct_resp = sess.get("https://api.robinhood.com/accounts/")
-    acct_data = acct_resp.json()
-    if "results" not in acct_data or not acct_data["results"]:
-        log.warning(f"Accounts response: {acct_data}")
-        raise Exception(f"Could not get account URL: {acct_data}")
-    account_url = acct_data["results"][0]["url"]
-    instrument_url = rh.get_instruments_by_symbols(symbol)[0]["url"]
-    payload = {
-        "account": account_url,
-        "instrument": instrument_url,
-        "symbol": symbol,
-        "type": "market",
-        "time_in_force": "gfd",
-        "trigger": "immediate",
-        "side": side,
-        "dollar_amount": str(round(dollar_amount, 2)),
-        "ref_id": str(uuid.uuid4()),
-    }
-    order_resp = sess.post("https://api.robinhood.com/orders/", data=payload)
-    return order_resp.json()
+    """Place a fractional dollar-based market order using robin_stocks built-ins."""
+    if side == "buy":
+        result = rh.order_buy_fractional_by_price(
+            symbol, dollar_amount, timeInForce="gfd", extendedHours=False
+        )
+    else:
+        result = rh.order_sell_fractional_by_price(
+            symbol, dollar_amount, timeInForce="gfd", extendedHours=False
+        )
+    return result or {}
 
 
 def market_is_open() -> bool:
@@ -176,10 +160,11 @@ def run():
                     log.info(f"ENTRY: {sym} +{pct:.2f}% — buying ${per_trade} @ ~${price:.2f}")
                     try:
                         order = place_order(sym, per_trade, "buy")
-                        if order and order.get("id"):
+                        order_id = order.get("id") if order else None
+                        if order_id:
                             qty = shares_for_amount(price, per_trade)
                             positions[sym] = {"entry": price, "qty": qty, "dollars": per_trade}
-                            log.info(f"  BUY order placed: {order['id']}")
+                            log.info(f"  BUY order placed: {order_id}")
                         else:
                             log.warning(f"  Buy order failed: {order}")
                     except Exception as e:
