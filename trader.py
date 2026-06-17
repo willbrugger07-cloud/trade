@@ -12,9 +12,12 @@ Strategy:
 import os
 import time
 import logging
+import uuid
 from datetime import datetime, time as dt_time
 from zoneinfo import ZoneInfo
 import robin_stocks.robinhood as rh
+import robin_stocks.robinhood.helper as rh_helper
+import robin_stocks.robinhood.urls as rh_urls
 from dotenv import load_dotenv
 
 ET = ZoneInfo("America/New_York")
@@ -60,6 +63,24 @@ def get_open_prices(symbols: list[str]) -> dict[str, float]:
 
 def shares_for_amount(price: float, amount_usd: float) -> float:
     return round(amount_usd / price, 6)
+
+
+def place_order(symbol: str, qty: float, side: str) -> dict:
+    """Place a market order directly via the Robinhood API."""
+    instrument_url = rh.get_instruments_by_symbols(symbol)[0]["url"]
+    payload = {
+        "account": rh.load_account_profile(info="url"),
+        "instrument": instrument_url,
+        "symbol": symbol,
+        "type": "market",
+        "time_in_force": "gfd",
+        "trigger": "immediate",
+        "quantity": str(round(qty, 6)),
+        "side": side,
+        "ref_id": str(uuid.uuid4()),
+    }
+    data = rh_helper.request_post(rh_urls.orders(), payload)
+    return data
 
 
 def market_is_open() -> bool:
@@ -150,7 +171,7 @@ def run():
                     log.info(f"ENTRY: {sym} +{pct:.2f}% — buying {qty} shares @ ~${price:.2f}")
                     try:
                         qty = shares_for_amount(price, per_trade)
-                        order = rh.order_buy_market(sym, qty, timeInForce="gfd")
+                        order = place_order(sym, qty, "buy")
                         if order and order.get("id"):
                             positions[sym] = {"entry": price, "qty": qty}
                             log.info(f"  BUY order placed: {order['id']}")
@@ -185,7 +206,7 @@ def _exit(symbol, qty, price, entry, reason):
     pnl = (price - entry) * qty
     log.info(f"{reason}: selling {qty} {symbol} @ ~${price:.2f}  est. P&L: ${pnl:+.2f}")
     try:
-        order = rh.order_sell_market(symbol, round(qty, 6), timeInForce="gfd")
+        order = place_order(symbol, round(qty, 6), "sell")
         if order and order.get("id"):
             log.info(f"  SELL order placed: {order['id']}")
         else:
