@@ -75,7 +75,7 @@ def run():
     if not username or not password:
         raise ValueError("Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD in .env")
 
-    rh.login(username, password, mfa_code=mfa_code)
+    rh.login(username, password, mfa_code=mfa_code, store_session=True, pickle_name="robinhood")
     log.info(f"Logged in. Watching: {', '.join(TICKERS)}")
 
     # positions: {symbol: {"entry": price, "qty": shares}}
