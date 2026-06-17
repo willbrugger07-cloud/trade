@@ -46,6 +46,18 @@ def get_prices(symbols: list[str]) -> dict[str, float]:
     return {sym: float(p) for sym, p in zip(symbols, prices) if p}
 
 
+def get_open_prices(symbols: list[str]) -> dict[str, float]:
+    result = {}
+    for sym in symbols:
+        try:
+            historicals = rh.get_stock_historicals(sym, interval="5minute", span="day")
+            if historicals:
+                result[sym] = float(historicals[0]["open_price"])
+        except Exception:
+            pass
+    return result
+
+
 def shares_for_amount(price: float, amount_usd: float) -> float:
     return round(amount_usd / price, 6)
 
@@ -66,7 +78,6 @@ def run():
     rh.login(username, password, mfa_code=mfa_code)
     log.info(f"Logged in. Watching: {', '.join(TICKERS)}")
 
-    open_prices: dict[str, float] = {}
     # positions: {symbol: {"entry": price, "qty": shares}}
     positions: dict[str, dict] = {}
     total_pnl: float = 0.0
@@ -75,6 +86,12 @@ def run():
     # Split capital evenly across max positions
     per_trade = round(TOTAL_CAPITAL / MAX_POSITIONS, 2)
     log.info(f"Capital: ${TOTAL_CAPITAL} split into {MAX_POSITIONS} slots of ${per_trade} each")
+
+    # Fetch real market open prices from historical data
+    log.info("Fetching real open prices...")
+    open_prices = get_open_prices(TICKERS)
+    for sym, p in open_prices.items():
+        log.info(f"  Real open {sym}: ${p:.2f}")
 
     try:
         while True:
@@ -88,11 +105,11 @@ def run():
 
             prices = get_prices(TICKERS)
 
-            # Capture opening prices
+            # Fallback: capture price for any ticker not in open_prices
             for sym, price in prices.items():
                 if sym not in open_prices:
                     open_prices[sym] = price
-                    log.info(f"  Open {sym}: ${price:.2f}")
+                    log.info(f"  Fallback open {sym}: ${price:.2f}")
 
             # --- Exit logic ---
             for sym in list(positions.keys()):
