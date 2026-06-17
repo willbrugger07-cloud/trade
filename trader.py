@@ -17,6 +17,7 @@ from datetime import datetime, time as dt_time
 from zoneinfo import ZoneInfo
 import robin_stocks.robinhood as rh
 import robin_stocks.robinhood.helper as rh_helper
+import robin_stocks.robinhood.urls as rh_urls
 from dotenv import load_dotenv
 
 ET = ZoneInfo("America/New_York")
@@ -65,10 +66,10 @@ def shares_for_amount(price: float, amount_usd: float) -> float:
 
 
 def place_order(symbol: str, qty: float, side: str) -> dict:
-    """Place a market order directly via the Robinhood API."""
-    # Get account URL directly without using the @login_required wrapper
-    account_data = rh_helper.request_get("https://api.robinhood.com/accounts/")
-    account_url = account_data["results"][0]["url"]
+    """Place a market order using the authenticated session directly."""
+    sess = rh_helper.SESSION
+    account_resp = sess.get("https://api.robinhood.com/accounts/")
+    account_url = account_resp.json()["results"][0]["url"]
     instrument_url = rh.get_instruments_by_symbols(symbol)[0]["url"]
     payload = {
         "account": account_url,
@@ -81,8 +82,8 @@ def place_order(symbol: str, qty: float, side: str) -> dict:
         "side": side,
         "ref_id": str(uuid.uuid4()),
     }
-    data = rh_helper.request_post(rh_urls.orders(), payload)
-    return data
+    order_resp = sess.post(rh_urls.orders(), data=payload)
+    return order_resp.json()
 
 
 def market_is_open() -> bool:
