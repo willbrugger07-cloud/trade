@@ -17,7 +17,6 @@ from datetime import datetime, time as dt_time
 from zoneinfo import ZoneInfo
 import robin_stocks.robinhood as rh
 import robin_stocks.robinhood.helper as rh_helper
-import robin_stocks.robinhood.urls as rh_urls
 from dotenv import load_dotenv
 
 ET = ZoneInfo("America/New_York")
@@ -65,9 +64,14 @@ def shares_for_amount(price: float, amount_usd: float) -> float:
     return round(amount_usd / price, 6)
 
 
-def place_order(symbol: str, qty: float, side: str) -> dict:
-    """Place a market order using the authenticated session directly."""
+def place_order(symbol: str, dollar_amount: float, side: str) -> dict:
+    """Place a fractional dollar-based market order via the authenticated session."""
     sess = rh_helper.SESSION
+    sess.headers.update({
+        "Origin": "https://robinhood.com",
+        "Referer": "https://robinhood.com/",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    })
     acct_resp = sess.get("https://api.robinhood.com/accounts/")
     acct_data = acct_resp.json()
     if "results" not in acct_data or not acct_data["results"]:
@@ -82,11 +86,11 @@ def place_order(symbol: str, qty: float, side: str) -> dict:
         "type": "market",
         "time_in_force": "gfd",
         "trigger": "immediate",
-        "quantity": str(round(qty, 6)),
         "side": side,
+        "dollar_amount": str(round(dollar_amount, 2)),
         "ref_id": str(uuid.uuid4()),
     }
-    order_resp = sess.post(rh_urls.orders(), data=payload)
+    order_resp = sess.post("https://api.robinhood.com/orders/", json=payload)
     return order_resp.json()
 
 
@@ -100,12 +104,9 @@ def run():
     rh_helper.update_session("Authorization", "Bearer " + token)
     rh_helper.set_login_state(True)
     log.info("Auth token loaded. Starting bot...")
-        log.info("Auth token set on session.")
-    else:
-        log.warning(f"Login response: {login_data}")
-    log.info(f"Logged in. Watching: {', '.join(TICKERS)}")
+    log.info(f"Watching: {', '.join(TICKERS)}")
 
-    # positions: {symbol: {"entry": price, "qty": shares}}
+    # positions: {symbol: {"entry": price, "qty": shares, "dollars": amount}}
     positions: dict[str, dict] = {}
     total_pnl: float = 0.0
     trade_count: int = 0
@@ -126,7 +127,7 @@ def run():
                 if datetime.now(ET).time() > MARKET_CLOSE:
                     log.info(f"Market closed. Trades: {trade_count}  Total P&L: ${total_pnl:+.2f}")
                     break
-                log.info("Waiting for market open…")
+                log.info("Waiting for market open...")
                 time.sleep(30)
                 continue
 
@@ -148,21 +149,20 @@ def run():
                 log.info(f"[{sym}] ${price:.2f}  {pct:+.2f}%  (TP +{TAKE_PROFIT_PCT}% / SL -{STOP_LOSS_PCT}%)")
 
                 if pct >= TAKE_PROFIT_PCT:
-                    _exit(sym, pos["qty"], price, pos["entry"], "TAKE PROFIT")
+                    _exit(sym, pos["dollars"], price, pos["entry"], "TAKE PROFIT")
                     total_pnl += (price - pos["entry"]) * pos["qty"]
                     trade_count += 1
                     del positions[sym]
                 elif pct <= -STOP_LOSS_PCT:
-                    _exit(sym, pos["qty"], price, pos["entry"], "STOP LOSS")
+                    _exit(sym, pos["dollars"], price, pos["entry"], "STOP LOSS")
                     total_pnl += (price - pos["entry"]) * pos["qty"]
                     trade_count += 1
                     del positions[sym]
 
             # --- Entry logic (fill open slots) ---
             slots_available = MAX_POSITIONS - len(positions)
+            candidates = []
             if slots_available > 0:
-                # Rank tickers by momentum, skip ones already held
-                candidates = []
                 for sym, price in prices.items():
                     if sym in positions or sym not in open_prices:
                         continue
@@ -173,20 +173,19 @@ def run():
                 candidates.sort(reverse=True)
 
                 for pct, sym, price in candidates[:slots_available]:
-                    qty = shares_for_amount(price, per_trade)
-                    log.info(f"ENTRY: {sym} +{pct:.2f}% — buying {qty} shares @ ~${price:.2f}")
+                    log.info(f"ENTRY: {sym} +{pct:.2f}% — buying ${per_trade} @ ~${price:.2f}")
                     try:
-                        qty = shares_for_amount(price, per_trade)
-                        order = place_order(sym, qty, "buy")
+                        order = place_order(sym, per_trade, "buy")
                         if order and order.get("id"):
-                            positions[sym] = {"entry": price, "qty": qty}
+                            qty = shares_for_amount(price, per_trade)
+                            positions[sym] = {"entry": price, "qty": qty, "dollars": per_trade}
                             log.info(f"  BUY order placed: {order['id']}")
                         else:
                             log.warning(f"  Buy order failed: {order}")
                     except Exception as e:
                         log.warning(f"  Buy order error: {e}")
 
-            if not candidates if slots_available > 0 else True:
+            if not candidates:
                 for sym, price in prices.items():
                     if sym not in positions and sym in open_prices:
                         pct = (price - open_prices[sym]) / open_prices[sym] * 100
@@ -198,8 +197,11 @@ def run():
         log.info("Interrupted — emergency exit all positions.")
         for sym, pos in list(positions.items()):
             price = prices.get(sym, pos["entry"])
-            log.warning(f"Emergency exit: selling {pos['qty']} {sym}")
-            rh.order_sell_fractional_by_quantity(sym, pos["qty"])
+            log.warning(f"Emergency exit: selling ${pos['dollars']} of {sym}")
+            try:
+                place_order(sym, pos["dollars"], "sell")
+            except Exception as e:
+                log.warning(f"  Emergency sell error: {e}")
             total_pnl += (price - pos["entry"]) * pos["qty"]
 
     finally:
@@ -207,11 +209,11 @@ def run():
         log.info("Done.")
 
 
-def _exit(symbol, qty, price, entry, reason):
-    pnl = (price - entry) * qty
-    log.info(f"{reason}: selling {qty} {symbol} @ ~${price:.2f}  est. P&L: ${pnl:+.2f}")
+def _exit(symbol, dollar_amount, price, entry, reason):
+    pnl_est = (price - entry) / entry * dollar_amount
+    log.info(f"{reason}: selling ${dollar_amount} of {symbol} @ ~${price:.2f}  est. P&L: ${pnl_est:+.2f}")
     try:
-        order = place_order(symbol, round(qty, 6), "sell")
+        order = place_order(symbol, dollar_amount, "sell")
         if order and order.get("id"):
             log.info(f"  SELL order placed: {order['id']}")
         else:
