@@ -103,7 +103,16 @@ def run():
     if not username or not password:
         raise ValueError("Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD in .env")
 
-    rh.login(username, password, mfa_code=mfa_code, store_session=False)
+    login_data = rh.login(username, password, mfa_code=mfa_code, store_session=False)
+    token = None
+    if isinstance(login_data, dict):
+        token = login_data.get("access_token")
+    if token:
+        rh_helper.update_session("Authorization", "Bearer " + token)
+        rh_helper.set_login_state(True)
+        log.info("Auth token set on session.")
+    else:
+        log.warning(f"Login response: {login_data}")
     log.info(f"Logged in. Watching: {', '.join(TICKERS)}")
 
     # positions: {symbol: {"entry": price, "qty": shares}}
