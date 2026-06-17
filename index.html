@@ -430,6 +430,103 @@ body.mega-win.show-win .slot-frame{filter:saturate(1);transition:filter 1.2s}
 #btn-record{color:var(--cyan);border-color:rgba(0,240,255,0.4);background:rgba(0,240,255,0.04)}
 #btn-record.recording{color:var(--magenta);border-color:var(--magenta);animation:recBlink 1s step-end infinite}
 @keyframes recBlink{50%{opacity:0.5}}
+
+/* ── AMBIENT BACK-BLEED ────────────────────────────────────────────────────── */
+.executive-hud{box-shadow:0 4px 24px rgba(0,0,0,0.6),0 8px 48px rgba(0,240,255,0.08)!important}
+.betting-deck{box-shadow:0 -8px 40px rgba(0,240,255,0.07)!important}
+/* Reflection horizon below slot frame */
+.slot-console::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:90%;height:40px;pointer-events:none;z-index:0;
+  background:var(--_reflect-color,transparent);
+  filter:blur(18px);opacity:0.18;transition:background 0.6s ease}
+
+/* ── ADAPTIVE ENVIRONMENT PHASES ───────────────────────────────────────────── */
+/* Phase 1: Ignition — default, resting amber grid tint */
+.cell{border-color:rgba(255,183,0,0.12)!important}
+/* Symbol idle float */
+.sym{animation:symFloat 3.5s ease-in-out infinite}
+@keyframes symFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.sym-capacitor{animation:capPulse 1.4s ease-in-out infinite,symFloat 3.5s ease-in-out infinite}
+/* Phase 2: Voltage Overload (cascade 4+) */
+body.phase-voltage{--bg:#0a0520}
+body.phase-voltage #cosmic-bg{background:
+  radial-gradient(ellipse 130% 90% at 50% 50%,rgba(80,0,160,0.18) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 60% at 30% 70%,rgba(0,240,255,0.06) 0%,transparent 50%),
+  #0a0520!important;transition:all 1s ease}
+body.phase-voltage .cell{border-color:rgba(0,240,255,0.35)!important;animation:cellFlash 0.9s ease infinite alternate}
+@keyframes cellFlash{from{border-color:rgba(0,240,255,0.2)}to{border-color:rgba(0,240,255,0.55);box-shadow:0 0 8px rgba(0,240,255,0.15)}}
+body.phase-voltage .slot-frame{border-color:rgba(0,240,255,0.4)!important;box-shadow:0 24px 64px rgba(0,0,0,0.85),0 0 60px rgba(0,240,255,0.15),inset 0 0 20px rgba(0,240,255,0.08)!important}
+/* Arc lightning on frame edges */
+body.phase-voltage .slot-frame::before{border-color:rgba(0,240,255,0.3)!important;animation:arcPulse 0.6s ease infinite alternate}
+@keyframes arcPulse{from{box-shadow:none}to{box-shadow:0 0 12px rgba(0,240,255,0.4),inset 0 0 8px rgba(0,240,255,0.2)}}
+/* Phase 3: Supernova (>100x win) */
+body.phase-supernova .cell{border:none!important;box-shadow:none!important}
+body.phase-supernova #cosmic-bg{background:
+  radial-gradient(ellipse 100% 100% at 50% 50%,rgba(255,100,0,0.08) 0%,rgba(100,0,255,0.12) 40%,rgba(0,240,255,0.06) 70%,#050305 100%),
+  #050305!important}
+body.phase-supernova #cosmic-grid{animation:vortexSpin 12s linear infinite;background-size:32px 32px;opacity:0.6}
+@keyframes vortexSpin{from{transform:rotate(0deg) scale(1.1)}to{transform:rotate(360deg) scale(1.1)}}
+body.phase-supernova .hud-val{font-size:28px!important;transition:font-size 0.1s}
+body.phase-supernova #win-val{animation:winPop 0.15s ease-out}
+@keyframes winPop{0%{transform:scale(1)}50%{transform:scale(1.22)}100%{transform:scale(1)}}
+
+/* ── SPIN SHOCKWAVE ─────────────────────────────────────────────────────────── */
+@keyframes shockwave{
+  0%  {transform:translateX(-50%) scale(0.4);opacity:0.9}
+  100%{transform:translateX(-50%) scale(3.5);opacity:0}}
+#spin-shockwave{
+  position:absolute;bottom:0;left:50%;width:200px;height:6px;
+  border-radius:50%;background:radial-gradient(ellipse,rgba(0,240,255,0.7),transparent);
+  pointer-events:none;z-index:900;opacity:0}
+#spin-shockwave.fire{animation:shockwave 0.22s ease-out forwards}
+
+/* ── REEL HITCH VIBRATION ───────────────────────────────────────────────────── */
+@keyframes reelHitch{
+  0%,100%{transform:translate(0,0)}
+  20%{transform:translate(-3px,-2px)}
+  40%{transform:translate(3px,2px)}
+  60%{transform:translate(-2px,3px)}
+  80%{transform:translate(2px,-3px)}}
+.reel-hitch{animation:reelHitch 0.12s linear 0s infinite}
+
+/* ── SHATTER-VAC SYMBOL DESTRUCTION ────────────────────────────────────────── */
+.cell.freeze-white{
+  filter:brightness(3) saturate(0);
+  transition:filter 0ms}
+.shard{
+  position:absolute;pointer-events:none;z-index:300;
+  clip-path:polygon(50% 0%,0% 100%,100% 100%);
+  transform-origin:center}
+
+/* ── SPIN BUTTON STATES ─────────────────────────────────────────────────────── */
+.spin-master-btn:hover:not(:disabled){
+  box-shadow:0 0 45px rgba(0,240,255,0.8),0 0 90px rgba(0,240,255,0.35)!important;
+  filter:brightness(1.1)}
+
+/* ── LIVE FEED SWIPE FLASH ──────────────────────────────────────────────────── */
+@keyframes feedSwipe{
+  0%  {background-position:-100% 0}
+  100%{background-position:200% 0}}
+.feed-item-new::after{
+  content:'';position:absolute;inset:0;border-radius:4px;
+  background:linear-gradient(90deg,transparent 0%,rgba(0,240,255,0.25) 50%,transparent 100%);
+  background-size:200% 100%;
+  animation:feedSwipe 0.5s ease-out forwards;pointer-events:none}
+.feed-item{position:relative}
+/* High-roller rows */
+.feed-item.high-roller{
+  border-color:var(--gold)!important;
+  animation:feedGlide 0.35s cubic-bezier(0.16,1,0.3,1),hrPulse 1.2s ease infinite alternate}
+@keyframes hrPulse{from{box-shadow:none}to{box-shadow:0 0 12px rgba(255,183,0,0.4),inset 0 0 6px rgba(255,183,0,0.1)}}
+/* Player's own row */
+.feed-item.own-row{border-color:var(--green)!important;animation:feedGlide 0.35s cubic-bezier(0.16,1,0.3,1),ownPulse 1.4s ease infinite alternate}
+@keyframes ownPulse{from{box-shadow:none}to{box-shadow:0 0 10px rgba(16,185,129,0.5)}}
+/* 250x+ gold foil */
+.feed-item.jackpot-row{
+  background:linear-gradient(90deg,rgba(255,183,0,0.05),rgba(255,100,0,0.08),rgba(255,183,0,0.05));
+  background-size:200% 100%;animation:feedGlide 0.35s cubic-bezier(0.16,1,0.3,1),goldFoil 2s ease infinite}
+@keyframes goldFoil{0%{background-position:0% 0}100%{background-position:200% 0}}
 </style>
 </head>
 <body>
@@ -518,6 +615,7 @@ body.mega-win.show-win .slot-frame{filter:saturate(1);transition:filter 1.2s}
 </main>
 
 <!-- BETTING DECK -->
+<div id="spin-shockwave"></div>
 <footer class="betting-deck">
   <button class="store-toggle-btn" id="btn-feature-shop">⚡ FEATURE SHOP</button>
   <div class="bet-controls">
@@ -756,6 +854,8 @@ class NeonOverload {
       const capCells=caps.filter(([r,c])=>winCells.has(`${r},${c}`));
       for(const[r,c]of capCells){const cv=CAPACITOR_MULTS[Math.floor(Math.random()*CAPACITOR_MULTS.length)];this.voltageMultiplier*=cv;this.showFloatText(`×${cv}⚡`,r,c,'#ffffff')}
       this.cascadeCount++;this.voltageMultiplier+=1;this.updateVoltageUI();
+      setEnvPhase(this.cascadeCount, this.spinWin/Math.max(this.bet,0.01));
+      if(this.audio._bassRackReady)setBassRack(this.audio,this.cascadeCount);
       if(!this.turbo){el('grid-wrapper').classList.add('cascade-active');for(const cl of clusters)for(const[r,c]of cl.cells){const cell=this.getCellEl(r,c);if(cell){cell.classList.add('highlighted')}}}
       let roundWin=0;
       for(const cl of clusters){
@@ -783,8 +883,19 @@ class NeonOverload {
       if(!this.turbo)await sleep(480);
       el('grid-wrapper').classList.remove('cascade-active');clearLasers();
       const removeCells=new Set([...winCells,...capCells.map(([r,c])=>`${r},${c}`)]);
-      this.markExploding(removeCells);
-      if(!this.turbo)await sleep(340);
+      // Shatter-vac destruction on winning cells
+      if(!this.turbo){
+        const shatterPromises=[];
+        for(const cl of clusters){
+          const color=SYMBOLS[cl.symbol].color;
+          for(const[r,c]of cl.cells.slice(0,4)){shatterPromises.push(shatterCell(this.getCellEl(r,c),color))}
+        }
+        this.markExploding(removeCells);
+        await Promise.all(shatterPromises);
+      } else {
+        this.markExploding(removeCells);
+        await sleep(340);
+      }
       for(const key of removeCells){const[r,c]=key.split(',').map(Number);this.grid[r][c]=null}
       const holes=this.findSpecials('blackhole');
       if(holes.length&&clusters.length)await this.triggerBlackHole(holes);
@@ -839,7 +950,7 @@ class NeonOverload {
     this.showBigWin(this.prismTotalWin);this.addFeedItem('You',this.prismTotalWin/this.bet,this.prismTotalWin);
     scrollNumber('balance-val',this.balance-this.prismTotalWin,this.balance,800,'$',this.bet);
     addXP(Math.ceil(this.prismTotalWin/this.bet*2+10));
-    this.initGrid();this.render();this.setState(STATES.IDLE)
+    this.initGrid();this.render();resetEnvPhase();this.setState(STATES.IDLE)
   }
 
   async spin(){
@@ -850,9 +961,18 @@ class NeonOverload {
     this.balance=r2(this.balance-eb);
     scrollNumber('balance-val',this.balance+eb,this.balance,200,'$',this.bet);
     this.spinWin=0;this.voltageMultiplier=1;this.cascadeCount=0;
-    el('win-val').textContent='$0.00';this.updateVoltageUI();this.audio.play('spin');clearLasers();
-    // Spring-load animation
-    if(!this.turbo){const gw=el('grid-wrapper');gw.classList.add('spring-load');await sleep(480);gw.classList.remove('spring-load')}
+    el('win-val').textContent='$0.00';this.updateVoltageUI();
+    this.audio.init();
+    if(!this.audio._bassRackReady)initBassRack(this.audio);
+    this.audio.play('spin');clearLasers();resetEnvPhase();
+    if(!this.turbo){
+      // Shockwave ring across footer + hitch vibration
+      fireSpinShockwave();
+      const gw=el('grid-wrapper');gw.classList.add('spring-load');
+      await sleep(280);
+      await reelHitch(120); // symbols vibrate before launch
+      gw.classList.remove('spring-load');
+    }
     if(this.turbo&&this.autoRunning){el('grid-wrapper').classList.add('hyper-drive');setTimeout(()=>el('grid-wrapper').classList.remove('hyper-drive'),300)}
     const rolls=await this.rng.roll(this.rows*this.cols+10);
     this.initGrid();await this.fillGrid(rolls);this.render();
@@ -872,6 +992,7 @@ class NeonOverload {
       }
     }else{addXP(2)}
     el('win-val').textContent=fmt(this.spinWin);
+    if(!this.spinWin)resetEnvPhase();
     this.setState(this.autoRunning?STATES.AUTOPLAY:STATES.IDLE);
     if(this.autoRunning)this.tickAutoplay(eb)
   }
@@ -988,6 +1109,7 @@ class NeonOverload {
     const mCls=mult>=100?'mega':mult>=20?'big':'';
     item.innerHTML=`<span class="feed-user">${user}</span> <span class="feed-mult ${mCls}">${mult.toFixed(1)}×</span><br><span style="color:#374151">${fmt(amount)}</span>`;
     feed.insertBefore(item,feed.firstChild);if(feed.children.length>30)feed.removeChild(feed.lastChild);
+    classifyFeedItem(item,mult,user==='You');
     this.recentHighs.push({user,mult});if(this.recentHighs.length>10)this.recentHighs.shift();this.updateTicker()
   }
   updateTicker(){const tc=el('ticker-content');const top=[...this.recentHighs].sort((a,b)=>b.mult-a.mult).slice(0,5);tc.innerHTML=top.map(h=>`<span class="tick-item">${h.user}: <span>${h.mult.toFixed(1)}×</span></span>`).join('')}
@@ -1023,6 +1145,136 @@ class NeonOverload {
     el('btn-close-shop').addEventListener('click',()=>el('feature-shop').classList.remove('open'));
     el('btn-record').addEventListener('click',()=>{_rec?stopRecording():startRecording()});
   }
+}
+
+// ─── ADAPTIVE ENVIRONMENT PHASES ─────────────────────────────────────────────
+function setEnvPhase(cascades, totalMult) {
+  const b = document.body;
+  if (totalMult >= 100) {
+    b.classList.add('phase-supernova');
+    b.classList.remove('phase-voltage');
+  } else if (cascades >= 4) {
+    b.classList.add('phase-voltage');
+    b.classList.remove('phase-supernova');
+  } else {
+    b.classList.remove('phase-voltage','phase-supernova');
+  }
+  // Reflection horizon: pass dominant color down to footer
+  const colors = ['#00f0ff','#ffb700','#ff0077','#10b981'];
+  const col = totalMult>=100 ? colors[2] : cascades>=4 ? colors[0] : 'transparent';
+  document.querySelector('.slot-console').style.setProperty('--_reflect-color', col);
+}
+function resetEnvPhase() {
+  document.body.classList.remove('phase-voltage','phase-supernova');
+  document.querySelector('.slot-console')?.style.setProperty('--_reflect-color','transparent');
+}
+
+// ─── SPIN SHOCKWAVE + HITCH ───────────────────────────────────────────────────
+function fireSpinShockwave() {
+  const sw = el('spin-shockwave');
+  sw.classList.remove('fire'); void sw.offsetWidth;
+  sw.classList.add('fire');
+}
+async function reelHitch(ms=120) {
+  const gw = el('grid-wrapper');
+  gw.classList.add('reel-hitch');
+  await sleep(ms);
+  gw.classList.remove('reel-hitch');
+}
+
+// ─── SHATTER-VAC DESTRUCTION ──────────────────────────────────────────────────
+async function shatterCell(cell, color) {
+  if (!cell) return;
+  // Phase 1: freeze white 0–60ms
+  cell.classList.add('freeze-white');
+  await sleep(60);
+  // Phase 2: spawn shards
+  const rect = cell.getBoundingClientRect();
+  const gridRect = el('grid-wrapper').getBoundingClientRect();
+  const cx = rect.left - gridRect.left + rect.width/2;
+  const cy = rect.top  - gridRect.top  + rect.height/2;
+  const shards = [];
+  const gw = el('grid-wrapper');
+  for (let i=0; i<8; i++) {
+    const s = document.createElement('div');
+    s.className = 'shard';
+    const sz = 6 + Math.random()*8;
+    const angle = (i/8)*360 + Math.random()*30;
+    const rad = angle * Math.PI/180;
+    const dist = 18 + Math.random()*22;
+    s.style.cssText = `width:${sz}px;height:${sz}px;background:${color};left:${cx}px;top:${cy}px;opacity:0.9;box-shadow:0 0 ${sz}px ${color};transition:transform 0.12s cubic-bezier(0.16,1,0.3,1),opacity 0.1s`;
+    gw.appendChild(s);
+    shards.push({el:s, dx:Math.cos(rad)*dist, dy:Math.sin(rad)*dist, rad, cx, cy});
+    requestAnimationFrame(()=>{ s.style.transform=`translate(${Math.cos(rad)*dist}px,${Math.sin(rad)*dist}px) scale(0.8)`; });
+  }
+  cell.classList.remove('freeze-white');
+  await sleep(120);
+  // Phase 3: vacuum toward win display
+  const winRect = el('win-val').getBoundingClientRect();
+  const targetX = winRect.left + winRect.width/2 - gridRect.left;
+  const targetY = winRect.top  + winRect.height/2 - gridRect.top;
+  for (const sh of shards) {
+    sh.el.style.transition = 'transform 0.18s ease-in,opacity 0.15s';
+    sh.el.style.transform = `translate(${targetX-sh.cx}px,${targetY-sh.cy}px) scale(0.2)`;
+    sh.el.style.opacity = '0';
+  }
+  await sleep(200);
+  shards.forEach(sh => sh.el.remove());
+}
+
+// ─── DYNAMIC BASS DROP AUDIO ──────────────────────────────────────────────────
+// Extends AudioEngine with a low-pass filter rack
+function initBassRack(audio) {
+  if (!audio.ctx) return;
+  const ctx = audio.ctx;
+  audio._lpf = ctx.createBiquadFilter();
+  audio._lpf.type = 'lowpass';
+  audio._lpf.frequency.value = 400;
+  // Re-route destination through LPF (for future oscillators routed through it)
+  audio._lpfGain = ctx.createGain();
+  audio._lpfGain.gain.value = 0.6;
+  audio._lpf.connect(audio._lpfGain);
+  audio._lpfGain.connect(ctx.destination);
+  audio._bassRackReady = true;
+}
+function setBassRack(audio, cascades) {
+  if (!audio._bassRackReady || !audio.ctx) return;
+  const ctx = audio.ctx, t = ctx.currentTime;
+  if (cascades >= 7) {
+    audio._lpf.frequency.setTargetAtTime(20000, t, 0.01);
+    // Rising siren
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sawtooth'; o.frequency.value = 200 + cascades * 40;
+    g.gain.setValueAtTime(0.04, t); g.gain.linearRampToValueAtTime(0.001, t+0.8);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t); o.stop(t+0.85);
+  } else if (cascades >= 4) {
+    audio._lpf.frequency.setTargetAtTime(20000, t, 0.008);
+    // Sub-bass 808 drop
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(80, t); o.frequency.exponentialRampToValueAtTime(35, t+0.5);
+    g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.001, t+0.55);
+    o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.6);
+  } else {
+    audio._lpf.frequency.setTargetAtTime(400, t, 0.05);
+  }
+}
+
+// ─── FEED HELPERS ─────────────────────────────────────────────────────────────
+function classifyFeedItem(item, mult, isOwn) {
+  if (isOwn) item.classList.add('own-row');
+  if (mult >= 250) item.classList.add('jackpot-row');
+  else if (mult >= 100) item.classList.add('high-roller');
+  // Swipe flash
+  item.classList.add('feed-item-new');
+  setTimeout(() => item.classList.remove('feed-item-new'), 550);
+}
+
+// ─── WIN-VAL SUPERNOVA POP ────────────────────────────────────────────────────
+function popWinVal() {
+  const wv = el('win-val');
+  wv.classList.remove('winPop'); void wv.offsetWidth;
+  // re-trigger via CSS animation on body.phase-supernova handled by CSS
 }
 
 const game = new NeonOverload();
