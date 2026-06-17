@@ -68,8 +68,12 @@ def shares_for_amount(price: float, amount_usd: float) -> float:
 def place_order(symbol: str, qty: float, side: str) -> dict:
     """Place a market order using the authenticated session directly."""
     sess = rh_helper.SESSION
-    account_resp = sess.get("https://api.robinhood.com/accounts/")
-    account_url = account_resp.json()["results"][0]["url"]
+    acct_resp = sess.get("https://api.robinhood.com/accounts/")
+    acct_data = acct_resp.json()
+    if "results" not in acct_data or not acct_data["results"]:
+        log.warning(f"Accounts response: {acct_data}")
+        raise Exception(f"Could not get account URL: {acct_data}")
+    account_url = acct_data["results"][0]["url"]
     instrument_url = rh.get_instruments_by_symbols(symbol)[0]["url"]
     payload = {
         "account": account_url,
@@ -99,7 +103,7 @@ def run():
     if not username or not password:
         raise ValueError("Set ROBINHOOD_USERNAME and ROBINHOOD_PASSWORD in .env")
 
-    rh.login(username, password, mfa_code=mfa_code, store_session=True, pickle_name="robinhood")
+    rh.login(username, password, mfa_code=mfa_code, store_session=False)
     log.info(f"Logged in. Watching: {', '.join(TICKERS)}")
 
     # positions: {symbol: {"entry": price, "qty": shares}}
