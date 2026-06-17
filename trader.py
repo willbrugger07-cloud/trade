@@ -90,7 +90,7 @@ def place_order(symbol: str, dollar_amount: float, side: str) -> dict:
         "dollar_amount": str(round(dollar_amount, 2)),
         "ref_id": str(uuid.uuid4()),
     }
-    order_resp = sess.post("https://api.robinhood.com/orders/", json=payload)
+    order_resp = sess.post("https://api.robinhood.com/orders/", data=payload)
     return order_resp.json()
 
 
