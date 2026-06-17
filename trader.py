@@ -1,12 +1,13 @@
 """
-Aggressive momentum trading bot — multi-position mode.
+Aggressive momentum trading bot — max profit mode.
 
 Strategy:
   - Watches 15 tickers simultaneously.
-  - Splits available capital across up to 3 simultaneous positions.
-  - Enters the top momentum movers (not already held).
-  - Exits each position independently at TAKE_PROFIT_PCT or STOP_LOSS_PCT.
+  - Goes all-in on the single strongest mover (1 position = full capital).
+  - Trailing stop: once up 0.5%, stop follows price to lock in gains.
+  - Take profit at 2.0%, stop loss at 0.5%.
   - Re-enters immediately after each exit all day long.
+  - Force-exits everything at 3:45 PM ET to avoid overnight risk.
 """
 
 import os
@@ -18,7 +19,6 @@ from zoneinfo import ZoneInfo
 import robin_stocks.robinhood as rh
 import robin_stocks.robinhood.helper as rh_helper
 from dotenv import load_dotenv
-
 
 ET = ZoneInfo("America/New_York")
 
@@ -34,14 +34,16 @@ log = logging.getLogger(__name__)
 # --- Config ---
 TICKERS            = os.getenv("TICKERS", "SPY,QQQ,AAPL,TSLA,NVDA,MSFT,AMZN,META,AMD,GOOGL,NFLX,PLTR,SOFI,RIVN,COIN").split(",")
 TOTAL_CAPITAL      = float(os.getenv("TRADE_AMOUNT_USD", "45"))
-MAX_POSITIONS      = int(os.getenv("MAX_POSITIONS", "3"))
-ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.15"))
-TAKE_PROFIT_PCT    = float(os.getenv("TAKE_PROFIT_PCT", "0.8"))
+ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.3"))
+TAKE_PROFIT_PCT    = float(os.getenv("TAKE_PROFIT_PCT", "2.0"))
 STOP_LOSS_PCT      = float(os.getenv("STOP_LOSS_PCT", "0.5"))
-POLL_SECONDS       = int(os.getenv("POLL_SECONDS", "20"))
+TRAIL_ACTIVATE_PCT = float(os.getenv("TRAIL_ACTIVATE_PCT", "0.5"))  # start trailing after +0.5%
+TRAIL_DISTANCE_PCT = float(os.getenv("TRAIL_DISTANCE_PCT", "0.4"))  # trail 0.4% below peak
+POLL_SECONDS       = int(os.getenv("POLL_SECONDS", "15"))
 
 MARKET_OPEN  = dt_time(9, 30)
 MARKET_CLOSE = dt_time(15, 50)
+EOD_EXIT     = dt_time(15, 45)
 
 
 def get_prices(symbols: list[str]) -> dict[str, float]:
@@ -66,7 +68,6 @@ def shares_for_amount(price: float, amount_usd: float) -> float:
 
 
 def place_order(symbol: str, dollar_amount: float, side: str) -> dict:
-    """Place a fractional dollar-based market order using robin_stocks built-ins."""
     if side == "buy":
         result = rh.order_buy_fractional_by_price(
             symbol, dollar_amount, timeInForce="gfd", extendedHours=False
@@ -88,22 +89,22 @@ def run():
     rh_helper.update_session("Authorization", "Bearer " + token)
     rh_helper.set_login_state(True)
     log.info("Auth token loaded. Starting bot...")
+    log.info(f"Strategy: all-in on top mover | TP +{TAKE_PROFIT_PCT}% | SL -{STOP_LOSS_PCT}% | Trail after +{TRAIL_ACTIVATE_PCT}%")
     log.info(f"Watching: {', '.join(TICKERS)}")
 
-    # positions: {symbol: {"entry": price, "qty": shares, "dollars": amount}}
-    positions: dict[str, dict] = {}
+    # Single position at a time for max capital concentration
+    # position: {"entry", "qty", "dollars", "peak"}
+    position: dict | None = None
+    position_sym: str | None = None
     total_pnl: float = 0.0
     trade_count: int = 0
 
-    # Split capital evenly across max positions
-    per_trade = round(TOTAL_CAPITAL / MAX_POSITIONS, 2)
-    log.info(f"Capital: ${TOTAL_CAPITAL} split into {MAX_POSITIONS} slots of ${per_trade} each")
-
-    # Fetch real market open prices from historical data
-    log.info("Fetching real open prices...")
+    log.info("Fetching open prices...")
     open_prices = get_open_prices(TICKERS)
     for sym, p in open_prices.items():
-        log.info(f"  Real open {sym}: ${p:.2f}")
+        log.info(f"  {sym}: ${p:.2f}")
+
+    prices: dict[str, float] = {}
 
     try:
         while True:
@@ -117,48 +118,53 @@ def run():
 
             prices = get_prices(TICKERS)
 
-            # Fallback: capture price for any ticker not in open_prices
             for sym, price in prices.items():
                 if sym not in open_prices:
                     open_prices[sym] = price
-                    log.info(f"  Fallback open {sym}: ${price:.2f}")
 
-            # Force-exit all positions 5 minutes before close
-            near_close = datetime.now(ET).time() >= dt_time(15, 45)
+            near_close = datetime.now(ET).time() >= EOD_EXIT
 
             # --- Exit logic ---
-            for sym in list(positions.keys()):
-                price = prices.get(sym)
-                if not price:
-                    continue
-                pos = positions[sym]
-                pct = (price - pos["entry"]) / pos["entry"] * 100
-                log.info(f"[{sym}] ${price:.2f}  {pct:+.2f}%  (TP +{TAKE_PROFIT_PCT}% / SL -{STOP_LOSS_PCT}%)")
+            if position and position_sym:
+                price = prices.get(position_sym)
+                if price:
+                    pct = (price - position["entry"]) / position["entry"] * 100
 
-                if near_close:
-                    _exit(sym, pos["dollars"], price, pos["entry"], "EOD CLOSE")
-                    total_pnl += (price - pos["entry"]) * pos["qty"]
-                    trade_count += 1
-                    del positions[sym]
-                    continue
+                    # Update trailing stop peak
+                    if price > position["peak"]:
+                        position["peak"] = price
 
-                if pct >= TAKE_PROFIT_PCT:
-                    _exit(sym, pos["dollars"], price, pos["entry"], "TAKE PROFIT")
-                    total_pnl += (price - pos["entry"]) * pos["qty"]
-                    trade_count += 1
-                    del positions[sym]
-                elif pct <= -STOP_LOSS_PCT:
-                    _exit(sym, pos["dollars"], price, pos["entry"], "STOP LOSS")
-                    total_pnl += (price - pos["entry"]) * pos["qty"]
-                    trade_count += 1
-                    del positions[sym]
+                    peak_pct = (position["peak"] - position["entry"]) / position["entry"] * 100
+                    trail_stop_pct = peak_pct - TRAIL_DISTANCE_PCT if peak_pct >= TRAIL_ACTIVATE_PCT else None
+                    trail_active = trail_stop_pct is not None
 
-            # --- Entry logic (fill open slots) ---
-            slots_available = MAX_POSITIONS - len(positions)
-            candidates = []
-            if slots_available > 0:
+                    if trail_active:
+                        log.info(f"[{position_sym}] ${price:.2f}  {pct:+.2f}%  peak={peak_pct:+.2f}%  trail_stop={trail_stop_pct:+.2f}%")
+                    else:
+                        log.info(f"[{position_sym}] ${price:.2f}  {pct:+.2f}%  (TP +{TAKE_PROFIT_PCT}% / SL -{STOP_LOSS_PCT}%)")
+
+                    reason = None
+                    if near_close:
+                        reason = "EOD CLOSE"
+                    elif pct >= TAKE_PROFIT_PCT:
+                        reason = "TAKE PROFIT"
+                    elif trail_active and pct <= trail_stop_pct:
+                        reason = f"TRAIL STOP (locked in {trail_stop_pct:+.2f}%)"
+                    elif pct <= -STOP_LOSS_PCT:
+                        reason = "STOP LOSS"
+
+                    if reason:
+                        _exit(position_sym, position["dollars"], price, position["entry"], reason)
+                        total_pnl += (price - position["entry"]) * position["qty"]
+                        trade_count += 1
+                        position = None
+                        position_sym = None
+
+            # --- Entry logic ---
+            if position is None and not near_close:
+                candidates = []
                 for sym, price in prices.items():
-                    if sym in positions or sym not in open_prices:
+                    if sym not in open_prices:
                         continue
                     pct = (price - open_prices[sym]) / open_prices[sym] * 100
                     if pct >= ENTRY_MOMENTUM_PCT:
@@ -166,38 +172,40 @@ def run():
 
                 candidates.sort(reverse=True)
 
-                for pct, sym, price in candidates[:slots_available]:
-                    log.info(f"ENTRY: {sym} +{pct:.2f}% — buying ${per_trade} @ ~${price:.2f}")
+                if candidates:
+                    best_pct, best_sym, best_price = candidates[0]
+                    log.info(f"ENTRY: {best_sym} +{best_pct:.2f}% — going all-in ${TOTAL_CAPITAL} @ ~${best_price:.2f}")
                     try:
-                        order = place_order(sym, per_trade, "buy")
+                        order = place_order(best_sym, TOTAL_CAPITAL, "buy")
                         order_id = order.get("id") if order else None
                         if order_id:
-                            qty = shares_for_amount(price, per_trade)
-                            positions[sym] = {"entry": price, "qty": qty, "dollars": per_trade}
+                            qty = shares_for_amount(best_price, TOTAL_CAPITAL)
+                            position = {"entry": best_price, "qty": qty, "dollars": TOTAL_CAPITAL, "peak": best_price}
+                            position_sym = best_sym
                             log.info(f"  BUY order placed: {order_id}")
                         else:
                             log.warning(f"  Buy order failed: {order}")
                     except Exception as e:
                         log.warning(f"  Buy order error: {e}")
-
-            if not candidates:
-                for sym, price in prices.items():
-                    if sym not in positions and sym in open_prices:
-                        pct = (price - open_prices[sym]) / open_prices[sym] * 100
-                        log.info(f"  {sym} ${price:.2f}  {pct:+.2f}%")
+                else:
+                    # Log all tickers so user can see what's happening
+                    for sym, price in sorted(prices.items(), key=lambda x: -(x[1] - open_prices.get(x[0], x[1])) / open_prices.get(x[0], x[1])):
+                        if sym in open_prices:
+                            pct = (price - open_prices[sym]) / open_prices[sym] * 100
+                            log.info(f"  {sym} ${price:.2f}  {pct:+.2f}%")
 
             time.sleep(POLL_SECONDS)
 
     except KeyboardInterrupt:
-        log.info("Interrupted — emergency exit all positions.")
-        for sym, pos in list(positions.items()):
-            price = prices.get(sym, pos["entry"])
-            log.warning(f"Emergency exit: selling ${pos['dollars']} of {sym}")
+        log.info("Interrupted — emergency exit.")
+        if position and position_sym:
+            price = prices.get(position_sym, position["entry"])
+            log.warning(f"Emergency exit: selling ${position['dollars']} of {position_sym}")
             try:
-                place_order(sym, pos["dollars"], "sell")
+                place_order(position_sym, position["dollars"], "sell")
             except Exception as e:
                 log.warning(f"  Emergency sell error: {e}")
-            total_pnl += (price - pos["entry"]) * pos["qty"]
+            total_pnl += (price - position["entry"]) * position["qty"]
 
     finally:
         log.info(f"Session summary — Trades: {trade_count}  P&L: ${total_pnl:+.2f}")
