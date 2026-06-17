@@ -37,7 +37,7 @@ TOTAL_CAPITAL      = float(os.getenv("TRADE_AMOUNT_USD", "45"))
 MAX_POSITIONS      = int(os.getenv("MAX_POSITIONS", "3"))
 ENTRY_MOMENTUM_PCT = float(os.getenv("ENTRY_MOMENTUM_PCT", "0.15"))
 TAKE_PROFIT_PCT    = float(os.getenv("TAKE_PROFIT_PCT", "0.8"))
-STOP_LOSS_PCT      = float(os.getenv("STOP_LOSS_PCT", "0.2"))
+STOP_LOSS_PCT      = float(os.getenv("STOP_LOSS_PCT", "0.5"))
 POLL_SECONDS       = int(os.getenv("POLL_SECONDS", "20"))
 
 MARKET_OPEN  = dt_time(9, 30)
@@ -123,6 +123,9 @@ def run():
                     open_prices[sym] = price
                     log.info(f"  Fallback open {sym}: ${price:.2f}")
 
+            # Force-exit all positions 5 minutes before close
+            near_close = datetime.now(ET).time() >= dt_time(15, 45)
+
             # --- Exit logic ---
             for sym in list(positions.keys()):
                 price = prices.get(sym)
@@ -131,6 +134,13 @@ def run():
                 pos = positions[sym]
                 pct = (price - pos["entry"]) / pos["entry"] * 100
                 log.info(f"[{sym}] ${price:.2f}  {pct:+.2f}%  (TP +{TAKE_PROFIT_PCT}% / SL -{STOP_LOSS_PCT}%)")
+
+                if near_close:
+                    _exit(sym, pos["dollars"], price, pos["entry"], "EOD CLOSE")
+                    total_pnl += (price - pos["entry"]) * pos["qty"]
+                    trade_count += 1
+                    del positions[sym]
+                    continue
 
                 if pct >= TAKE_PROFIT_PCT:
                     _exit(sym, pos["dollars"], price, pos["entry"], "TAKE PROFIT")
